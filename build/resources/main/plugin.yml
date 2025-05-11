@@ -6,3 +6,4 @@ authors: [Mr_bl]
 commands:
   mlcgui:
     description: "打开mlc菜单"
+    permission: mlc.op
