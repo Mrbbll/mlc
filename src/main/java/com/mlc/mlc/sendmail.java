@@ -101,7 +101,9 @@ public class sendmail implements CommandExecutor {
     public void saveitem(String itemid, Map<String, Object> serialized , String type, Integer amount, File file) throws IOException {
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
 
-
+        fileConfiguration.set("item."+itemid+".type",type);
+        fileConfiguration.set("item."+itemid+".amount",amount);
+        fileConfiguration.set("item."+itemid+".itemmeta",serialized);
         fileConfiguration.save(file);
     }
 }
