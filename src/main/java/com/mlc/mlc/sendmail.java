@@ -17,6 +17,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.mlc.mlc.Mlc.instance;
@@ -41,8 +43,6 @@ public class sendmail implements CommandExecutor {
             return false;
         };
 
-//        Player receiver = Bukkit.getPlayer(s);
-//        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(strings[0]);
         try {
             savetomailgui(item,strings[0]);
         } catch (IOException e) {
@@ -79,7 +79,8 @@ public class sendmail implements CommandExecutor {
         //获取物品信息
         ItemMeta itemMeta = item.getItemMeta();
         //序列化itemmeta以及其他信息
-        Map<String, Object> serialized = itemMeta.serialize();
+
+        Map<String, Object> serialized = item.serialize();
         String type = item.getType().toString();
         int amount = item.getAmount();
 
@@ -94,8 +95,9 @@ public class sendmail implements CommandExecutor {
 
     public String getitemid()
     {
-        Date date = new Date();
-        return date.toString();
+        long timeMillis = System.currentTimeMillis();
+        Bukkit.broadcast(Component.text(timeMillis));
+        return String.valueOf(timeMillis);
     };
 
     public void saveitem(String itemid, Map<String, Object> serialized , String type, Integer amount, File file) throws IOException {
