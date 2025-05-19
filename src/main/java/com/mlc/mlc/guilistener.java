@@ -6,6 +6,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.util.HSVLike;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.WeatherType;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,6 +15,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +41,7 @@ public class guilistener implements Listener {
             if(itemStack == null)
             {
                 return;
-            }
+            };
             if(Objects.equals(itemStack.getItemMeta().itemName(), Component.text("exit")))
             {
                 player.kick(Component.text("拜拜"));
@@ -62,6 +64,8 @@ public class guilistener implements Listener {
 public void onsleep(PlayerDeepSleepEvent onbed) throws  IOException{
         Player player = onbed.getPlayer();
         World world = onbed.getPlayer().getWorld();
+
+
 ////        if(world.getTime()%24000<12541)
 ////        {
 ////            return;
@@ -80,13 +84,23 @@ public void onsleep(PlayerDeepSleepEvent onbed) throws  IOException{
         String line = words.get(wordsnum);
         String cleanedLine1 = line.replace("\t", "  ");
 
+//提示
         Bukkit.broadcast(Component.text("\n" + player.getName() + "上床睡不着，开始背单词了......\n").color(TextColor.fromHexString("#38ff8e")));
         Bukkit.broadcast(Component.text(cleanedLine1+" \n ").color(TextColor.fromHexString("#c3fd26")));
         Bukkit.broadcast(Component.text(player.getName() + "背了一会发现天亮了\n").color(TextColor.fromHexString("#38ff8e")));
+
         instance.getConfig().set("words", wordsnum);
         instance.saveConfig();
+
+        //时间
         world.setTime(0);
-        return;
+
+        //天气
+        if(world.isThundering()&&!world.hasStorm()){
+            world.setThundering(false);
+            world.setStorm(false);
+            world.setWeatherDuration(0);
+        };
     }
 
 

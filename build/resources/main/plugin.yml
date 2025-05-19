@@ -7,3 +7,7 @@ commands:
   mlcgui:
     description: "打开mlc菜单"
     permission: mlc.op
+  sendmail:
+    description: "发送邮件"
+  mymail:
+    description: "打开自己的邮箱"

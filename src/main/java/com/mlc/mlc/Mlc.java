@@ -27,7 +27,7 @@ public final class Mlc extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
-        getLogger().info("mlc核心插件加载成功");
+        getLogger().info("\n\nmlc核心插件加载成功\n\n");
 
         this.saveDefaultConfig();
         saveResource("words.txt", false);
@@ -37,6 +37,8 @@ public final class Mlc extends JavaPlugin {
 
 
         Bukkit.getPluginManager().registerEvents(new guilistener(), this);
+        Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
+        Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mlcgui")).setExecutor(new mlcgui());
     }
 
@@ -44,7 +46,7 @@ public final class Mlc extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        getLogger().info("mlc核心插件卸载成功");
+        getLogger().info("\n\nmlc核心插件卸载成功\n\n");
     }
 
     public static List<String> readwords(String resourcePath) throws IOException {
