@@ -83,34 +83,25 @@ public class sendmail implements CommandExecutor {
         String type = item.getType().toString();
         int amount = item.getAmount();
 
-        //获取空闲格子
-        int freeslot = getfreeslot(fileConfiguration);
+        //获取物品存储id
+        String itemid = getitemid();
 
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> itemList = (List<Map<String, Object>>) fileConfiguration.get("item");
+        //存储物品
+        saveitem(itemid,serialized,type,amount,file);
 
-        Map<String, Object> newItem = new HashMap<>();
-        newItem.put("type",type);
-        newItem.put("amount",amount);
-        newItem.put("itemmeta",serialized);
-
-        itemList.add(newItem);
-        fileConfiguration.set("item",itemList);
-        fileConfiguration.save(file);
     }
 
-    public int getfreeslot (FileConfiguration fileConfiguration)
-    {
-        ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("item");
-        if(configurationSection==null)
-        {
-            return 0;
-        }
-        Map<String,Object> items = configurationSection.getValues(false);
-        for(var solts : configurationSection.getKeys(false)){
 
-        }
-        return -1;
+    public String getitemid()
+    {
+        Date date = new Date();
+        return date.toString();
     };
 
+    public void saveitem(String itemid, Map<String, Object> serialized , String type, Integer amount, File file) throws IOException {
+        FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
+
+
+        fileConfiguration.save(file);
+    }
 }
