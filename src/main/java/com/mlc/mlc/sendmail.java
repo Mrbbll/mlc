@@ -3,26 +3,19 @@ package com.mlc.mlc;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.mlc.mlc.Mlc.instance;
-import static org.bukkit.inventory.ItemStack.serializeItemsAsBytes;
 
 public class sendmail implements CommandExecutor {
 
@@ -48,8 +41,8 @@ public class sendmail implements CommandExecutor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-
+        //删除手上物品
+        player.getInventory().getItemInMainHand().setAmount(0);
         return true;
     }
 
@@ -76,22 +69,17 @@ public class sendmail implements CommandExecutor {
             fileConfiguration.save(file);
         }
 
-        //获取物品信息
-        ItemMeta itemMeta = item.getItemMeta();
-        //序列化itemmeta以及其他信息
-
+        //序列化itemmeta
         Map<String, Object> serialized = item.serialize();
-        String type = item.getType().toString();
-        int amount = item.getAmount();
 
         //获取物品存储id
         String itemid = getitemid();
 
         //存储物品
-        saveitem(itemid,serialized,type,amount,file);
+        saveitem(itemid,serialized,file);
+
 
     }
-
 
     public String getitemid()
     {
@@ -100,12 +88,10 @@ public class sendmail implements CommandExecutor {
         return String.valueOf(timeMillis);
     };
 
-    public void saveitem(String itemid, Map<String, Object> serialized , String type, Integer amount, File file) throws IOException {
+    public void saveitem(String itemid, Map<String, Object> serialized , File file) throws IOException {
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
 
-        fileConfiguration.set("item."+itemid+".type",type);
-        fileConfiguration.set("item."+itemid+".amount",amount);
-        fileConfiguration.set("item."+itemid+".itemmeta",serialized);
+        fileConfiguration.set("item."+itemid,serialized);
         fileConfiguration.save(file);
     }
 }

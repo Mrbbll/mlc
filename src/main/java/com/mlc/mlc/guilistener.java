@@ -3,23 +3,23 @@ package com.mlc.mlc;
 import io.papermc.paper.event.player.PlayerDeepSleepEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.util.HSVLike;
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.WeatherType;
 import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.wordsnum;
@@ -28,7 +28,8 @@ public class guilistener implements Listener {
     //和睡觉监听写一起
 
     @EventHandler
-    public void onClick(InventoryClickEvent e) {
+    //普通的界面事件监听
+    public void onClick(InventoryClickEvent e) throws IOException {
         Player player = (Player) e.getWhoClicked();
         InventoryView inv = player.getOpenInventory();
         if (inv.title().equals(Component.text("mlc"))) {
@@ -49,28 +50,40 @@ public class guilistener implements Listener {
             else{
                 player.give(itemStack);
             };
-//            if(Objects.equals(itemStack.getItemMeta().itemName(), Component.text("活动帽子1"))){
-//                player.give(itemStack);
-
-
         };
 
-        return;
-
+        //邮箱事件监听
+        if(inv.title().equals(Component.text("邮箱"))){
+            e.setCancelled(true);
+            ItemStack itemStack =e.getCurrentItem();
+            if(e.getRawSlot()<0||e.getRawSlot()>e.getInventory().getSize())
+            {
+                return;
+            };
+            if(itemStack==null)
+            {
+                return;
+            }
+            else{
+                player.give(itemStack);
+                Integer slot = e.getRawSlot();
+                String string = player.getName() + ".yml";
+                File mailDir = new File(instance.getDataFolder(), "mail");
+                File file = new File(mailDir, string);
+                FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
+                ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("item");
+                List<String> items = configurationSection.getKeys(false).stream().toList();
+                configurationSection.set(items.get(slot),null);
+                fileConfiguration.save(file);
+                new mailgui(player).open();
+            }
+        }
     }
-
     @EventHandler
-//    public void onsleep(PlayerBedEnterEvent onbed) throws IOException {
+
 public void onsleep(PlayerDeepSleepEvent onbed) throws  IOException{
         Player player = onbed.getPlayer();
         World world = onbed.getPlayer().getWorld();
-
-
-////        if(world.getTime()%24000<12541)
-////        {
-////            return;
-////        };
-//        world.getTime();
 
         String path = instance.getDataPath().toString();
         List<String> words = Mlc.readwords(path);
