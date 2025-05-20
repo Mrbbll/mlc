@@ -1,6 +1,8 @@
 package com.mlc.mlc;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -43,6 +45,13 @@ public class sendmail implements CommandExecutor {
         }
         //删除手上物品
         player.getInventory().getItemInMainHand().setAmount(0);
+        Player receiver = Bukkit.getPlayer(strings[0]);
+        if (receiver != null) {
+            receiver.sendMessage(Component.text(player.getName() + "向你发送了一封邮件")
+                    .decoration(TextDecoration.BOLD,true)
+                    .color(TextColor.fromHexString("#7cff4d"))
+            );
+        }
         return true;
     }
 
