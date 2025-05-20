@@ -1,6 +1,8 @@
 package com.mlc.mlc;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -117,8 +119,12 @@ public class gui {
         meta4.setItemModel(mlc_partyhat_1);
         meta4.itemName( Component.text("生日帽子"));
         List<Component> lore1 = new ArrayList<>();
-        lore1.add(Component.text("生日快乐喵"));
-        
+        lore1.add(Component.text("生日快乐喵")
+                .decoration(TextDecoration.ITALIC,false)
+                .color(TextColor.fromHexString("#eea468"))
+        );
+
+        meta4.lore(lore1);
 
         EquippableComponent equippableComponent4 = meta4.getEquippable();
         equippableComponent4.setSlot(EquipmentSlot.HEAD);

@@ -3,6 +3,7 @@ package com.mlc.mlc;
 import io.papermc.paper.event.player.PlayerDeepSleepEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
@@ -12,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
@@ -115,6 +117,21 @@ public class guilistener implements Listener {
                 world.setStorm(false);
                 world.setWeatherDuration(0);
             }
+        }
+    }
+
+    @EventHandler
+    public void onjion(PlayerJoinEvent join){
+        File mailDir = new File(instance.getDataFolder(), "mail");
+        String string = join.getPlayer().getName() + ".yml";
+        File file = new File(mailDir,string);
+        FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
+        ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("item");
+        if (configurationSection != null && !configurationSection.getKeys(false).isEmpty()) {
+            join.getPlayer().sendMessage(Component.text("邮箱中有新信件！")
+                    .color(TextColor.fromHexString("#7cff4d"))
+                    .decoration(TextDecoration.BOLD,true)
+            );
         }
     }
 
