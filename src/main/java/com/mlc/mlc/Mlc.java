@@ -30,6 +30,7 @@ public final class Mlc extends JavaPlugin {
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mlcgui")).setExecutor(new mlcgui());
+        Objects.requireNonNull(Bukkit.getPluginCommand("sendmailtoall")).setExecutor(new sendmailtoall());
     }
 
 

@@ -80,8 +80,7 @@ public class guilistener implements Listener {
         }
     }
     @EventHandler
-
-public void onsleep(PlayerDeepSleepEvent onbed) throws  IOException{
+    public void onsleep(PlayerDeepSleepEvent onbed) throws  IOException{
         Player player = onbed.getPlayer();
         World world = onbed.getPlayer().getWorld();
 
@@ -104,16 +103,19 @@ public void onsleep(PlayerDeepSleepEvent onbed) throws  IOException{
 
         instance.getConfig().set("words", wordsnum);
         instance.saveConfig();
-
-        //时间
-        world.setTime(0);
-
-        //天气
-        if(world.isThundering()&&!world.hasStorm()){
+//        Bukkit.broadcast(Component.text(world.getTime()));
+        //天气,时间
+        if(world.isThundering()&&world.getTime()<12530){
             world.setThundering(false);
             world.setStorm(false);
             world.setWeatherDuration(0);
-        };
+        } else {
+            world.setTime(0);
+            if (world.hasStorm()){
+                world.setStorm(false);
+                world.setWeatherDuration(0);
+            }
+        }
     }
 
 

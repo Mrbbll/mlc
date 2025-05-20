@@ -84,7 +84,6 @@ public class sendmail implements CommandExecutor {
     public String getitemid()
     {
         long timeMillis = System.currentTimeMillis();
-        Bukkit.broadcast(Component.text(timeMillis));
         return String.valueOf(timeMillis);
     };
 

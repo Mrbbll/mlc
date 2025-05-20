@@ -9,5 +9,9 @@ commands:
     permission: mlc.op
   sendmail:
     description: "发送邮件"
+  sendmailtoall:
+    descricption: "发送所有玩家邮件"
+    permission: mlc.op
   mymail:
     description: "打开自己的邮箱"
+

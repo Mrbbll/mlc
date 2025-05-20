@@ -41,7 +41,7 @@ public class gui {
 //        quit.setItemMeta(meta);
 
         //1item
-        ItemStack fes1_hat_1_item = new ItemStack(Material.STICK);
+        ItemStack fes1_hat_1_item = new ItemStack(Material.ECHO_SHARD);
         ItemMeta meta1 = fes1_hat_1_item.getItemMeta();
         NamespacedKey fes1_hat_1 = new NamespacedKey("mlc","fes1_hat_1");
         meta1.setItemModel(fes1_hat_1);
@@ -61,8 +61,9 @@ public class gui {
 
         fes1_hat_1_item.setItemMeta((ItemMeta) damageable1);
         fes1_hat_1_item.setItemMeta(meta1);
+
         //2item
-        ItemStack fes1_hat_2_item = new ItemStack(Material.STICK);
+        ItemStack fes1_hat_2_item = new ItemStack(Material.ECHO_SHARD);
         ItemMeta meta2 = fes1_hat_2_item.getItemMeta();
         NamespacedKey fes1_hat_2 = new NamespacedKey("mlc","fes1_hat_2");
         meta2.setItemModel(fes1_hat_2);
@@ -84,8 +85,9 @@ public class gui {
 
         fes1_hat_2_item.setItemMeta((ItemMeta) damageable2);
         fes1_hat_2_item.setItemMeta(meta2);
+
         //3item
-        ItemStack fes1_hat_3_item = new ItemStack(Material.STICK);
+        ItemStack fes1_hat_3_item = new ItemStack(Material.ECHO_SHARD);
         ItemMeta meta3 = fes1_hat_3_item.getItemMeta();
         NamespacedKey fes1_hat_3 = new NamespacedKey("mlc","fes1_hat_3");
         meta3.setItemModel(fes1_hat_3);
@@ -108,6 +110,28 @@ public class gui {
         fes1_hat_3_item.setItemMeta((ItemMeta) damageable3);
         fes1_hat_3_item.setItemMeta(meta3);
 
+        //4item
+        ItemStack mlc_partyhat_1_item = new ItemStack(Material.ECHO_SHARD);
+        ItemMeta meta4 = mlc_partyhat_1_item.getItemMeta();
+        NamespacedKey mlc_partyhat_1 = new NamespacedKey("mlc","mlc_partyhat_1");
+        meta4.setItemModel(mlc_partyhat_1);
+        meta4.itemName( Component.text("生日帽子"));
+        List<Component> lore1 = new ArrayList<>();
+        lore1.add(Component.text("生日快乐喵"));
+        
+
+        EquippableComponent equippableComponent4 = meta4.getEquippable();
+        equippableComponent4.setSlot(EquipmentSlot.HEAD);
+        meta4.setEquippable(equippableComponent4);
+        meta4.setRarity(ItemRarity.EPIC);
+        meta4.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+
+        Damageable damageable4 = (Damageable)meta4;
+        damageable4.setMaxDamage(407);
+        damageable4.setDamage(0);
+
+        mlc_partyhat_1_item.setItemMeta((ItemMeta) damageable4);
+        mlc_partyhat_1_item.setItemMeta(meta4);
 
 
 
@@ -115,6 +139,7 @@ public class gui {
         inv.setItem(0,fes1_hat_1_item);
         inv.setItem(1,fes1_hat_2_item);
         inv.setItem(2,fes1_hat_3_item);
+        inv.setItem(3,mlc_partyhat_1_item);
     }
     public void open(){
         owner.openInventory(inv);
