@@ -1,0 +1,51 @@
+items:
+  1:
+    name: 1111
+    type: ECHO_SHARD
+    resource: "mlc:item"
+    lore:
+      - '&7When you mine a block'
+      - '&7it drops exp orbs'
+      - '&750% of times.'
+    tooltips:
+    durability:
+      max_custom_durability: 1324
+      usages: 5
+      unbreakable: false
+    enchants:
+      - ARROW_FIRE:1
+      - anger_artifact:1
+      - my_custom_plugin:custom_enchant:6
+    item_flags:
+      - HIDE_ATTRIBUTES
+      - HIDE_DESTROYS
+      - HIDE_ENCHANTS
+      - HIDE_PLACED_ON
+      - HIDE_POTION_EFFECTS
+      - HIDE_UNBREAKABLE
+    blocked_enchants:
+      - DAMAGE_UNDEAD
+      - DAMAGE_ALL
+      - DAMAGE_ARTHROPODS
+      - KNOCKBACK
+      - DURABILITY
+      - SWEEPING_EDGE
+    attribute_modifiers:
+      mainhand:
+        attackDamage: 19
+        attackSpeed: 1.1
+        maxHealth: 1.1
+        movementSpeed: -1
+        armor: 1.1
+        armorToughness: 1.1
+        attackKnockback: 1.1
+        luck: 1.1
+      offhand:
+        attackDamage: 19
+        attackSpeed: 1.1
+        maxHealth: 1.1
+        movementSpeed: 1.1
+        armor: 1.1
+        armorToughness: 1.1
+        attackKnockback: 1.1
+        luck: 1.1

@@ -42,7 +42,6 @@ public final class Mlc extends JavaPlugin {
 
     public static List<String> readwords(String resourcePath) throws IOException {
         File file = new File(resourcePath,"words.txt");
-//        instance.getLogger().info(file.getPath());
         FileInputStream fileInputStream = new FileInputStream(file.getPath()) ;
         InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
         BufferedReader reader = new BufferedReader(inputStreamReader);

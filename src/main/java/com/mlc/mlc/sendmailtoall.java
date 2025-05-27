@@ -1,5 +1,6 @@
 package com.mlc.mlc;
 
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,7 +29,11 @@ public class sendmailtoall implements CommandExecutor {
         }
         Player player = (Player) commandSender;
         ItemStack itemStack = player.getInventory().getItemInMainHand();
-
+        if(itemStack.getType()== Material.AIR)
+        {
+            commandSender.sendMessage("手上物品为空");
+            return false;
+        };
         for(String playername : playernames)
         {
             player.sendMessage("尝试发送信件到" + playername);

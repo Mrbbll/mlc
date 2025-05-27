@@ -8,13 +8,20 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.EquippableComponent;
+import org.checkerframework.checker.units.qual.C;
 
+import java.io.File;
 import java.util.*;
+
+import static com.mlc.mlc.Mlc.instance;
 
 
 public class gui {
@@ -22,11 +29,22 @@ public class gui {
     public Inventory inv;
     public Player owner;
 
+    public void loaditem(String itemid){
+
+    }
+
     public gui(Player player){
         inv = Bukkit.createInventory(player, 9*5, Component.text("mlc"));
         owner = player;
-
-
+        File file = new File(instance.getDataFolder(),"items.yml");
+        FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
+        ConfigurationSection configurationSection =fileConfiguration.getConfigurationSection("items");
+        if (configurationSection != null) {
+            Set<String> itemids = configurationSection.getKeys(false);
+            for(String itemid:itemids){
+                loaditem(itemid);
+            }
+        }
 
 
         AttributeModifier am = new AttributeModifier(new NamespacedKey("mlc","plus"), 0.02, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.HEAD);
