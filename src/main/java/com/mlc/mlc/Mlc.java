@@ -1,5 +1,10 @@
 package com.mlc.mlc;
 
+import com.mlc.mlc.commands.mlcgui;
+import com.mlc.mlc.commands.mymail;
+import com.mlc.mlc.commands.sendmail;
+import com.mlc.mlc.commands.sendmailtoall;
+import com.mlc.mlc.guis.guilistener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.*;
@@ -21,7 +26,7 @@ public final class Mlc extends JavaPlugin {
 
         this.saveDefaultConfig();
         saveResource("words.txt", false);
-
+        saveResource("items.txt",false);
         instance = this;
         wordsnum = this.getConfig().getInt("words");
 

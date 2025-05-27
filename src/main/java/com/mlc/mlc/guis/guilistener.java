@@ -1,5 +1,6 @@
-package com.mlc.mlc;
+package com.mlc.mlc.guis;
 
+import com.mlc.mlc.Mlc;
 import io.papermc.paper.event.player.PlayerDeepSleepEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -21,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.wordsnum;

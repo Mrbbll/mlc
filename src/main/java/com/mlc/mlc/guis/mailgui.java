@@ -1,4 +1,4 @@
-package com.mlc.mlc;
+package com.mlc.mlc.guis;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;

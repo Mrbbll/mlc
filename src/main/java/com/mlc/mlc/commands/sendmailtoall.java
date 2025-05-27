@@ -1,5 +1,6 @@
-package com.mlc.mlc;
+package com.mlc.mlc.commands;
 
+import com.mlc.mlc.commands.sendmail;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
