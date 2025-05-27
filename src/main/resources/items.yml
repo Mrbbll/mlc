@@ -3,6 +3,7 @@ items:
     name: "<#ff3300>1111"
     type: ECHO_SHARD
     resource: "mlc:item"
+    head: false
     lore:
       - "<#ff3300>1111"
     tooltips: "mlc:mlc"
@@ -11,7 +12,7 @@ items:
       usages: 0
       unbreakable: false
     enchants:
-      - sharpness,100
+#      - sharpness,100
     item_flags:
 #      - HIDE_ATTRIBUTES
 #      - HIDE_DESTROYS

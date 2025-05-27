@@ -24,7 +24,7 @@ public class attributeloader {
                 Attribute attribute = RegistryAccess.registryAccess().getRegistry(RegistryKey.ATTRIBUTE).get(NamespacedKey.minecraft(attributeName.toLowerCase()));
                 if (attribute != null) {
                     meta.addAttributeModifier(attribute,attributeModifier);
-                };
+                }
             }
         }
 

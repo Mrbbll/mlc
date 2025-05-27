@@ -36,7 +36,7 @@ public class sendmail implements CommandExecutor {
         {
             commandSender.sendMessage("手上物品为空");
             return false;
-        };
+        }
 
         try {
             savetomailgui(item,strings[0]);
@@ -69,7 +69,7 @@ public class sendmail implements CommandExecutor {
         if(!file.exists())
         {
             file.createNewFile();
-        };
+        }
 
         //初始化item
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
@@ -94,7 +94,7 @@ public class sendmail implements CommandExecutor {
     {
         long timeMillis = System.currentTimeMillis();
         return String.valueOf(timeMillis);
-    };
+    }
 
     public void saveitem(String itemid, Map<String, Object> serialized , File file) throws IOException {
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);

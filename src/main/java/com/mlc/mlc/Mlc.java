@@ -26,7 +26,7 @@ public final class Mlc extends JavaPlugin {
 
         this.saveDefaultConfig();
         saveResource("words.txt", false);
-        saveResource("items.txt",false);
+        saveResource("items.yml",false);
         instance = this;
         wordsnum = this.getConfig().getInt("words");
 

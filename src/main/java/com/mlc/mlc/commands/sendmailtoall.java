@@ -1,6 +1,5 @@
 package com.mlc.mlc.commands;
 
-import com.mlc.mlc.commands.sendmail;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -34,7 +33,7 @@ public class sendmailtoall implements CommandExecutor {
         {
             commandSender.sendMessage("手上物品为空");
             return false;
-        };
+        }
         for(String playername : playernames)
         {
             player.sendMessage("尝试发送信件到" + playername);
@@ -44,7 +43,7 @@ public class sendmailtoall implements CommandExecutor {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        };
+        }
 
         return true;
     }
