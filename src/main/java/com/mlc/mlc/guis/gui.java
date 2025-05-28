@@ -13,6 +13,7 @@ import org.bukkit.inventory.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.EquippableComponent;
+import org.bukkit.persistence.PersistentDataContainer;
 
 import java.io.File;
 import java.util.*;
@@ -80,6 +81,10 @@ public class gui {
                     equippableComponent.setSlot(EquipmentSlot.HEAD);
                     meta.setEquippable(equippableComponent);
                 }
+            }
+
+            if(configurationSection_item.contains("tagged")){
+                PDCloader.loadpdc(configurationSection_item,meta);
             }
 
             itemStack.setItemMeta(meta);

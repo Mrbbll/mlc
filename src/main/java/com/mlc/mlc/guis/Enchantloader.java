@@ -12,21 +12,25 @@ import java.util.Map;
 public class Enchantloader {
     public static Map<Enchantment, Integer> loadEnchantments(ConfigurationSection config) {
         Map<Enchantment, Integer> enchantments = new HashMap<>();
-        List<String> enchantStrings = config.getStringList("enchants");
+        ConfigurationSection configurationSection = config.getConfigurationSection("enchants");
 
-        for (String entry : enchantStrings) {
-            String[] parts = entry.split(",");
-            if (parts.length != 2) continue;
+        if (configurationSection != null) {
+            for (String enchantname : configurationSection.getKeys(false)) {
+    //            String[] parts = entry.split(",");
+    //            if (parts.length != 2) continue;
+    //
+    //            int level;
+    //            try {
+    //                level = Integer.parseInt(parts[1]);
+    //            } catch (NumberFormatException e) {
+    //                continue;
+    //            }
 
-            int level;
-            try {
-                level = Integer.parseInt(parts[1]);
-            } catch (NumberFormatException e) {
-                continue;
+                int level;
+                level = configurationSection.getInt(enchantname,0);
+                Enchantment enchantment = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(NamespacedKey.minecraft(enchantname.toLowerCase()));
+                enchantments.put(enchantment, level);
             }
-
-            Enchantment enchantment = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(NamespacedKey.minecraft(parts[0].toLowerCase()));
-            enchantments.put(enchantment, level);
         }
 
         return enchantments;

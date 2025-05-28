@@ -6,6 +6,7 @@ import com.mlc.mlc.commands.sendmail;
 import com.mlc.mlc.commands.sendmailtoall;
 import com.mlc.mlc.guis.guilistener;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +20,8 @@ public final class Mlc extends JavaPlugin {
     public static JavaPlugin instance;
     public static int wordsnum;
 
+    public static NamespacedKey damagetype;
+    public static NamespacedKey armortype;
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -29,7 +32,8 @@ public final class Mlc extends JavaPlugin {
         saveResource("items.yml",false);
         instance = this;
         wordsnum = this.getConfig().getInt("words");
-
+        damagetype = new NamespacedKey(this,"damagetype");
+        armortype = new NamespacedKey(this,"armortype");
 
         Bukkit.getPluginManager().registerEvents(new guilistener(), this);
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
