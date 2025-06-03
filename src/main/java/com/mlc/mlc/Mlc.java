@@ -1,10 +1,11 @@
 package com.mlc.mlc;
 
+import com.mlc.mlc.Listener.heavest;
 import com.mlc.mlc.commands.mlcgui;
 import com.mlc.mlc.commands.mymail;
 import com.mlc.mlc.commands.sendmail;
 import com.mlc.mlc.commands.sendmailtoall;
-import com.mlc.mlc.guis.guilistener;
+import com.mlc.mlc.Listener.guilistener;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,7 +27,7 @@ public final class Mlc extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
-
+        //目前功能：邮箱，简易物品管理器，跳过睡觉
         this.saveDefaultConfig();
         saveResource("words.txt", false);
         saveResource("items.yml",false);
@@ -35,6 +36,7 @@ public final class Mlc extends JavaPlugin {
         damagetype = new NamespacedKey(this,"damagetype");
         armortype = new NamespacedKey(this,"armortype");
 
+        Bukkit.getPluginManager().registerEvents(new heavest(),this);
         Bukkit.getPluginManager().registerEvents(new guilistener(), this);
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
