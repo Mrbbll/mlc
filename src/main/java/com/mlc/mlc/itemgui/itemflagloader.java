@@ -1,8 +1,7 @@
-package com.mlc.mlc.guis;
+package com.mlc.mlc.itemgui;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.mlc.mlc.commands;
 
-import com.mlc.mlc.guis.gui;
+import com.mlc.mlc.itemgui.gui;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

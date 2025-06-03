@@ -1,4 +1,4 @@
-package com.mlc.mlc.guis;
+package com.mlc.mlc.itemgui;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;

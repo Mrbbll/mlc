@@ -1,4 +1,4 @@
-package com.mlc.mlc.guis;
+package com.mlc.mlc.itemgui;
 
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
@@ -6,7 +6,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Enchantloader {

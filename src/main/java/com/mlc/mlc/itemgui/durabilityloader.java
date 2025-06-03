@@ -1,4 +1,4 @@
-package com.mlc.mlc.guis;
+package com.mlc.mlc.itemgui;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.meta.Damageable;

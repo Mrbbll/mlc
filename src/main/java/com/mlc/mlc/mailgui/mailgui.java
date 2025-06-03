@@ -1,4 +1,4 @@
-package com.mlc.mlc.guis;
+package com.mlc.mlc.mailgui;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;

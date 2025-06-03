@@ -1,4 +1,4 @@
-package com.mlc.mlc.guis;
+package com.mlc.mlc.itemgui;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -13,13 +13,12 @@ import org.bukkit.inventory.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.EquippableComponent;
-import org.bukkit.persistence.PersistentDataContainer;
 
 import java.io.File;
 import java.util.*;
 
 import static com.mlc.mlc.Mlc.instance;
-import static com.mlc.mlc.guis.itemflagloader.applyItemFlags;
+import static com.mlc.mlc.itemgui.itemflagloader.applyItemFlags;
 
 
 public class gui {

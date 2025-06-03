@@ -1,5 +1,6 @@
 package com.mlc.mlc;
 
+import com.mlc.mlc.Listener.backpacklistener;
 import com.mlc.mlc.Listener.heavest;
 import com.mlc.mlc.commands.mlcgui;
 import com.mlc.mlc.commands.mymail;
@@ -7,10 +8,12 @@ import com.mlc.mlc.commands.sendmail;
 import com.mlc.mlc.commands.sendmailtoall;
 import com.mlc.mlc.Listener.guilistener;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,6 +24,7 @@ public final class Mlc extends JavaPlugin {
     public static JavaPlugin instance;
     public static int wordsnum;
 
+    public static List<Material> crops = new ArrayList<>();
     public static NamespacedKey damagetype;
     public static NamespacedKey armortype;
     @Override
@@ -36,12 +40,20 @@ public final class Mlc extends JavaPlugin {
         damagetype = new NamespacedKey(this,"damagetype");
         armortype = new NamespacedKey(this,"armortype");
 
+        crops.add(Material.CARROTS);
+        crops.add(Material.POTATOES);
+        crops.add(Material.BEETROOTS);
+        crops.add(Material.WHEAT);
+
+        Bukkit.getPluginManager().registerEvents(new backpacklistener(),this);
         Bukkit.getPluginManager().registerEvents(new heavest(),this);
         Bukkit.getPluginManager().registerEvents(new guilistener(), this);
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mlcgui")).setExecutor(new mlcgui());
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmailtoall")).setExecutor(new sendmailtoall());
+
+
     }
 
 
