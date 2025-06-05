@@ -64,7 +64,7 @@ public class sendmail implements CommandExecutor {
         if (!mailDir.exists()) mailDir.mkdirs();
 
         //初始化文件
-        String string = player+".yml";
+        String string = player +".yml";
         File file = new File(mailDir,string);
         if(!file.exists())
         {

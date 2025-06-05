@@ -7,6 +7,7 @@ import com.mlc.mlc.commands.mymail;
 import com.mlc.mlc.commands.sendmail;
 import com.mlc.mlc.commands.sendmailtoall;
 import com.mlc.mlc.Listener.guilistener;
+import com.mlc.mlc.recipes.backpack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -45,6 +46,7 @@ public final class Mlc extends JavaPlugin {
         crops.add(Material.BEETROOTS);
         crops.add(Material.WHEAT);
 
+        new backpack().backpackrecipe();
         Bukkit.getPluginManager().registerEvents(new backpacklistener(),this);
         Bukkit.getPluginManager().registerEvents(new heavest(),this);
         Bukkit.getPluginManager().registerEvents(new guilistener(), this);
@@ -60,7 +62,9 @@ public final class Mlc extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        Bukkit.resetRecipes();
         getLogger().info("\n\nmlc核心插件卸载成功\n\n");
+
     }
 
     public static List<String> readwords(String resourcePath) throws IOException {
