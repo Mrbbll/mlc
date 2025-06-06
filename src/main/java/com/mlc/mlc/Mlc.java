@@ -7,6 +7,7 @@ import com.mlc.mlc.commands.mymail;
 import com.mlc.mlc.commands.sendmail;
 import com.mlc.mlc.commands.sendmailtoall;
 import com.mlc.mlc.Listener.guilistener;
+import com.mlc.mlc.recipes.Elytra;
 import com.mlc.mlc.recipes.backpack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -47,6 +48,7 @@ public final class Mlc extends JavaPlugin {
         crops.add(Material.WHEAT);
 
         new backpack().backpackrecipe();
+        new Elytra().elytrarecipe();
         Bukkit.getPluginManager().registerEvents(new backpacklistener(),this);
         Bukkit.getPluginManager().registerEvents(new heavest(),this);
         Bukkit.getPluginManager().registerEvents(new guilistener(), this);
