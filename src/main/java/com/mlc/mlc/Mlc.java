@@ -12,6 +12,8 @@ import com.mlc.mlc.recipes.backpack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +31,8 @@ public final class Mlc extends JavaPlugin {
     public static List<Material> crops = new ArrayList<>();
     public static NamespacedKey damagetype;
     public static NamespacedKey armortype;
+
+    public static FileConfiguration backpackfile;
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -42,10 +46,15 @@ public final class Mlc extends JavaPlugin {
         damagetype = new NamespacedKey(this,"damagetype");
         armortype = new NamespacedKey(this,"armortype");
 
+        //加右键收获作物
         crops.add(Material.CARROTS);
         crops.add(Material.POTATOES);
         crops.add(Material.BEETROOTS);
         crops.add(Material.WHEAT);
+
+        //初始化背包文件
+        backpackfile = YamlConfiguration.loadConfiguration(backpackfilecreater());
+
 
         new backpack().backpackrecipe();
         new Elytra().elytrarecipe();
@@ -56,8 +65,6 @@ public final class Mlc extends JavaPlugin {
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mlcgui")).setExecutor(new mlcgui());
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmailtoall")).setExecutor(new sendmailtoall());
-
-
     }
 
 
@@ -76,6 +83,24 @@ public final class Mlc extends JavaPlugin {
         BufferedReader reader = new BufferedReader(inputStreamReader);
 
         return reader.lines().toList();
+    }
+
+    public File backpackfilecreater(){
+        File backpackDir = new File(instance.getDataFolder(), "backpacks");
+        if(!backpackDir.exists()){
+            backpackDir.mkdirs();
+        }
+        String string = "backpack" + ".yml";
+        File file = new File(backpackDir,string);
+        if(!file.exists())
+        {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return file;
     }
 }
 

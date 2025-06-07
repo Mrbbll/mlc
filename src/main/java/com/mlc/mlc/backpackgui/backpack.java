@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import static com.mlc.mlc.Mlc.backpackfile;
 import static com.mlc.mlc.Mlc.instance;
 
 public class backpack {
@@ -58,18 +59,7 @@ public class backpack {
             if(num==1){
                 return inv;
             };
-            File backpackDir = new File(instance.getDataFolder(), "backpacks");
-            if(!backpackDir.exists()){
-                backpackDir.mkdirs();
-            }
-            String string = player.getUniqueId() + ".yml";
-            File file = new File(backpackDir,string);
-            if(!file.exists())
-            {
-                file.createNewFile();
-            }
-            FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
-            List<Map<?, ?>> itemMaps = fileConfiguration.getMapList("" + num);
+            List<Map<?, ?>> itemMaps = backpackfile.getMapList("" + num);
 
             ItemStack[] items = deserializeItems(itemMaps);
             for (ItemStack item : items) {
@@ -113,14 +103,8 @@ public class backpack {
         assert key != null;
         if (pdc.has(key,PersistentDataType.LONG)) {
             File mailDir = new File(instance.getDataFolder(), "backpacks");
-            String string = player.getUniqueId() + ".yml";
+            String string = "backpack" + ".yml";
             File file = new File(mailDir,string);
-            if(!file.exists())
-            {
-                file.createNewFile();
-            }
-            FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
-
 
             long num = pdc.getOrDefault(key,PersistentDataType.LONG,1L);
             if(num==1){
@@ -137,10 +121,10 @@ public class backpack {
                 }
             }
 
-            fileConfiguration.set(num + "", itemMaps);
+            backpackfile.set(num + "", itemMaps);
 
             try {
-                fileConfiguration.save(file);
+                backpackfile.save(file);
             } catch (IOException e) {
                 instance.getLogger().log(Level.SEVERE, "保存背包数据失败", e);
             }
