@@ -2,10 +2,7 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.Listener.backpacklistener;
 import com.mlc.mlc.Listener.heavest;
-import com.mlc.mlc.commands.mlcgui;
-import com.mlc.mlc.commands.mymail;
-import com.mlc.mlc.commands.sendmail;
-import com.mlc.mlc.commands.sendmailtoall;
+import com.mlc.mlc.commands.*;
 import com.mlc.mlc.Listener.guilistener;
 import com.mlc.mlc.recipes.Elytra;
 import com.mlc.mlc.recipes.backpack;
@@ -17,9 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 public final class Mlc extends JavaPlugin {
@@ -27,12 +22,14 @@ public final class Mlc extends JavaPlugin {
 
     public static JavaPlugin instance;
     public static int wordsnum;
-
     public static List<Material> crops = new ArrayList<>();
     public static NamespacedKey damagetype;
     public static NamespacedKey armortype;
-
+    public static Map<UUID,UUID> Tpamap = new HashMap<>();
+    public static Map<UUID,UUID> Tpaheremap = new HashMap<>();
     public static FileConfiguration backpackfile;
+    public static File playerfiledir;
+
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -54,7 +51,8 @@ public final class Mlc extends JavaPlugin {
 
         //初始化背包文件
         backpackfile = YamlConfiguration.loadConfiguration(backpackfilecreater());
-
+        //初始化player文件夹
+        playerfiledir = playerfiledircreater();
 
         new backpack().backpackrecipe();
         new Elytra().elytrarecipe();
@@ -65,6 +63,12 @@ public final class Mlc extends JavaPlugin {
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mlcgui")).setExecutor(new mlcgui());
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmailtoall")).setExecutor(new sendmailtoall());
+        Objects.requireNonNull(Bukkit.getPluginCommand("home")).setExecutor(new home());
+        Objects.requireNonNull(Bukkit.getPluginCommand("sethome")).setExecutor(new sethome());
+        Objects.requireNonNull(Bukkit.getPluginCommand("delhome")).setExecutor(new delhome());
+        Objects.requireNonNull(Bukkit.getPluginCommand("tpa")).setExecutor(new tpa());
+        Objects.requireNonNull(Bukkit.getPluginCommand("tpaccept")).setExecutor(new tpaccept());
+        Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());
     }
 
 
@@ -101,6 +105,14 @@ public final class Mlc extends JavaPlugin {
             }
         }
         return file;
+    }
+
+    public File playerfiledircreater(){
+        File filerdir = new File(instance.getDataFolder(),"players");
+        if(!filerdir.exists()){
+            filerdir.mkdirs();
+        }
+        return filerdir;
     }
 }
 

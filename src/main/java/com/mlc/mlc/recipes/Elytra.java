@@ -27,6 +27,7 @@ public class Elytra {
         Attribute attribute = RegistryAccess.registryAccess().getRegistry(RegistryKey.ATTRIBUTE).get(ARMOR);
         assert attribute != null;
         itemMeta.addAttributeModifier(attribute,attributeModifier);
+        itemMeta.setItemModel(NamespacedKey.fromString("mlc:elytra"));
         elytraitem.setItemMeta(itemMeta);
 
         SmithingTransformRecipe smithingTransformRecipe = new SmithingTransformRecipe(
