@@ -39,7 +39,7 @@ public class home implements CommandExecutor {
         if(strings.length==0){
             Map<String,Object> loc;
             try {
-                File playerfile = new File(playerfiledir,uuid.toString()+".yml");
+                File playerfile = new File(playerfiledir,uuid+".yml");
                 if(!playerfile.exists()){
                     playerfile.createNewFile();
                 };
@@ -59,8 +59,9 @@ public class home implements CommandExecutor {
         };
         //有参
         try {
-            File playerfile = new File(playerfiledir,uuid.toString()+".yml");
+            File playerfile = new File(playerfiledir,uuid+".yml");
             Map<String,Object> loc;
+
             if(!playerfile.exists()){
                 playerfile.createNewFile();
             };
