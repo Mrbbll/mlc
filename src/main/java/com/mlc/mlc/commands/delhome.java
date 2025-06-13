@@ -6,21 +6,22 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executor;
 
 import static com.mlc.mlc.Mlc.playerfiledir;
 
-public class delhome implements CommandExecutor {
+public class delhome implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         Player player = (Player) commandSender;
@@ -74,5 +75,32 @@ public class delhome implements CommandExecutor {
         };
 
         return false;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
+
+        Player player = (Player) commandSender;
+        UUID uuid = player.getUniqueId();
+
+        if(strings.length>1){
+            return null;
+        }
+        try {
+            File playerfile = new File(playerfiledir,uuid+".yml");
+            if(!playerfile.exists()){
+                playerfile.createNewFile();
+            };
+            FileConfiguration playerfileconfig = YamlConfiguration.loadConfiguration(playerfile);
+            ConfigurationSection configurationSection = playerfileconfig.getConfigurationSection("homes.");
+            if (configurationSection != null) {
+                Set<String> home =  configurationSection.getKeys(false);
+                return new ArrayList<>(home);
+            }
+
+            return null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
