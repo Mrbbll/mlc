@@ -69,6 +69,7 @@ public final class Mlc extends JavaPlugin {
         Objects.requireNonNull(Bukkit.getPluginCommand("tpa")).setExecutor(new tpa());
         Objects.requireNonNull(Bukkit.getPluginCommand("tpaccept")).setExecutor(new tpaccept());
         Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());
+        Objects.requireNonNull(Bukkit.getPluginCommand("sit")).setExecutor((new sit()));
     }
 
 

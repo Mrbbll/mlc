@@ -26,3 +26,5 @@ commands:
     description: "删除家"
   home:
     description: "回到家"
+  sit:
+    description: "坐下"
