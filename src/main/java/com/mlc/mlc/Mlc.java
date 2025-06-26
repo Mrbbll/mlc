@@ -55,6 +55,7 @@ public final class Mlc extends JavaPlugin {
         playerfiledir = playerfiledircreater();
 
         new backpack().backpackrecipe();
+        new task();
         new Elytra().elytrarecipe();
         Bukkit.getPluginManager().registerEvents(new backpacklistener(),this);
         Bukkit.getPluginManager().registerEvents(new heavest(),this);
