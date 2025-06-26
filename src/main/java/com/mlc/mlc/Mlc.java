@@ -2,6 +2,7 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.Listener.backpacklistener;
 import com.mlc.mlc.Listener.heavest;
+import com.mlc.mlc.Listener.unsitlistener;
 import com.mlc.mlc.commands.*;
 import com.mlc.mlc.Listener.guilistener;
 import com.mlc.mlc.recipes.Elytra;
@@ -60,6 +61,7 @@ public final class Mlc extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new backpacklistener(),this);
         Bukkit.getPluginManager().registerEvents(new heavest(),this);
         Bukkit.getPluginManager().registerEvents(new guilistener(), this);
+        Bukkit.getPluginManager().registerEvents(new unsitlistener(), this);
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mlcgui")).setExecutor(new mlcgui());
