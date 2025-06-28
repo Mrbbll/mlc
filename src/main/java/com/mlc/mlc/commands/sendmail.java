@@ -26,7 +26,7 @@ public class sendmail implements CommandExecutor {
 
         if(strings.length==0)
         {
-            commandSender.sendMessage("需要提供玩家名字");
+            commandSender.sendMessage(Component.text("需要提供玩家名字", TextColor.color(0xFF4213)));
             return false;
         }
         //先监测手上是否为空
@@ -34,7 +34,7 @@ public class sendmail implements CommandExecutor {
         ItemStack item = player.getInventory().getItemInMainHand();
         if(item.getType()== Material.AIR)
         {
-            commandSender.sendMessage("手上物品为空");
+            commandSender.sendMessage(Component.text("手上物品为空", TextColor.color(0xFF4213)));
             return false;
         }
 

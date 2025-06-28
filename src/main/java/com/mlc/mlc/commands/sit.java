@@ -1,7 +1,11 @@
 package com.mlc.mlc.commands;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,6 +23,11 @@ public class sit implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         Player player = (Player) commandSender;
         Location location = player.getLocation();
+        Block block = location.add(0,-0.5,0).getBlock();
+        if(!block.getType().isSolid()){
+            player.sendMessage(Component.text("这里不能坐下", TextColor.color(0xFF4213)));
+            return false;
+        }
         ItemDisplay itemDisplay = (ItemDisplay) location.getWorld().spawnEntity(location, EntityType.ITEM_DISPLAY);
         itemDisplay.addPassenger(player);
         PersistentDataContainer persistentDataContainer = itemDisplay.getPersistentDataContainer();
