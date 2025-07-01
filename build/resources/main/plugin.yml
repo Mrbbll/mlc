@@ -28,3 +28,5 @@ commands:
     description: "回到家"
   sit:
     description: "坐下"
+  back:
+    description: "回到上个路径点"
