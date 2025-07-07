@@ -50,11 +50,20 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
+def versionpropsfile = file('version.properties')
+def props = new Properties()
+props.load(new FileInputStream(versionpropsfile))
+def currentVersion = props['version'].toString()
+def (versionMajor, versionMinor, versionPatch) = currentVersion.tokenize('.').collect { it.toInteger() }
+def newVersion = "${versionMajor}.${versionMinor}.${versionPatch + 1}" as String
+props['version'] = newVersion
+props.store(versionpropsfile.newWriter(), null)
+version = props['version']
+
 processResources {
-    def props = [version: version]
-    inputs.properties props
+    inputs.property('version', version)
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
-        expand props
+        expand version: version
     }
 }
