@@ -1,6 +1,7 @@
 package com.mlc.mlc.itemgui;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -95,7 +96,7 @@ public class gui {
 
 
     public gui(Player player){
-        inv = Bukkit.createInventory(player, 9*5, Component.text("mlc"));
+        inv = Bukkit.createInventory(player, 9*5, Component.text("mlc", TextColor.fromHexString("#f73636")));
         owner = player;
         File file = new File(instance.getDataFolder(),"items.yml");
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);

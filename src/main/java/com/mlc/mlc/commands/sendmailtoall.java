@@ -2,6 +2,7 @@ package com.mlc.mlc.commands;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -36,16 +37,22 @@ public class sendmailtoall implements CommandExecutor {
             commandSender.sendMessage(Component.text("手上物品为空", TextColor.color(0xFF4213)));
             return false;
         }
-        for(String playername : playernames)
-        {
-            player.sendMessage("尝试发送信件到" + playername);
-            sendmail sendmail_1 = new sendmail();
-            try {
-                sendmail_1.savetomailgui(itemStack,playername);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+//异步
+        List<String> finalPlayernames = playernames;
+        Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+            for(String playername : finalPlayernames)
+            {
+                player.sendMessage("尝试发送信件到" + playername);
+                sendmail sendmail_1 = new sendmail();
+                try {
+                    sendmail_1.savetomailgui(itemStack,playername);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
-        }
+
+        });
+
 
         return true;
     }

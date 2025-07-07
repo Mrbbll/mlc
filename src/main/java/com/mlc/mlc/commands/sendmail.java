@@ -5,6 +5,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -45,6 +46,7 @@ public class sendmail implements CommandExecutor {
         }
         //删除手上物品
         player.getInventory().getItemInMainHand().setAmount(0);
+        player.sendMessage(Component.text(  "成功发送邮件到" + strings[0], TextColor.fromHexString("#7cff4d")));
         Player receiver = Bukkit.getPlayer(strings[0]);
         if (receiver != null) {
             receiver.sendMessage(Component.text(player.getName() + "向你发送了一封邮件")
@@ -59,12 +61,12 @@ public class sendmail implements CommandExecutor {
     //保存到文件
     public  void savetomailgui(ItemStack item,String player) throws IOException {
         File mailDir = new File(instance.getDataFolder(), "mail");
-
+        OfflinePlayer player1 = Bukkit.getOfflinePlayer(player);
         // 初始化目录
         if (!mailDir.exists()) mailDir.mkdirs();
 
         //初始化文件
-        String string = player +".yml";
+        String string = player1.getUniqueId() +".yml";
         File file = new File(mailDir,string);
         if(!file.exists())
         {

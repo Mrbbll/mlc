@@ -1,6 +1,8 @@
 package com.mlc.mlc.mailgui;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -21,11 +23,11 @@ public class mailgui {
 
 
     public mailgui(Player player) {
-        inv = Bukkit.createInventory(player, 6 * 9, Component.text("邮箱"));
+        inv = Bukkit.createInventory(player, 6 * 9, Component.text("邮箱", TextColor.fromHexString("#66ee1d"), TextDecoration.BOLD));
         owner = player;
         slot = 0;
 
-        String string = player.getName() + ".yml";
+        String string = player.getUniqueId()+ ".yml";
         File mailDir = new File(instance.getDataFolder(), "mail");
         File file = new File(mailDir, string);
 

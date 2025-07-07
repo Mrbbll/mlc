@@ -35,7 +35,7 @@ public class guilistener implements Listener {
     public void onClick(InventoryClickEvent e) throws IOException {
         Player player = (Player) e.getWhoClicked();
         InventoryView inv = player.getOpenInventory();
-        if (inv.title().equals(Component.text("mlc"))) {
+        if (inv.title().equals(Component.text("mlc", TextColor.fromHexString("#f73636")))) {
             e.setCancelled(true);
             if(e.getRawSlot()<0||e.getRawSlot()>e.getInventory().getSize())
             {
@@ -56,7 +56,7 @@ public class guilistener implements Listener {
         };
 
         //邮箱事件监听
-        if(inv.title().equals(Component.text("邮箱"))){
+        if(inv.title().equals(Component.text("邮箱", TextColor.fromHexString("#66ee1d"), TextDecoration.BOLD))){
             e.setCancelled(true);
             ItemStack itemStack =e.getCurrentItem();
             if(e.getRawSlot()<0||e.getRawSlot()>e.getInventory().getSize())
@@ -70,7 +70,7 @@ public class guilistener implements Listener {
             else{
                 player.give(itemStack);
                 Integer slot = e.getRawSlot();
-                String string = player.getName() + ".yml";
+                String string = player.getUniqueId() + ".yml";
                 File mailDir = new File(instance.getDataFolder(), "mail");
                 File file = new File(mailDir, string);
                 FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
@@ -124,7 +124,7 @@ public class guilistener implements Listener {
     @EventHandler
     public void onjion(PlayerJoinEvent join){
         File mailDir = new File(instance.getDataFolder(), "mail");
-        String string = join.getPlayer().getName() + ".yml";
+        String string = join.getPlayer().getUniqueId() + ".yml";
         File file = new File(mailDir,string);
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
         ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("item");
