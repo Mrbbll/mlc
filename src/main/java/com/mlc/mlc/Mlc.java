@@ -3,6 +3,7 @@ package com.mlc.mlc;
 import com.mlc.mlc.Listener.*;
 import com.mlc.mlc.commands.*;
 import com.mlc.mlc.recipes.Elytra;
+import com.mlc.mlc.recipes.Healfood;
 import com.mlc.mlc.recipes.backpack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -53,6 +54,7 @@ public final class Mlc extends JavaPlugin {
         playerfiledir = playerfiledircreater();
 
         new backpack().backpackrecipe();
+        new Healfood().healfoodrecipe();
         new task();
         new Elytra().elytrarecipe();
         Bukkit.getPluginManager().registerEvents(new backpacklistener(),this);
@@ -61,6 +63,7 @@ public final class Mlc extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new unsitlistener(), this);
         Bukkit.getPluginManager().registerEvents(new joinlistener(), this);
         Bukkit.getPluginManager().registerEvents(new tplistener(), this);
+        Bukkit.getPluginManager().registerEvents(new Deadlistener(), this);
         Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
