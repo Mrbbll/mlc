@@ -8,15 +8,25 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.components.FoodComponent;
+import io.papermc.paper.datacomponent.item.Consumable;
 
 import static com.mlc.mlc.Mlc.instance;
 
 public class Healfood {
     public void healfoodrecipe(){
-        ItemStack healfooditem = ItemStack.of(Material.ECHO_SHARD);
+        ItemStack healfooditem = ItemStack.of(Material.MUSHROOM_STEW);
         ItemMeta itemMeta = healfooditem.getItemMeta();
         itemMeta.setItemModel(NamespacedKey.fromString("mlc:mlc_healfood"));
         itemMeta.itemName(Component.text("回复汤"));
+        FoodComponent foodComponent = itemMeta.getFood();
+
+        foodComponent.setCanAlwaysEat(true);
+        foodComponent.setSaturation(10.0f);
+        foodComponent.setNutrition(10);
+
+        itemMeta.setUseRemainder(ItemStack.of(Material.BOWL));
+        itemMeta.setFood(foodComponent);
         itemMeta.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
         healfooditem.setItemMeta(itemMeta);
 
@@ -26,6 +36,7 @@ public class Healfood {
         shapelessRecipe.addIngredient(1,Material.BEEF);
         shapelessRecipe.addIngredient(1,Material.CHICKEN);
         shapelessRecipe.addIngredient(1,Material.MUTTON);
+        shapelessRecipe.addIngredient(1,Material.PORKCHOP);
         shapelessRecipe.addIngredient(1,Material.SWEET_BERRIES);
         Bukkit.addRecipe(shapelessRecipe);
     }
