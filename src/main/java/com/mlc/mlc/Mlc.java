@@ -58,7 +58,7 @@ public final class Mlc extends JavaPlugin {
         new task();
         new Elytra().elytrarecipe();
         Bukkit.getPluginManager().registerEvents(new backpacklistener(),this);
-        Bukkit.getPluginManager().registerEvents(new heavest(),this);
+        Bukkit.getPluginManager().registerEvents(new heavestlistener(),this);
         Bukkit.getPluginManager().registerEvents(new guilistener(), this);
         Bukkit.getPluginManager().registerEvents(new unsitlistener(), this);
         Bukkit.getPluginManager().registerEvents(new joinlistener(), this);
