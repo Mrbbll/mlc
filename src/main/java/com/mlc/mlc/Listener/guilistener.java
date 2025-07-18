@@ -59,7 +59,7 @@ public class guilistener implements Listener {
         if(inv.title().equals(Component.text("邮箱", TextColor.fromHexString("#66ee1d"), TextDecoration.BOLD))){
             e.setCancelled(true);
             ItemStack itemStack =e.getCurrentItem();
-            if(e.getRawSlot()<0||e.getRawSlot()>e.getInventory().getSize())
+            if(e.getRawSlot()<0||e.getRawSlot()>=e.getInventory().getSize())
             {
                 return;
             };
@@ -69,7 +69,7 @@ public class guilistener implements Listener {
             }
             else{
                 player.give(itemStack);
-                Integer slot = e.getRawSlot();
+                int slot = e.getRawSlot();
                 String string = player.getUniqueId() + ".yml";
                 File mailDir = new File(instance.getDataFolder(), "mail");
                 File file = new File(mailDir, string);

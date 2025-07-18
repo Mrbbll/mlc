@@ -22,8 +22,12 @@ public class sit implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         Player player = (Player) commandSender;
+        if(player.isInsideVehicle()){
+            return false;
+        }
         Location location = player.getLocation();
-        Block block = location.add(0,-0.5,0).getBlock();
+        player.sendMessage(location.toString());
+        Block block = location.clone().add(0,-1,0).getBlock();
         if(!block.getType().isSolid()){
             player.sendMessage(Component.text("这里不能坐下", TextColor.color(0xFF4213)));
             return false;
