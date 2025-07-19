@@ -37,7 +37,7 @@ public class guilistener implements Listener {
         InventoryView inv = player.getOpenInventory();
         if (inv.title().equals(Component.text("mlc", TextColor.fromHexString("#f73636")))) {
             e.setCancelled(true);
-            if(e.getRawSlot()<0||e.getRawSlot()>e.getInventory().getSize())
+            if(e.getRawSlot()<0||e.getRawSlot()>=e.getInventory().getSize())
             {
                 return;
             };

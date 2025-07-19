@@ -1,5 +1,5 @@
 name: mlc
-version: 1.0.52
+version: 1.0.60
 main: com.mlc.mlc.Mlc
 api-version: '1.21'
 authors: [Mr_bl]

@@ -26,7 +26,6 @@ public class sit implements CommandExecutor {
             return false;
         }
         Location location = player.getLocation();
-        player.sendMessage(location.toString());
         Block block = location.clone().add(0,-1,0).getBlock();
         if(!block.getType().isSolid()){
             player.sendMessage(Component.text("这里不能坐下", TextColor.color(0xFF4213)));
