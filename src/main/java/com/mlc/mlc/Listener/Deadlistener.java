@@ -19,7 +19,7 @@ public class Deadlistener implements Listener {
         if (maxHealth != null) {
             double maxHealthnum = maxHealth.getValue();
             if(maxHealthnum > 6.0){
-                maxHealth.setBaseValue(maxHealthnum - 2);
+                maxHealth.setBaseValue(maxHealthnum - 1);
             }
         }
 
