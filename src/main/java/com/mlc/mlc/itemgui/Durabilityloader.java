@@ -4,7 +4,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class durabilityloader {
+public class Durabilityloader {
     public static void loaddurability(ItemMeta meta, ConfigurationSection section){
         Damageable damageable = (Damageable)meta;
 

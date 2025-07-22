@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.mlc.mlc.Mlc.crops;
 
-public class heavestlistener implements Listener {
+public class Heavestlistener implements Listener {
 
 
     @EventHandler

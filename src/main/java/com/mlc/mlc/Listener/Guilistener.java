@@ -1,7 +1,7 @@
 package com.mlc.mlc.Listener;
 
 import com.mlc.mlc.Mlc;
-import com.mlc.mlc.mailgui.mailgui;
+import com.mlc.mlc.mailgui.Mailgui;
 import io.papermc.paper.event.player.PlayerDeepSleepEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -27,7 +27,7 @@ import java.util.Objects;
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.wordsnum;
 
-public class guilistener implements Listener {
+public class Guilistener implements Listener {
     //和睡觉监听写一起
 
     @EventHandler
@@ -78,7 +78,8 @@ public class guilistener implements Listener {
                 List<String> items = configurationSection.getKeys(false).stream().toList();
                 configurationSection.set(items.get(slot),null);
                 fileConfiguration.save(file);
-                new mailgui(player).open();
+
+                new Mailgui(player).open();
             }
         }
     }

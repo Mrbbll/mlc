@@ -6,7 +6,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 
-public class itemflagloader {
+public class Itemflagloader {
     public static void applyItemFlags(ItemMeta meta, ConfigurationSection section) {
         List<String> flags = section.getStringList("item_flags");
         for (String flagName : flags) {

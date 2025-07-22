@@ -1,6 +1,6 @@
 package com.mlc.mlc.commands;
 
-import com.mlc.mlc.itemgui.gui;
+import com.mlc.mlc.itemgui.Gui;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,7 +14,7 @@ public class mlcgui implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
-        new gui((Player)commandSender).open();
+        new Gui((Player)commandSender).open();
         return false;
     }
 

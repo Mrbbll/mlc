@@ -19,10 +19,10 @@ import java.io.File;
 import java.util.*;
 
 import static com.mlc.mlc.Mlc.instance;
-import static com.mlc.mlc.itemgui.itemflagloader.applyItemFlags;
+import static com.mlc.mlc.itemgui.Itemflagloader.applyItemFlags;
 
 
-public class gui {
+public class Gui {
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
     public Inventory inv;
     public Player owner;
@@ -39,11 +39,11 @@ public class gui {
             ItemMeta meta =itemStack.getItemMeta();
 
             if(configurationSection_item.contains("name")){
-                meta.itemName(miniMessage.deserialize(Objects.requireNonNull(configurationSection_item.getString("name"))));
+                meta.itemName(miniMessage.deserialize(Objects.requireNonNull(configurationSection_item.getString("name","null"))));
             }
 
             if(configurationSection_item.contains("resource")){
-                meta.setItemModel(NamespacedKey.fromString(Objects.requireNonNull(configurationSection_item.getString("resource"))));
+                meta.setItemModel(NamespacedKey.fromString(Objects.requireNonNull(configurationSection_item.getString("resource","null"))));
             }
 
             if(configurationSection_item.contains("tooltips")){
@@ -68,11 +68,11 @@ public class gui {
             }
 
             if(configurationSection_item.contains("durability")){
-                durabilityloader.loaddurability(meta,configurationSection_item);
+                Durabilityloader.loaddurability(meta,configurationSection_item);
             }
 
             if(configurationSection_item.contains("attribute_modifiers")){
-                attributeloader.applyAttributes(meta,configurationSection_item);
+                Attributeloader.applyAttributes(meta,configurationSection_item);
             }
 
             if(configurationSection_item.contains("head")){
@@ -95,7 +95,7 @@ public class gui {
     }
 
 
-    public gui(Player player){
+    public Gui(Player player){
         inv = Bukkit.createInventory(player, 9*5, Component.text("mlc", TextColor.fromHexString("#f73636")));
         owner = player;
         File file = new File(instance.getDataFolder(),"items.yml");

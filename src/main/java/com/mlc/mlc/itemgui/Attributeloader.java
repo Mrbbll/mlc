@@ -12,7 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.Objects;
 
 
-public class attributeloader {
+public class Attributeloader {
 
     public static void applyAttributes(ItemMeta meta, ConfigurationSection section) {
         ConfigurationSection configurationSection = section.getConfigurationSection("attribute_modifiers");

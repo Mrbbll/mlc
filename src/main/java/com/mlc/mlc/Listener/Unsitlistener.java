@@ -14,7 +14,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import static com.mlc.mlc.Mlc.instance;
 
-public class unsitlistener implements Listener {
+public class Unsitlistener implements Listener {
     @EventHandler
     public void onquit(PlayerQuitEvent event){
         Player player = event.getPlayer();

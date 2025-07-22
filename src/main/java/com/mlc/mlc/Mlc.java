@@ -4,7 +4,7 @@ import com.mlc.mlc.Listener.*;
 import com.mlc.mlc.commands.*;
 import com.mlc.mlc.recipes.Elytra;
 import com.mlc.mlc.recipes.Healfood;
-import com.mlc.mlc.recipes.backpack;
+import com.mlc.mlc.recipes.Backpack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -53,16 +53,16 @@ public final class Mlc extends JavaPlugin {
         //初始化player文件夹
         playerfiledir = playerfiledircreater();
 
-        new backpack().backpackrecipe();
+        new Backpack().backpackrecipe();
         new Healfood().healfoodrecipe();
-        new task();
+        new Task();
         new Elytra().elytrarecipe();
-        Bukkit.getPluginManager().registerEvents(new backpacklistener(),this);
-        Bukkit.getPluginManager().registerEvents(new heavestlistener(),this);
-        Bukkit.getPluginManager().registerEvents(new guilistener(), this);
-        Bukkit.getPluginManager().registerEvents(new unsitlistener(), this);
-        Bukkit.getPluginManager().registerEvents(new joinlistener(), this);
-        Bukkit.getPluginManager().registerEvents(new tplistener(), this);
+        Bukkit.getPluginManager().registerEvents(new Backpacklistener(),this);
+        Bukkit.getPluginManager().registerEvents(new Heavestlistener(),this);
+        Bukkit.getPluginManager().registerEvents(new Guilistener(), this);
+        Bukkit.getPluginManager().registerEvents(new Unsitlistener(), this);
+        Bukkit.getPluginManager().registerEvents(new Joinlistener(), this);
+        Bukkit.getPluginManager().registerEvents(new Tplistener(), this);
         Bukkit.getPluginManager().registerEvents(new Deadlistener(), this);
         Bukkit.getPluginManager().registerEvents(new Eatlistener(), this);
         Bukkit.getPluginManager().registerEvents(new Enchantlistener(), this);

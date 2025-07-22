@@ -15,14 +15,14 @@ import java.util.*;
 
 import static com.mlc.mlc.Mlc.instance;
 
-public class mailgui {
+public class Mailgui {
 
     public Inventory inv;
     public Player owner;
     public Integer slot;
 
 
-    public mailgui(Player player) {
+    public Mailgui(Player player) {
         inv = Bukkit.createInventory(player, 6 * 9, Component.text("邮箱", TextColor.fromHexString("#66ee1d"), TextDecoration.BOLD));
         owner = player;
         slot = 0;
@@ -33,8 +33,6 @@ public class mailgui {
 
         invinit(file);
     }
-
-
     public void invinit(File file){
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
         ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("item");
@@ -54,13 +52,11 @@ public class mailgui {
                     break;
                 }
             }
-
         }
         else {
             inv.setItem(0,null);
         }
     }
-
     public void open(){
         owner.openInventory(inv);
     }

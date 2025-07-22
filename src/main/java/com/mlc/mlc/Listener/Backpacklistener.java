@@ -1,6 +1,6 @@
 package com.mlc.mlc.Listener;
 
-import com.mlc.mlc.backpackgui.backpack;
+import com.mlc.mlc.backpackgui.Backpack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -19,7 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.io.IOException;
 import java.util.Objects;
 
-public class backpacklistener implements Listener {
+public class Backpacklistener implements Listener {
     @EventHandler
     public void onrightclik(PlayerInteractEvent event) throws IOException {
         if(event.getAction() == Action.LEFT_CLICK_AIR||event.getAction()==Action.LEFT_CLICK_BLOCK){
@@ -33,7 +33,7 @@ public class backpacklistener implements Listener {
         if(!meta.hasItemModel()){
             return;
         }else if(Objects.requireNonNull(meta.getItemModel()).toString().equals("mlc:mlc_backpack")){
-            new backpack().openbackpack(event.getPlayer(),itemStack);
+            new Backpack().openbackpack(event.getPlayer(),itemStack);
             event.getPlayer().swingMainHand();
         }
     }
@@ -52,7 +52,7 @@ public class backpacklistener implements Listener {
         if(!meta.hasItemModel()){
             return;
         }else if(Objects.requireNonNull(meta.getItemModel()).toString().equals("mlc:mlc_backpack")){
-            new backpack().saveBackpack((Player) event.getPlayer(), event.getInventory());
+            new Backpack().saveBackpack((Player) event.getPlayer(), event.getInventory());
         }
     }
 

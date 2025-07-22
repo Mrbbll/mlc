@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import static com.mlc.mlc.Mlc.backpackfile;
 import static com.mlc.mlc.Mlc.instance;
 
-public class backpack {
+public class Backpack {
     private static final String BACKPACK_KEY = "mlc:backpack";
 
 

@@ -1,9 +1,6 @@
 package com.mlc.mlc.Listener;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -11,18 +8,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.http.WebSocket;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import static com.mlc.mlc.Mlc.playerfiledir;
 
-public class tplistener implements Listener {
+public class Tplistener implements Listener {
     @EventHandler
     public void onteleport(PlayerTeleportEvent event) throws IOException {
         PlayerTeleportEvent.TeleportCause cause = event.getCause();

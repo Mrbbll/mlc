@@ -10,7 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import static com.mlc.mlc.Mlc.instance;
 
-public class backpack {
+public class Backpack {
     public void backpackrecipe(){
         ItemStack backpackitem = ItemStack.of(Material.ECHO_SHARD);
         ItemMeta itemMeta = backpackitem.getItemMeta();
