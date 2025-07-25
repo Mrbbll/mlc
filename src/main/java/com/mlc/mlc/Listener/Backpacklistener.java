@@ -22,7 +22,7 @@ import java.util.Objects;
 public class Backpacklistener implements Listener {
     @EventHandler
     public void onrightclik(PlayerInteractEvent event) throws IOException {
-        if(event.getAction() == Action.LEFT_CLICK_AIR||event.getAction()==Action.LEFT_CLICK_BLOCK){
+        if(event.getAction() == Action.LEFT_CLICK_AIR||event.getAction()==Action.LEFT_CLICK_BLOCK||event.getAction()==Action.PHYSICAL){
             return;
         }
         ItemStack itemStack = event.getPlayer().getInventory().getItemInMainHand();
@@ -71,12 +71,30 @@ public class Backpacklistener implements Listener {
         if(!meta.hasItemModel()){
             return;
         }else if(Objects.requireNonNull(meta.getItemModel()).toString().equals("mlc:mlc_backpack")){
+            int num = event.getHotbarButton();
+            if(num != -1){
+                event.setCancelled(true);
+            }
             ItemStack itemStack1 = event.getCurrentItem();
+//            ItemStack itemStack2 = event.getCursor();
             if(itemStack1!=null&&itemStack1.getType().equals(Material.SHULKER_BOX)){
                 event.setCancelled(true);
                 return;
             }
-
+            if(itemStack1!=null&& itemStack1.getItemMeta().hasItemModel()){
+                if(Objects.requireNonNull(itemStack1.getItemMeta().getItemModel()).toString().equals("mlc:mlc_backpack")){
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+//            if(itemStack2.getType().equals(Material.SHULKER_BOX)){
+//                event.setCancelled(true);
+//                return;
+//            }
+//            if(Objects.requireNonNull(itemStack2.getItemMeta().getItemModel()).toString().equals("mlc:mlc_backpack")){
+//                event.setCancelled(true);
+//                return;
+//            }
             if (itemStack1 != null) {
                 ItemMeta meta1 = itemStack1.getItemMeta();
                 if(meta1.hasItemModel()&& Objects.requireNonNull(meta1.getItemModel()).toString().equals("mlc:mlc_backpack")){
@@ -84,7 +102,6 @@ public class Backpacklistener implements Listener {
                     return;
                 }
             }
-
         }
     }
 }
