@@ -27,7 +27,7 @@ public class Backpack {
     private static final String BACKPACK_KEY = "mlc:backpack";
 
 
-    public Inventory inventorycreater(Player player,ItemStack itemStack) throws IOException {
+    public Inventory inventorycreater(Player player,ItemStack itemStack) {
         Inventory inv = Bukkit.createInventory(player, 3 * 9,
                 Component.text("背包")
                 .decoration(TextDecoration.ITALIC,false).decoration(TextDecoration.BOLD,true)
@@ -38,7 +38,7 @@ public class Backpack {
         if (key != null && !pdc.has(key, PersistentDataType.LONG)) {
             long timeMillis = System.currentTimeMillis();
             pdc.set(key,PersistentDataType.LONG,timeMillis);
-        };
+        }
         itemStack.setItemMeta(meta);
         pdc = meta.getPersistentDataContainer();
 
@@ -46,7 +46,7 @@ public class Backpack {
             long num = pdc.getOrDefault(key,PersistentDataType.LONG,1L);
             if(num==1){
                 return inv;
-            };
+            }
             List<Map<?, ?>> itemMaps = backpackfile.getMapList("" + num);
 
             ItemStack[] items = deserializeItems(itemMaps);
@@ -78,7 +78,7 @@ public class Backpack {
     }
 
 
-    public void openbackpack(Player player, ItemStack itemStack) throws IOException {
+    public void openbackpack(Player player, ItemStack itemStack) {
         player.openInventory(inventorycreater(player,itemStack));
     }
 
@@ -110,12 +110,8 @@ public class Backpack {
             }
 
             backpackfile.set(num + "", itemMaps);
+            backpackfile.save(file);
 
-            try {
-                backpackfile.save(file);
-            } catch (IOException e) {
-                instance.getLogger().log(Level.SEVERE, "保存背包数据失败", e);
-            }
 
         }
 
