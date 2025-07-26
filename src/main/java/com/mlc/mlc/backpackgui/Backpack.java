@@ -26,7 +26,6 @@ import static com.mlc.mlc.Mlc.instance;
 public class Backpack {
     private static final String BACKPACK_KEY = "mlc:backpack";
 
-
     public Inventory inventorycreater(Player player,ItemStack itemStack) {
         Inventory inv = Bukkit.createInventory(player, 3 * 9,
                 Component.text("背包")
@@ -82,9 +81,8 @@ public class Backpack {
         player.openInventory(inventorycreater(player,itemStack));
     }
 
-    public void saveBackpack(Player player, Inventory inventory) throws IOException {
+    public void saveBackpack(Player player, Inventory inventory ,ItemStack itemStack) throws IOException {
 
-        ItemStack itemStack = player.getInventory().getItemInMainHand();
         ItemMeta meta =itemStack.getItemMeta();
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         NamespacedKey key = NamespacedKey.fromString(BACKPACK_KEY);
