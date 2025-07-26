@@ -79,7 +79,7 @@ public class Guilistener implements Listener {
                 configurationSection.set(items.get(slot),null);
                 fileConfiguration.save(file);
 
-                new Mailgui(player).open();
+                Mailgui.open(player,file);
             }
         }
     }

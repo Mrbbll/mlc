@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 public class mymail implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
-        new Mailgui((Player)commandSender).open();
+        Mailgui.open((Player)commandSender);
         return false;
     }
 }

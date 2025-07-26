@@ -43,7 +43,7 @@ public class Backpacklistener implements Listener {
             return;
         }else if(Objects.requireNonNull(meta.getItemModel()).toString().equals("mlc:mlc_backpack")){
             openmap.put(event.getPlayer().getUniqueId(),itemStack);
-            new Backpack().openbackpack(event.getPlayer(),itemStack);
+            Backpack.openbackpack(event.getPlayer(),itemStack);
             event.getPlayer().swingMainHand();
         }
     }
@@ -56,7 +56,7 @@ public class Backpacklistener implements Listener {
             return;
         }
         ItemStack itemStack = openmap.get(event.getPlayer().getUniqueId());
-        new Backpack().saveBackpack((Player) event.getPlayer(), event.getInventory(), itemStack);
+        Backpack.saveBackpack((Player) event.getPlayer(), event.getInventory(), itemStack);
 
     }
 

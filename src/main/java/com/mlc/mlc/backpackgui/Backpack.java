@@ -26,7 +26,7 @@ import static com.mlc.mlc.Mlc.instance;
 public class Backpack {
     private static final String BACKPACK_KEY = "mlc:backpack";
 
-    public Inventory inventorycreater(Player player,ItemStack itemStack) {
+    public static Inventory inventorycreater(Player player,ItemStack itemStack) {
         Inventory inv = Bukkit.createInventory(player, 3 * 9,
                 Component.text("背包")
                 .decoration(TextDecoration.ITALIC,false).decoration(TextDecoration.BOLD,true)
@@ -58,7 +58,7 @@ public class Backpack {
         return inv;
     }
 
-    private ItemStack[] deserializeItems(List<Map<?, ?>> itemMaps) {
+    private static ItemStack[] deserializeItems(List<Map<?, ?>> itemMaps) {
         ItemStack[] items = new ItemStack[27]; // 3x9格子
 
         for (int i = 0; i < Math.min(itemMaps.size(), items.length); i++) {
@@ -72,16 +72,14 @@ public class Backpack {
                 instance.getLogger().log(Level.WARNING, "反序列化物品失败", e);
             }
         }
-
         return items;
     }
 
-
-    public void openbackpack(Player player, ItemStack itemStack) {
+    public static void openbackpack(Player player, ItemStack itemStack) {
         player.openInventory(inventorycreater(player,itemStack));
     }
 
-    public void saveBackpack(Player player, Inventory inventory ,ItemStack itemStack) throws IOException {
+    public static void saveBackpack(Player player, Inventory inventory ,ItemStack itemStack) throws IOException {
 
         ItemMeta meta =itemStack.getItemMeta();
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -98,7 +96,6 @@ public class Backpack {
             }
             List<Map<String, Object>> itemMaps = new ArrayList<>();
             ItemStack[] contents = inventory.getContents();
-
             for (ItemStack item : contents) {
                 if (item != null && item.getType() != Material.AIR) {
                     itemMaps.add(item.serialize());
@@ -106,13 +103,8 @@ public class Backpack {
                     itemMaps.add(null); // 保存空槽位
                 }
             }
-
             backpackfile.set(num + "", itemMaps);
             backpackfile.save(file);
-
-
         }
-
-
     }
 }

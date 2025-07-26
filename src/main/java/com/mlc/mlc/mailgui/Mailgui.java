@@ -17,23 +17,22 @@ import static com.mlc.mlc.Mlc.instance;
 
 public class Mailgui {
 
-    public Inventory inv;
-    public Player owner;
-    public Integer slot;
+    public static Integer slot;
 
 
-    public Mailgui(Player player) {
-        inv = Bukkit.createInventory(player, 6 * 9, Component.text("邮箱", TextColor.fromHexString("#66ee1d"), TextDecoration.BOLD));
-        owner = player;
-        slot = 0;
-
-        String string = player.getUniqueId()+ ".yml";
-        File mailDir = new File(instance.getDataFolder(), "mail");
-        File file = new File(mailDir, string);
-
-        invinit(file);
+    public Mailgui() {
+//        inv = Bukkit.createInventory(player, 6 * 9, Component.text("邮箱", TextColor.fromHexString("#66ee1d"), TextDecoration.BOLD));
+//        owner = player;
+//        slot = 0;
+//
+//        String string = player.getUniqueId()+ ".yml";
+//        File mailDir = new File(instance.getDataFolder(), "mail");
+//        File file = new File(mailDir, string);
+//
+//        invinit(file);
     }
-    public void invinit(File file){
+
+    public static void invinit(File file,Inventory inv){
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
         ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("item");
         if (configurationSection != null) {
@@ -57,10 +56,23 @@ public class Mailgui {
             inv.setItem(0,null);
         }
     }
-    public void open(){
-        owner.openInventory(inv);
+    public static void open(Player player){
+        Inventory inv = Bukkit.createInventory(player, 6 * 9, Component.text("邮箱", TextColor.fromHexString("#66ee1d"), TextDecoration.BOLD));
+        slot = 0;
+        String string = player.getUniqueId()+ ".yml";
+        File mailDir = new File(instance.getDataFolder(), "mail");
+        File file = new File(mailDir, string);
+
+        invinit(file,inv);
+        player.openInventory(inv);
     }
 
+    public static void open(Player player, File file){
+        Inventory inv = Bukkit.createInventory(player, 6 * 9, Component.text("邮箱", TextColor.fromHexString("#66ee1d"), TextDecoration.BOLD));
+        slot = 0;
+        invinit(file,inv);
+        player.openInventory(inv);
+    }
 };
 
 
