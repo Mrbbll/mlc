@@ -2,9 +2,12 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.backpack.listener.Backpacklistener;
 import com.mlc.mlc.listener.*;
-import com.mlc.mlc.commands.*;
+import com.mlc.mlc.mlcitem.command.*;
 import com.mlc.mlc.ess.Listener.Tplistener;
 import com.mlc.mlc.ess.command.*;
+import com.mlc.mlc.mail.command.mymail;
+import com.mlc.mlc.mail.command.sendmail;
+import com.mlc.mlc.mail.command.sendmailtoall;
 import com.mlc.mlc.recipes.Elytra;
 import com.mlc.mlc.recipes.Healfood;
 import com.mlc.mlc.recipes.Backpack;

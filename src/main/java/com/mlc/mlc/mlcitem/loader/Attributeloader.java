@@ -1,4 +1,4 @@
-package com.mlc.mlc.itemgui;
+package com.mlc.mlc.mlcitem.loader;
 
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;

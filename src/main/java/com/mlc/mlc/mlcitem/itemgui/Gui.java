@@ -1,5 +1,6 @@
-package com.mlc.mlc.itemgui;
+package com.mlc.mlc.mlcitem.itemgui;
 
+import com.mlc.mlc.mlcitem.loader.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -19,7 +20,7 @@ import java.io.File;
 import java.util.*;
 
 import static com.mlc.mlc.Mlc.instance;
-import static com.mlc.mlc.itemgui.Itemflagloader.applyItemFlags;
+import static com.mlc.mlc.mlcitem.loader.Itemflagloader.applyItemFlags;
 
 
 public class Gui {

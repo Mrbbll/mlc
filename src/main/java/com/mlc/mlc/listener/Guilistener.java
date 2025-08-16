@@ -1,7 +1,7 @@
 package com.mlc.mlc.listener;
 
 import com.mlc.mlc.Mlc;
-import com.mlc.mlc.mailgui.Mailgui;
+import com.mlc.mlc.mail.mailgui.Mailgui;
 import io.papermc.paper.event.player.PlayerDeepSleepEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;

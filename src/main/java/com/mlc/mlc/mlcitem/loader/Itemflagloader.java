@@ -1,4 +1,4 @@
-package com.mlc.mlc.itemgui;
+package com.mlc.mlc.mlcitem.loader;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemFlag;
