@@ -13,6 +13,7 @@ import com.mlc.mlc.recipes.Healfood;
 import com.mlc.mlc.recipes.Backpack;
 import com.mlc.mlc.sit.Unsitlistener;
 import com.mlc.mlc.sit.Command.Sit;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -36,11 +37,13 @@ public final class Mlc extends JavaPlugin {
     public static Map<UUID,UUID> Tpaheremap = new HashMap<>();
     public static FileConfiguration backpackfile;
     public static File playerfiledir;
+    public static MiniMessage miniMessage;
 
     @Override
     public void onEnable() {
         // Plugin startup logic
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
+
         //目前功能：邮箱，简易物品管理器，跳过睡觉
         this.saveDefaultConfig();
         saveResource("words.txt", false);
@@ -49,6 +52,9 @@ public final class Mlc extends JavaPlugin {
         wordsnum = this.getConfig().getInt("words");
         damagetype = new NamespacedKey(this,"damagetype");
         armortype = new NamespacedKey(this,"armortype");
+
+        //minimessage初始化
+        miniMessage = MiniMessage.miniMessage();
 
         //加右键收获作物
         crops.add(Material.CARROTS);

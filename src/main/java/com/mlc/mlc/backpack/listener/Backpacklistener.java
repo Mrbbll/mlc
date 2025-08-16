@@ -13,6 +13,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 
@@ -84,12 +85,17 @@ public class Backpacklistener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            if(itemStack1!=null&& itemStack1.getItemMeta().hasItemModel()){
-                if(Objects.requireNonNull(itemStack1.getItemMeta().getItemModel()).toString().equals("mlc:mlc_backpack")){
-                    event.setCancelled(true);
-                    return;
-                }
+            if(itemStack1!=null && isshulkerbox(itemStack1) && event.getInventory() instanceof PlayerInventory) {
+                event.setCancelled(true);
+                return;
             }
+//            }
+//            if(itemStack1!=null&& itemStack1.getItemMeta().hasItemModel()){
+//                if(Objects.requireNonNull(itemStack1.getItemMeta().getItemModel()).toString().equals("mlc:mlc_backpack")){
+//                    event.setCancelled(true);
+//                    return;
+//                }
+//            }
 
             if (itemStack1 != null) {
                 ItemMeta meta1 = itemStack1.getItemMeta();
@@ -98,5 +104,10 @@ public class Backpacklistener implements Listener {
                 }
             }
         }
+    }
+
+    public boolean isshulkerbox(ItemStack itemStack){
+        Material material = itemStack.getType();
+        return material.name().endsWith("_SHULKER_BOX");
     }
 }
