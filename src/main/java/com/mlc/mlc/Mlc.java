@@ -1,10 +1,15 @@
 package com.mlc.mlc;
 
-import com.mlc.mlc.Listener.*;
+import com.mlc.mlc.backpack.listener.Backpacklistener;
+import com.mlc.mlc.listener.*;
 import com.mlc.mlc.commands.*;
+import com.mlc.mlc.ess.Listener.Tplistener;
+import com.mlc.mlc.ess.command.*;
 import com.mlc.mlc.recipes.Elytra;
 import com.mlc.mlc.recipes.Healfood;
 import com.mlc.mlc.recipes.Backpack;
+import com.mlc.mlc.sit.Unsitlistener;
+import com.mlc.mlc.sit.Command.Sit;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -77,7 +82,7 @@ public final class Mlc extends JavaPlugin {
         Objects.requireNonNull(Bukkit.getPluginCommand("tpa")).setExecutor(new tpa());
         Objects.requireNonNull(Bukkit.getPluginCommand("tpaccept")).setExecutor(new tpaccept());
         Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());
-        Objects.requireNonNull(Bukkit.getPluginCommand("sit")).setExecutor((new sit()));
+        Objects.requireNonNull(Bukkit.getPluginCommand("sit")).setExecutor((new Sit()));
     }
 
 

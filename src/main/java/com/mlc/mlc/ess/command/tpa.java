@@ -1,4 +1,4 @@
-package com.mlc.mlc.commands;
+package com.mlc.mlc.ess.command;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;

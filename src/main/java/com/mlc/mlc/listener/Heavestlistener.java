@@ -1,4 +1,4 @@
-package com.mlc.mlc.Listener;
+package com.mlc.mlc.listener;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;

@@ -1,4 +1,4 @@
-package com.mlc.mlc.commands;
+package com.mlc.mlc.ess.command;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -14,12 +14,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.playerfiledir;
 
 public class sethome implements CommandExecutor {

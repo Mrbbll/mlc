@@ -1,11 +1,9 @@
-package com.mlc.mlc.Listener;
+package com.mlc.mlc.listener;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockType;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.RespawnAnchor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
@@ -24,7 +22,6 @@ import org.bukkit.util.Vector;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.mlc.mlc.Mlc.instance;
 

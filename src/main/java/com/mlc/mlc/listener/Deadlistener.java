@@ -1,6 +1,5 @@
-package com.mlc.mlc.Listener;
+package com.mlc.mlc.listener;
 
-import net.kyori.adventure.text.Component;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;

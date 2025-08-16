@@ -1,4 +1,4 @@
-package com.mlc.mlc.backpackgui;
+package com.mlc.mlc.backpack.backpackgui;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;

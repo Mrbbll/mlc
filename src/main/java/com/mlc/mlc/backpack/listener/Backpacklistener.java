@@ -1,6 +1,6 @@
-package com.mlc.mlc.Listener;
+package com.mlc.mlc.backpack.listener;
 
-import com.mlc.mlc.backpackgui.Backpack;
+import com.mlc.mlc.backpack.backpackgui.Backpack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;

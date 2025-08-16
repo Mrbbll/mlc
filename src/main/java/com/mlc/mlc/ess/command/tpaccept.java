@@ -1,4 +1,4 @@
-package com.mlc.mlc.commands;
+package com.mlc.mlc.ess.command;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 
 import java.util.UUID;
-import java.util.concurrent.Executor;
 
 import static com.mlc.mlc.Mlc.Tpaheremap;
 import static com.mlc.mlc.Mlc.Tpamap;

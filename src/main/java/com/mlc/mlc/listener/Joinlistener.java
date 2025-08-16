@@ -1,4 +1,4 @@
-package com.mlc.mlc.Listener;
+package com.mlc.mlc.listener;
 
 
 import net.kyori.adventure.text.Component;

@@ -1,4 +1,4 @@
-package com.mlc.mlc.commands;
+package com.mlc.mlc.ess.command;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -10,8 +10,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.Executor;
 
 import static com.mlc.mlc.Mlc.*;
 

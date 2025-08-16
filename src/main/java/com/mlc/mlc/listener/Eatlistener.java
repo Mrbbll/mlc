@@ -1,6 +1,5 @@
-package com.mlc.mlc.Listener;
+package com.mlc.mlc.listener;
 
-import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;

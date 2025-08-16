@@ -1,4 +1,4 @@
-package com.mlc.mlc.Listener;
+package com.mlc.mlc.listener;
 
 import com.mlc.mlc.Mlc;
 import com.mlc.mlc.mailgui.Mailgui;
@@ -136,8 +136,4 @@ public class Guilistener implements Listener {
             );
         }
     }
-
-
-
-
 }
