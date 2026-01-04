@@ -14,7 +14,7 @@ import io.papermc.paper.datacomponent.item.Consumable;
 import static com.mlc.mlc.Mlc.instance;
 
 public class Healfood {
-    public void healfoodrecipe(){
+    public static void healfoodrecipe(){
         ItemStack healfooditem = ItemStack.of(Material.MUSHROOM_STEW);
         ItemMeta itemMeta = healfooditem.getItemMeta();
         itemMeta.setItemModel(NamespacedKey.fromString("mlc:mlc_healfood"));

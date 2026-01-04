@@ -17,7 +17,7 @@ import static com.mlc.mlc.Mlc.instance;
 import static io.papermc.paper.registry.keys.AttributeKeys.ARMOR;
 
 public class Elytra {
-    public void elytrarecipe(){
+    public static void elytrarecipe(){
         ItemStack elytraitem = ItemStack.of(Material.ELYTRA);
         ItemMeta itemMeta = elytraitem.getItemMeta();
 //        itemMeta.setItemModel(NamespacedKey.fromString("mlc:mlc_backpack"));

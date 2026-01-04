@@ -1,19 +1,10 @@
 package com.mlc.mlc;
 
-import com.mlc.mlc.backpack.listener.Backpacklistener;
 import com.mlc.mlc.hook.economy.MlcEconomy;
-import com.mlc.mlc.listener.*;
-import com.mlc.mlc.mlcitem.command.*;
-import com.mlc.mlc.ess.Listener.Tplistener;
-import com.mlc.mlc.ess.command.*;
-import com.mlc.mlc.mail.command.mymail;
-import com.mlc.mlc.mail.command.sendmail;
-import com.mlc.mlc.mail.command.sendmailtoall;
+import com.mlc.mlc.hook.economy.Moneyfilemanager;
 import com.mlc.mlc.recipes.Elytra;
 import com.mlc.mlc.recipes.Healfood;
 import com.mlc.mlc.recipes.Backpack;
-import com.mlc.mlc.sit.Unsitlistener;
-import com.mlc.mlc.sit.Command.Sit;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -21,10 +12,12 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.*;
 
 
@@ -36,19 +29,33 @@ public final class Mlc extends JavaPlugin {
     public static List<Material> crops = new ArrayList<>();
     public static NamespacedKey damagetype;
     public static NamespacedKey armortype;
+    public static Map<UUID,Double> EconomyMap = new HashMap<>();
     public static Map<UUID,UUID> Tpamap = new HashMap<>();
     public static Map<UUID,UUID> Tpaheremap = new HashMap<>();
     public static FileConfiguration backpackfile;
     public static File playerfiledir;
     public static MiniMessage miniMessage;
-    private MlcEconomy MlcEconomy;
 
     @Override
     public void onEnable() {
         // Plugin startup logic
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
-        MlcEconomy = new MlcEconomy(this);
-        getServer().getServicesManager().register(Economy.class, MlcEconomy, this, ServicePriority.Normal);
+        //注册经济系统
+        MlcEconomy mlcEconomy = new MlcEconomy(this);
+        getServer().getServicesManager().register(Economy.class, mlcEconomy, this, ServicePriority.Normal);
+        // 验证注册
+        RegisteredServiceProvider<Economy> rsp = getServer()
+                .getServicesManager()
+                .getRegistration(Economy.class);
+
+        if (rsp != null && rsp.getProvider() == mlcEconomy) {
+            getLogger().info("✅ 经济服务注册成功: " + mlcEconomy.getName());
+        } else if (rsp != null) {
+            getLogger().warning("⚠ 有其他经济服务已注册: " + rsp.getProvider().getName());
+        } else {
+            getLogger().warning("⚠ 经济服务注册失败");
+        }
+
         //目前功能：邮箱，简易物品管理器，跳过睡觉
         this.saveDefaultConfig();
         saveResource("words.txt", false);
@@ -71,32 +78,19 @@ public final class Mlc extends JavaPlugin {
         backpackfile = YamlConfiguration.loadConfiguration(backpackfilecreater());
         //初始化player文件夹
         playerfiledir = playerfiledircreater();
+        //初始化货币文件夹
+        try {
+            new Moneyfilemanager();
+            getLogger().info("\n\n货币数据库建立成功\n\n");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
-        new Backpack().backpackrecipe();
-        new Healfood().healfoodrecipe();
-        new Task();
-        new Elytra().elytrarecipe();
-        Bukkit.getPluginManager().registerEvents(new Backpacklistener(),this);
-        Bukkit.getPluginManager().registerEvents(new Heavestlistener(),this);
-        Bukkit.getPluginManager().registerEvents(new Guilistener(), this);
-        Bukkit.getPluginManager().registerEvents(new Unsitlistener(), this);
-        Bukkit.getPluginManager().registerEvents(new Joinlistener(), this);
-        Bukkit.getPluginManager().registerEvents(new Tplistener(), this);
-        Bukkit.getPluginManager().registerEvents(new Deadlistener(), this);
-        Bukkit.getPluginManager().registerEvents(new Eatlistener(), this);
-        Bukkit.getPluginManager().registerEvents(new Enchantlistener(), this);
-        Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));
-        Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
-        Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
-        Objects.requireNonNull(Bukkit.getPluginCommand("mlcgui")).setExecutor(new mlcgui());
-        Objects.requireNonNull(Bukkit.getPluginCommand("sendmailtoall")).setExecutor(new sendmailtoall());
-        Objects.requireNonNull(Bukkit.getPluginCommand("home")).setExecutor(new home());
-        Objects.requireNonNull(Bukkit.getPluginCommand("sethome")).setExecutor(new sethome());
-        Objects.requireNonNull(Bukkit.getPluginCommand("delhome")).setExecutor(new delhome());
-        Objects.requireNonNull(Bukkit.getPluginCommand("tpa")).setExecutor(new tpa());
-        Objects.requireNonNull(Bukkit.getPluginCommand("tpaccept")).setExecutor(new tpaccept());
-        Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());
-        Objects.requireNonNull(Bukkit.getPluginCommand("sit")).setExecutor((new Sit()));
+
+        Backpack.backpackrecipe();
+        Healfood.healfoodrecipe();
+        Elytra.elytrarecipe();
+        Task.task();
     }
 
 

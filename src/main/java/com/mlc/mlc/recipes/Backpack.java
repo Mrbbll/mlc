@@ -17,7 +17,7 @@ import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.miniMessage;
 
 public class Backpack {
-    public void backpackrecipe(){
+    public static void backpackrecipe(){
         ItemStack backpackitem = ItemStack.of(Material.ECHO_SHARD);
         ItemMeta itemMeta = backpackitem.getItemMeta();
         itemMeta.setItemModel(NamespacedKey.fromString("mlc:mlc_backpack"));

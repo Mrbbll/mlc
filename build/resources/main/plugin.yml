@@ -1,5 +1,5 @@
 name: mlc
-version: 1.0.211
+version: 1.0.224
 main: com.mlc.mlc.Mlc
 api-version: '1.21'
 authors: [Mr_bl]
@@ -30,3 +30,5 @@ commands:
     description: "坐下"
   back:
     description: "回到上个路径点"
+  money:
+    description: "操作货币"

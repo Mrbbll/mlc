@@ -6,7 +6,10 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
 import java.util.List;
+import java.util.UUID;
 
+
+@SuppressWarnings("deprecation")
 public class MlcEconomy implements Economy {
 
     public MlcEconomy(Mlc mlc) {
@@ -14,19 +17,19 @@ public class MlcEconomy implements Economy {
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 
     @Override
     public String getName() {
-        return "";
+        return "MlcEconomy";
     }
 
     @Override
     public boolean hasBankSupport() {
         return false;
     }
-
+    // 小数位数,不设置了，不能搞小数
     @Override
     public int fractionalDigits() {
         return 0;
@@ -34,116 +37,160 @@ public class MlcEconomy implements Economy {
 
     @Override
     public String format(double amount) {
-        return "";
+        return String.valueOf(amount);
     }
 
     @Override
     public String currencyNamePlural() {
-        return "";
+        return "🪙";
     }
 
     @Override
     public String currencyNameSingular() {
-        return "";
+        return "🪙";
     }
 
     @Override
     public boolean hasAccount(String playerName) {
-        return false;
+        try {
+            return Moneyfilemanager.hasPlayer(UUID.fromString(playerName));
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public boolean hasAccount(OfflinePlayer player) {
-        return false;
+        return Moneyfilemanager.hasPlayer(player.getUniqueId());
     }
 
     @Override
     public boolean hasAccount(String playerName, String worldName) {
-        return false;
+        return Moneyfilemanager.hasPlayer(UUID.fromString(playerName));
     }
 
     @Override
     public boolean hasAccount(OfflinePlayer player, String worldName) {
-        return false;
+        return Moneyfilemanager.hasPlayer(player.getUniqueId());
     }
 
     @Override
     public double getBalance(String playerName) {
-        return 0;
+        return Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName));
     }
 
     @Override
     public double getBalance(OfflinePlayer player) {
-        return 0;
+        return Moneyfilemanager.getPlayerMoney(player.getUniqueId());
     }
 
     @Override
     public double getBalance(String playerName, String world) {
-        return 0;
+        return Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName));
     }
 
     @Override
     public double getBalance(OfflinePlayer player, String world) {
-        return 0;
+        return Moneyfilemanager.getPlayerMoney(player.getUniqueId());
     }
 
     @Override
     public boolean has(String playerName, double amount) {
-        return false;
+        return Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) >= amount;
     }
 
     @Override
     public boolean has(OfflinePlayer player, double amount) {
-        return false;
+        return Moneyfilemanager.getPlayerMoney(player.getUniqueId()) >= amount;
     }
 
     @Override
     public boolean has(String playerName, String worldName, double amount) {
-        return false;
+        return Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) >= amount;
     }
 
     @Override
     public boolean has(OfflinePlayer player, String worldName, double amount) {
-        return false;
+        return Moneyfilemanager.getPlayerMoney(player.getUniqueId()) >= amount;
     }
 
     @Override
     public EconomyResponse withdrawPlayer(String playerName, double amount) {
+        try {
+            Moneyfilemanager.setPlayerMoney(UUID.fromString(playerName), (int) (Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) - amount));
+        } catch (IllegalArgumentException e) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
+        }
         return null;
     }
 
     @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, double amount) {
+        try {
+            Moneyfilemanager.setPlayerMoney(player.getUniqueId(), (int) (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) - amount));
+        } catch (IllegalArgumentException e) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
+        }
         return null;
     }
 
     @Override
     public EconomyResponse withdrawPlayer(String playerName, String worldName, double amount) {
+        try {
+            Moneyfilemanager.setPlayerMoney(UUID.fromString(playerName), (int) (Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) - amount));
+        } catch (IllegalArgumentException e) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
+        }
         return null;
     }
 
     @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, String worldName, double amount) {
+        try {
+            Moneyfilemanager.setPlayerMoney(player.getUniqueId(), (int) (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) - amount));
+        } catch (IllegalArgumentException e) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
+        }
         return null;
     }
 
     @Override
     public EconomyResponse depositPlayer(String playerName, double amount) {
+        try {
+            Moneyfilemanager.setPlayerMoney(UUID.fromString(playerName), (int) (Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) + amount));
+        } catch (IllegalArgumentException e) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
+        }
         return null;
     }
 
     @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, double amount) {
+        try {
+            Moneyfilemanager.setPlayerMoney(player.getUniqueId(), (int) (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + amount));
+        } catch (IllegalArgumentException e) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
+        }
         return null;
     }
 
     @Override
     public EconomyResponse depositPlayer(String playerName, String worldName, double amount) {
+        try {
+            Moneyfilemanager.setPlayerMoney(UUID.fromString(playerName), (int) (Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) + amount));
+        } catch (IllegalArgumentException e) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
+        }
         return null;
     }
 
     @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, String worldName, double amount) {
+        try {
+            Moneyfilemanager.setPlayerMoney(player.getUniqueId(), (int) (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + amount));
+        } catch (IllegalArgumentException e) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
+        }
         return null;
     }
 
@@ -209,21 +256,41 @@ public class MlcEconomy implements Economy {
 
     @Override
     public boolean createPlayerAccount(String playerName) {
-        return false;
+        try {
+            Moneyfilemanager.createPlayer(UUID.fromString(playerName), playerName);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public boolean createPlayerAccount(OfflinePlayer player) {
-        return false;
+        try {
+            Moneyfilemanager.createPlayer(player.getUniqueId(), player.getName());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public boolean createPlayerAccount(String playerName, String worldName) {
-        return false;
+        try {
+            Moneyfilemanager.createPlayer(UUID.fromString(playerName), playerName);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public boolean createPlayerAccount(OfflinePlayer player, String worldName) {
-        return false;
+        try {
+            Moneyfilemanager.createPlayer(player.getUniqueId(), player.getName());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

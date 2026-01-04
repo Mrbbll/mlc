@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id("xyz.jpenilla.run-paper") version "2.3.1"
+    id("com.gradleup.shadow") version "9.1.0"
 }
 
 group = 'com.mlc'
@@ -19,6 +20,9 @@ repositories {
     maven {
         name = "Vault"
         url = "https://jitpack.io" }
+    maven {
+        url = 'https://repo.extendedclip.com/releases/'
+    }
 }
 
 dependencies {
@@ -26,8 +30,18 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude group: 'org.bukkit', module: 'bukkit'
     }
+    compileOnly 'me.clip:placeholderapi:2.11.7'
     implementation 'net.kyori:adventure-text-minimessage:4.13.0'
+    implementation 'org.xerial:sqlite-jdbc:3.47.1.0'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
 }
+
+shadowJar {
+    relocate 'com.zaxxer.hikari', 'com.mlc.mlcdomain.lib.hikari'
+//    relocate 'org.sqlite', 'com.mlc.mlcdomain.lib.sqlite'
+}
+
+build.dependsOn(shadowJar)
 
 tasks {
   runServer {
