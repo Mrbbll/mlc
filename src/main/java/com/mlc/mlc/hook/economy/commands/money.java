@@ -10,6 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import static com.mlc.mlc.hook.economy.Moneyfilemanager.playermoneyMap;
 
 public class money implements CommandExecutor {
+    private Player target;
+    private int money;
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         if(!(commandSender instanceof Player player)){
@@ -38,12 +40,17 @@ public class money implements CommandExecutor {
                     commandSender.sendMessage("用法: /money give <玩家> <金额>");
                     return false;
                 }
-                Player target = player.getServer().getPlayer(strings[1]);
+
+                target = player.getServer().getPlayer(strings[1]);
                 if(target == null){
                     commandSender.sendMessage("玩家不存在");
                     return false;
                 }
-                int money = Integer.parseInt(strings[2]);
+                if(!strings[2].matches("\\d+")){
+                    commandSender.sendMessage("金额必须为整数");
+                    return false;
+                }
+                money = Integer.parseInt(strings[2]);
                 if(money <= 0){
                     commandSender.sendMessage("金额必须大于0");
                     return false;
@@ -64,6 +71,10 @@ public class money implements CommandExecutor {
                     commandSender.sendMessage("玩家不存在");
                     return false;
                 }
+                if(!strings[2].matches("\\d+")){
+                    commandSender.sendMessage("金额必须为整数");
+                    return false;
+                }
                 money = Integer.parseInt(strings[2]);
                 if(money <= 0){
                     commandSender.sendMessage("金额必须大于0");
@@ -80,6 +91,10 @@ public class money implements CommandExecutor {
                 target = player.getServer().getPlayer(strings[1]);
                 if(target == null){
                     commandSender.sendMessage("玩家不存在");
+                    return false;
+                }
+                if(!strings[2].matches("\\d+")){
+                    commandSender.sendMessage("金额必须为整数");
                     return false;
                 }
                 money = Integer.parseInt(strings[2]);
