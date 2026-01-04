@@ -8,6 +8,8 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,6 +20,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -119,6 +122,16 @@ public class Guilistener implements Listener {
                 world.setStorm(false);
                 world.setWeatherDuration(0);
             }
+        }
+        //睡觉回血
+        @Nullable AttributeInstance maxHealth = player.getAttribute(Attribute.MAX_HEALTH);
+        assert maxHealth != null;
+        double healthnum = maxHealth.getBaseValue();
+        if(healthnum<=18){
+            maxHealth.setBaseValue(healthnum + 2);
+        }
+        else {
+            maxHealth.setBaseValue(20);
         }
     }
 

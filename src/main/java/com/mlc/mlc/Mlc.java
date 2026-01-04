@@ -1,6 +1,7 @@
 package com.mlc.mlc;
 
 import com.mlc.mlc.backpack.listener.Backpacklistener;
+import com.mlc.mlc.hook.economy.MlcEconomy;
 import com.mlc.mlc.listener.*;
 import com.mlc.mlc.mlcitem.command.*;
 import com.mlc.mlc.ess.Listener.Tplistener;
@@ -14,11 +15,13 @@ import com.mlc.mlc.recipes.Backpack;
 import com.mlc.mlc.sit.Unsitlistener;
 import com.mlc.mlc.sit.Command.Sit;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -38,12 +41,14 @@ public final class Mlc extends JavaPlugin {
     public static FileConfiguration backpackfile;
     public static File playerfiledir;
     public static MiniMessage miniMessage;
+    private MlcEconomy MlcEconomy;
 
     @Override
     public void onEnable() {
         // Plugin startup logic
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
-
+        MlcEconomy = new MlcEconomy(this);
+        getServer().getServicesManager().register(Economy.class, MlcEconomy, this, ServicePriority.Normal);
         //目前功能：邮箱，简易物品管理器，跳过睡觉
         this.saveDefaultConfig();
         saveResource("words.txt", false);

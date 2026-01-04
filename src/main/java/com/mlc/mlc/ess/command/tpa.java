@@ -39,7 +39,7 @@ public class tpa implements CommandExecutor {
         target.sendMessage(Component.text("使用 /tpaccept 接受，3分钟后自动拒绝",TextColor.fromHexString("#e5fe67")));
         target.sendMessage(Component.text("或者点我同意", TextColor.fromHexString("#e5fe67"))
                 .append(Component.text("[✓]", TextColor.fromHexString("#3cff2e"), TextDecoration.BOLD)
-                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND,"/tpaccept")))
+                        .clickEvent(ClickEvent.runCommand("/tpaccept")))
         );
 //下面是移除
         Bukkit.getScheduler().runTaskLater(instance, () -> {

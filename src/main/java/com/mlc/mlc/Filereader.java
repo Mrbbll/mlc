@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import static com.mlc.mlc.Mlc.playerfiledir;
 
-public class Playerfilereader {
+public class Filereader {
 
     public static FileConfiguration openplayerfile(UUID uuid) throws IOException {
         File playerfile = new File(playerfiledir,uuid.toString());
