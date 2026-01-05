@@ -2,6 +2,7 @@ package com.mlc.mlc.hook.economy;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
@@ -106,7 +107,8 @@ public class Moneyfilemanager {
         try {
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
-            String update = "UPDATE money_data SET money = " + money + " WHERE player_uuid = '" + playerUUID + "'";
+            OfflinePlayer player = instance.getServer().getOfflinePlayer(playerUUID);
+            String update = "UPDATE money_data SET player_name = '" + player.getName() + "', money = " + money + " WHERE player_uuid = '" + playerUUID + "'";
             statement.executeUpdate(update);
             playermoneyMap.put(playerUUID, money);
         } catch (SQLException e) {

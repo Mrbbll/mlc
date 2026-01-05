@@ -89,6 +89,7 @@ public class money implements CommandExecutor {
                     return false;
                 }
                 target = player.getServer().getPlayer(strings[1]);
+
                 if(target == null){
                     commandSender.sendMessage("玩家不存在");
                     return false;
@@ -102,7 +103,11 @@ public class money implements CommandExecutor {
                     commandSender.sendMessage("金额必须大于0");
                     return false;
                 }
-                if(playermoneyMap.get(player.getUniqueId()) < money){
+                if(target == player){
+                    commandSender.sendMessage("不能给自己支付货币");
+                    return false;
+                }
+                if(playermoneyMap.getOrDefault(player.getUniqueId(),0) < money){
                     commandSender.sendMessage("你没有足够的货币");
                     return false;
                 }
