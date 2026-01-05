@@ -1,4 +1,4 @@
-package com.mlc.mlc.ess.Listener;
+package com.mlc.mlc.ess.listener;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;

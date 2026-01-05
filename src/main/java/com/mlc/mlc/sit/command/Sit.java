@@ -1,4 +1,4 @@
-package com.mlc.mlc.sit.Command;
+package com.mlc.mlc.sit.command;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;

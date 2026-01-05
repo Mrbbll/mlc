@@ -1,4 +1,4 @@
-package com.mlc.mlc.listener;
+package com.mlc.mlc.maxhealth;
 
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;

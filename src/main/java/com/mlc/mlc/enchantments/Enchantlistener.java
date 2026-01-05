@@ -1,4 +1,4 @@
-package com.mlc.mlc.listener;
+package com.mlc.mlc.enchantments;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;

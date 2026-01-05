@@ -1,4 +1,4 @@
-package com.mlc.mlc.sit;
+package com.mlc.mlc.sit.listener;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;

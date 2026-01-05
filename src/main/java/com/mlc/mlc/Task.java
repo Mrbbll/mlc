@@ -1,16 +1,24 @@
 package com.mlc.mlc;
 
 import com.mlc.mlc.backpack.listener.Backpacklistener;
-import com.mlc.mlc.ess.Listener.Tplistener;
+import com.mlc.mlc.enchantments.Enchantlistener;
+import com.mlc.mlc.ess.listener.Tplistener;
 import com.mlc.mlc.ess.command.*;
 import com.mlc.mlc.hook.economy.commands.money;
+import com.mlc.mlc.hook.placeholderapi.Mlceco;
 import com.mlc.mlc.listener.*;
 import com.mlc.mlc.mail.command.mymail;
 import com.mlc.mlc.mail.command.sendmail;
 import com.mlc.mlc.mail.command.sendmailtoall;
+import com.mlc.mlc.mail.listener.Maillistener;
+import com.mlc.mlc.maxhealth.Deadlistener;
+import com.mlc.mlc.maxhealth.Eatlistener;
 import com.mlc.mlc.mlcitem.command.mlcgui;
-import com.mlc.mlc.sit.Command.Sit;
-import com.mlc.mlc.sit.Unsitlistener;
+import com.mlc.mlc.mlcitem.listener.Guilistener;
+import com.mlc.mlc.rightclickheavest.Heavestlistener;
+import com.mlc.mlc.sit.command.Sit;
+import com.mlc.mlc.sit.listener.Unsitlistener;
+import com.mlc.mlc.sleep.Sleeplistener;
 import org.bukkit.Bukkit;
 
 import java.util.Objects;
@@ -28,6 +36,8 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new Deadlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Eatlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Enchantlistener(), instance);
+        Bukkit.getPluginManager().registerEvents(new Sleeplistener(), instance);
+        Bukkit.getPluginManager().registerEvents(new Maillistener(), instance);
         Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
@@ -41,7 +51,10 @@ public class Task {
         Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());
         Objects.requireNonNull(Bukkit.getPluginCommand("sit")).setExecutor((new Sit()));
         Objects.requireNonNull(Bukkit.getPluginCommand("money")).setExecutor(new money());
-
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new Mlceco().register();
+            System.out.println("\n\nmlcdomain placeholder registered\n\n");
+        }
     }
 
 
