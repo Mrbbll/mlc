@@ -6,10 +6,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -42,7 +39,7 @@ public class Moneyfilemanager {
             config.setLeakDetectionThreshold(60000);
             dataSource = new HikariDataSource(config);
         } catch (Exception e) {
-            plugin.getLogger().severe("\n\nHikariCP 初始化失败: " + e.getMessage() + "\n\n");
+            plugin.getLogger().severe("\n\nHikariCP初始化失败: " + e.getMessage() + "\n\n");
         }
 
         //连接数据库
@@ -50,7 +47,7 @@ public class Moneyfilemanager {
             try (Connection connection = dataSource.getConnection();
                  ) {
                 createTables(connection);
-                plugin.getLogger().info("\n\n✓ 数据库表连接完成\n\n");
+                plugin.getLogger().info("\n\n数据库表连接完成\n\n");
             }
         }
 
@@ -71,21 +68,19 @@ public class Moneyfilemanager {
             String index = "CREATE INDEX IF NOT EXISTS idx_player_uuid ON money_data (player_uuid)";
             statement.executeUpdate(index);
 
-            plugin.getLogger().info("\n\n 数据库表创建完成 \n\n");
+            plugin.getLogger().info("\n\n数据库表创建完成\n\n");
         } catch (SQLException e) {
             plugin.getLogger().severe("\n\n数据库表创建失败: " + e.getMessage() + "\n\n");
         }
     }
 
     public static void moneyfileload(){
-        try {
-            Connection connection = dataSource.getConnection();
-            Statement statement = connection.createStatement();
+        String query = "SELECT player_uuid, money FROM money_data";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()){
 
             // 从数据库加载玩家货币数据
-            String query = "SELECT player_uuid, money FROM money_data";
-            ResultSet resultSet = statement.executeQuery(query);
-
             while (resultSet.next()) {
                 UUID playerUUID = UUID.fromString(resultSet.getString("player_uuid"));
                 int money = resultSet.getInt("money");
@@ -105,9 +100,9 @@ public class Moneyfilemanager {
 
     public static void setPlayerMoney(UUID playerUUID, int money) {
         // 保存到数据库
-        try {
-            Connection connection = dataSource.getConnection();
-            Statement statement = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement();
+        ){
             OfflinePlayer player = instance.getServer().getOfflinePlayer(playerUUID);
             String update = "UPDATE money_data SET player_name = '" + player.getName() + "', money = " + money + " WHERE player_uuid = '" + playerUUID + "'";
             statement.executeUpdate(update);
@@ -125,9 +120,9 @@ public class Moneyfilemanager {
         if (hasPlayer(playerUUID)) {
             return false;
         }
-        try {
-            Connection connection = dataSource.getConnection();
-            Statement statement = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement();
+        ){
             String insert = "INSERT INTO money_data (player_uuid, player_name, money) VALUES ('" + playerUUID + "', '" + playerName + "', 0)";
             statement.executeUpdate(insert);
             playermoneyMap.put(playerUUID, 0);

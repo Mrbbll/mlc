@@ -210,6 +210,7 @@ public class Enchantlistener implements Listener {
         for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
             Enchantment enchant = entry.getKey();
             //检查是否有非法魔咒
+            //允许附魔：锋利度、效率、耐久度、保护、采集量
             if(enchant.equals(Enchantment.SHARPNESS)||
                     enchant.equals(Enchantment.EFFICIENCY)||
                     enchant.equals(Enchantment.UNBREAKING)||

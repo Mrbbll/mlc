@@ -49,11 +49,11 @@ public final class Mlc extends JavaPlugin {
                 .getRegistration(Economy.class);
 
         if (rsp != null && rsp.getProvider() == mlcEconomy) {
-            getLogger().info("✅ 经济服务注册成功: " + mlcEconomy.getName());
+            getLogger().info("经济服务注册成功: " + mlcEconomy.getName());
         } else if (rsp != null) {
-            getLogger().warning("⚠ 有其他经济服务已注册: " + rsp.getProvider().getName());
+            getLogger().warning("有其他经济服务已注册: " + rsp.getProvider().getName());
         } else {
-            getLogger().warning("⚠ 经济服务注册失败");
+            getLogger().warning("经济服务注册失败");
         }
 
         //目前功能：邮箱，简易物品管理器，跳过睡觉
