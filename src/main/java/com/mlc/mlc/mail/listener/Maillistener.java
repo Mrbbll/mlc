@@ -10,16 +10,22 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static com.mlc.mlc.Mlc.instance;
 
 public class Maillistener implements Listener {
+    public static Map<UUID,Integer> mailnum = new HashMap<>();
+
     @EventHandler
     //邮箱事件监听
         public void onInventoryClick(org.bukkit.event.inventory.InventoryClickEvent e) throws IOException {
@@ -51,10 +57,39 @@ public class Maillistener implements Listener {
             if (items != null) {
                 configurationSection.set(items.get(slot),null);
             }
+            mailnum.put(player.getUniqueId(),mailnum.getOrDefault(player.getUniqueId(),0)-1);
             fileConfiguration.save(file);
 
             Mailgui.open(player,file);
+            }
         }
     }
-}
+    @EventHandler
+    public void onjion(PlayerJoinEvent join){
+
+        if (haveunreadmail(join.getPlayer())) return;
+
+        File mailDir = new File(instance.getDataFolder(), "mail");
+        String string = join.getPlayer().getUniqueId() + ".yml";
+        File file = new File(mailDir,string);
+        FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
+        ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("item");
+        if (configurationSection != null && !configurationSection.getKeys(false).isEmpty()) {
+            for(String key : configurationSection.getKeys(false)){
+                mailnum.put(join.getPlayer().getUniqueId(),mailnum.getOrDefault(join.getPlayer().getUniqueId(),0)+1);
+            }
+            haveunreadmail(join.getPlayer());
+        }
+    }
+
+    private static boolean haveunreadmail(Player player) {
+        if(mailnum.containsKey(player.getUniqueId())){
+            player.sendMessage(Component.text("你有" + mailnum.get(player.getUniqueId()) + "封信未读")
+                    .color(TextColor.fromHexString("#7cff4d"))
+                    .decoration(TextDecoration.BOLD,true)
+            );
+            return true;
+        }
+        return false;
+    }
 }

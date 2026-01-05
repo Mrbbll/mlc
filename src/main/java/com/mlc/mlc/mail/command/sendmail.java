@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static com.mlc.mlc.Mlc.instance;
+import static com.mlc.mlc.mail.listener.Maillistener.mailnum;
 
 public class sendmail implements CommandExecutor {
 
@@ -87,7 +88,9 @@ public class sendmail implements CommandExecutor {
         String itemid = getitemid();
 
         //存储物品
+
         saveitem(itemid,serialized,file);
+        mailnum.put(player1.getUniqueId(),mailnum.getOrDefault(player1.getUniqueId(),0)+1);
 
 
     }

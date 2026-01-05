@@ -21,8 +21,6 @@ public class Moneyfilemanager {
     private final Plugin plugin = instance;
     private final String dbName = "money_data";
     private HikariConfig config = new HikariConfig();
-    private Connection connection;
-    private Statement statement;
     public static Map<UUID, Integer> playermoneyMap = new HashMap<>();
 
     public Moneyfilemanager() throws SQLException {
@@ -41,6 +39,7 @@ public class Moneyfilemanager {
             // HikariCP 配置
             config.setJdbcUrl("jdbc:sqlite:" + databaseFile.getAbsolutePath());
             config.setDriverClassName("org.sqlite.JDBC");
+            config.setLeakDetectionThreshold(60000);
             dataSource = new HikariDataSource(config);
         } catch (Exception e) {
             plugin.getLogger().severe("\n\nHikariCP 初始化失败: " + e.getMessage() + "\n\n");
@@ -48,21 +47,23 @@ public class Moneyfilemanager {
 
         //连接数据库
         if (dataSource != null) {
-            connection = dataSource.getConnection();
-            plugin.getLogger().info("\n\n✓ 数据库表连接完成\n\n");
-            statement = connection.createStatement();
+            try (Connection connection = dataSource.getConnection();
+                 ) {
+                createTables(connection);
+                plugin.getLogger().info("\n\n✓ 数据库表连接完成\n\n");
+            }
         }
 
         //初始化
-        createTables();
+
         moneyfileload();
     }
 
-    private void createTables() {
+    private void createTables(Connection connection) {
         try {
             // 创建玩家货币表
             //player_uuid player_name money
-
+            Statement statement = connection.createStatement();
             statement.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS money_data (player_uuid VARCHAR(36) PRIMARY KEY, player_name VARCHAR(16), money INTEGER)
                     """);

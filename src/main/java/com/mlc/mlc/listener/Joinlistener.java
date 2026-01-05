@@ -23,18 +23,5 @@ public class Joinlistener implements Listener {
         player.sendMessage(Component.text("服务器插件部分为腐竹自研，如果遇到bug或者功能建议请联系腐竹(。・ω・。)", TextColor.color(0x66EE1D)));
     }
 
-    @EventHandler
-    public void onjion(PlayerJoinEvent join){
-        File mailDir = new File(instance.getDataFolder(), "mail");
-        String string = join.getPlayer().getUniqueId() + ".yml";
-        File file = new File(mailDir,string);
-        FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
-        ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("item");
-        if (configurationSection != null && !configurationSection.getKeys(false).isEmpty()) {
-            join.getPlayer().sendMessage(Component.text("邮箱中有新信件！")
-                    .color(TextColor.fromHexString("#7cff4d"))
-                    .decoration(TextDecoration.BOLD,true)
-            );
-        }
-    }
+
 }
