@@ -15,6 +15,7 @@ import com.mlc.mlc.maxhealth.Deadlistener;
 import com.mlc.mlc.maxhealth.Eatlistener;
 import com.mlc.mlc.mlcitem.command.mlcgui;
 import com.mlc.mlc.mlcitem.listener.Guilistener;
+import com.mlc.mlc.motd.Motd;
 import com.mlc.mlc.rightclickheavest.Heavestlistener;
 import com.mlc.mlc.sit.command.Sit;
 import com.mlc.mlc.sit.listener.Unsitlistener;
@@ -27,6 +28,8 @@ import static com.mlc.mlc.Mlc.instance;
 
 public class Task {
     public static void task(){
+        Motd.setmotd();
+
         Bukkit.getPluginManager().registerEvents(new Backpacklistener(),instance);
         Bukkit.getPluginManager().registerEvents(new Heavestlistener(),instance);
         Bukkit.getPluginManager().registerEvents(new Guilistener(), instance);
