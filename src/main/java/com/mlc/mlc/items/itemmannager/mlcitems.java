@@ -27,6 +27,7 @@ public class mlcitems {
     public static ItemStack money_ingot;
     public static ItemStack money_stack;
     public static ItemStack money_gem;
+    public static ItemStack money_coin;
     public static void init(){
         //初始化背包
         backpack = ItemStack.of(Material.ECHO_SHARD);
@@ -96,5 +97,12 @@ public class mlcitems {
         itemMeta_6.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
         itemMeta_6.setItemModel(NamespacedKey.fromString("mlc:crystal_gem"));
         money_gem.setItemMeta(itemMeta_6);
+
+        money_coin = ItemStack.of(Material.ECHO_SHARD);
+        ItemMeta itemMeta_7 = money_coin.getItemMeta();
+        itemMeta_7.itemName(Component.text("水晶币"));
+        itemMeta_7.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        itemMeta_7.setItemModel(NamespacedKey.fromString("mlc:crystal_coin"));
+        money_coin.setItemMeta(itemMeta_7);
     }
 }

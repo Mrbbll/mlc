@@ -90,9 +90,13 @@ public class Task {
         Backpack.backpackrecipe();
         Healfood.healfoodrecipe();
         Elytra.elytrarecipe();
-        Moneyitemrecipe.money_ingotrecipe();
-        Moneyitemrecipe.money_stackrecipe();
+        Moneyitemrecipe.money_nugget_to_ingotrecipe();
+        Moneyitemrecipe.money_ingot_to_stackrecipe();
         Moneyitemrecipe.money_gemrecipe();
+        Moneyitemrecipe.money_coin_to_nuggetrecipe();
+        Moneyitemrecipe.money_ingot_to_nuggetrecipe();
+        Moneyitemrecipe.money_stack_to_ingotrecipe();
+        Moneyitemrecipe.money_nugget_to_coinrecipe();
     }
 
 
