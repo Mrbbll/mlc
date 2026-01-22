@@ -92,6 +92,7 @@ public class Gui {
             if(num<44){
                 inv.setItem(num,itemStack);
             }
+
         }
     }
 

@@ -1,13 +1,23 @@
 package com.mlc.mlc.hook.economy.commands;
 
 import com.mlc.mlc.hook.economy.Moneyfilemanager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
+import static com.mlc.mlc.Mlc.miniMessage;
 import static com.mlc.mlc.hook.economy.Moneyfilemanager.playermoneyMap;
+import static com.mlc.mlc.items.itemmannager.mlcitems.money_ingot;
+import static com.mlc.mlc.items.itemmannager.mlcitems.money_stack;
 
 public class money implements CommandExecutor {
     private Player target;
@@ -20,13 +30,13 @@ public class money implements CommandExecutor {
         }
 
         if(strings.length == 0){
-            commandSender.sendMessage("你的货币为: " + Moneyfilemanager.getPlayerMoney(player.getUniqueId()));
+            commandSender.sendMessage("你的水晶碎块为: " + Moneyfilemanager.getPlayerMoney(player.getUniqueId()));
             return false;
         }
 
         switch (strings[0]) {
             case "money":
-                commandSender.sendMessage("你的货币为: " + Moneyfilemanager.getPlayerMoney(player.getUniqueId()));
+                commandSender.sendMessage("你的水晶碎块为: " + Moneyfilemanager.getPlayerMoney(player.getUniqueId()));
                 break;
             case "top":
 //                commandSender.sendMessage("货币排行榜: " + Moneyfilemanager.getTopPlayers());
@@ -47,16 +57,16 @@ public class money implements CommandExecutor {
                     return false;
                 }
                 if(!strings[2].matches("\\d+")){
-                    commandSender.sendMessage("金额必须为整数");
+                    commandSender.sendMessage("数量必须为整数");
                     return false;
                 }
                 money = Integer.parseInt(strings[2]);
                 if(money <= 0){
-                    commandSender.sendMessage("金额必须大于0");
+                    commandSender.sendMessage("数量必须大于0");
                     return false;
                 }
                 Moneyfilemanager.setPlayerMoney(target.getUniqueId(), Moneyfilemanager.getPlayerMoney(target.getUniqueId()) + money);
-                commandSender.sendMessage("成功给玩家 " + target.getName() + " 给予 " + money + " 货币");
+                commandSender.sendMessage("成功给玩家 " + target.getName() + " 给予 " + money + " 水晶碎块");
                 break;
             case "set":
                 if(!player.isOp()){
@@ -72,16 +82,16 @@ public class money implements CommandExecutor {
                     return false;
                 }
                 if(!strings[2].matches("\\d+")){
-                    commandSender.sendMessage("金额必须为整数");
+                    commandSender.sendMessage("数量必须为整数");
                     return false;
                 }
                 money = Integer.parseInt(strings[2]);
                 if(money <= 0){
-                    commandSender.sendMessage("金额必须大于0");
+                    commandSender.sendMessage("数量必须大于0");
                     return false;
                 }
                 Moneyfilemanager.setPlayerMoney(target.getUniqueId(), money);
-                commandSender.sendMessage("成功设置玩家 " + target.getName() + " 的货币为 " + money);
+                commandSender.sendMessage("成功设置玩家 " + target.getName() + " 的水晶碎块为 " + money);
                 break;
             case "pay":
                 if(strings.length != 3){
@@ -95,28 +105,57 @@ public class money implements CommandExecutor {
                     return false;
                 }
                 if(!strings[2].matches("\\d+")){
-                    commandSender.sendMessage("金额必须为整数");
+                    commandSender.sendMessage("数量必须为整数");
                     return false;
                 }
                 money = Integer.parseInt(strings[2]);
                 if(money <= 0){
-                    commandSender.sendMessage("金额必须大于0");
+                    commandSender.sendMessage("数量必须大于0");
                     return false;
                 }
                 if(target == player){
-                    commandSender.sendMessage("不能给自己支付货币");
+                    commandSender.sendMessage("不能给自己支付水晶碎块");
                     return false;
                 }
                 if(playermoneyMap.getOrDefault(player.getUniqueId(),0) < money){
-                    commandSender.sendMessage("你没有足够的货币");
+                    commandSender.sendMessage("你没有足够的水晶碎块");
                     return false;
                 }
                 Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) - money);
                 Moneyfilemanager.setPlayerMoney(target.getUniqueId(), Moneyfilemanager.getPlayerMoney(target.getUniqueId()) + money);
 
-                commandSender.sendMessage("成功给玩家 " + target.getName() + " 支付 " + money + " 货币");
+                commandSender.sendMessage("成功给玩家 " + target.getName() + " 支付 " + money + " 水晶碎块");
                 break;
-        }
+            case "save":
+                player.sendMessage(Component.text("你当前有"+Moneyfilemanager.getPlayerMoney(player.getUniqueId())+"水晶碎块"));
+                ItemStack item = player.getInventory().getItemInMainHand();
+                if(Objects.equals(item.getItemMeta(), money_ingot.getItemMeta())) {
+                    int money = item.getAmount();
+                    player.sendMessage(Component.text("存入" + money + "水晶碎块").color(NamedTextColor.GREEN));
+                    Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + money);
+                    item.setAmount(0);
+                }else if(Objects.equals(item.getItemMeta(), money_stack.getItemMeta())) {
+                    int money = item.getAmount() * 9;
+                    player.sendMessage(Component.text("存入" + money + "水晶碎块").color(NamedTextColor.GREEN));
+                    Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + money);
+                    item.setAmount(0);
+                }
+
+
+//                for(ItemStack item : player.getInventory().getStorageContents()){
+//                    if(item == null) {
+//                        continue;
+//                    }else if(Objects.equals(item.getItemMeta(), money_ingot.getItemMeta())){
+//                        int money = item.getAmount();
+//                        player.sendMessage(Component.text("存入"+money+"水晶碎块").color(NamedTextColor.GREEN));
+//                        Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + money);
+//                        item.setAmount(0);
+//
+//                    }
+//
+//                }
+
+    }
         return false;
     }
 }

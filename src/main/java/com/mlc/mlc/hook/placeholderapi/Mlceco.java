@@ -26,6 +26,7 @@ public class Mlceco extends PlaceholderExpansion {
         if (player == null) {
             return "";
         }
+        // %mlc_money%
         if (params.equals("money")) {
             if(!Moneyfilemanager.playermoneyMap.containsKey(player.getUniqueId())){
                 Moneyfilemanager.createPlayer(player.getUniqueId(), player.getName());

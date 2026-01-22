@@ -2,9 +2,9 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.hook.economy.MlcEconomy;
 import com.mlc.mlc.hook.economy.Moneyfilemanager;
-import com.mlc.mlc.recipes.Elytra;
-import com.mlc.mlc.recipes.Healfood;
-import com.mlc.mlc.recipes.Backpack;
+import com.mlc.mlc.items.recipes.Elytra;
+import com.mlc.mlc.items.recipes.Healfood;
+import com.mlc.mlc.items.recipes.Backpack;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -16,7 +16,9 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -25,6 +27,7 @@ public final class Mlc extends JavaPlugin {
 
 
     public static JavaPlugin instance;
+    public static FileConfiguration fileConfiguration;
     public static int wordsnum;
     public static List<Material> crops = new ArrayList<>();
     public static NamespacedKey damagetype;
@@ -61,6 +64,7 @@ public final class Mlc extends JavaPlugin {
         saveResource("words.txt", false);
         saveResource("items.yml",false);
         instance = this;
+        fileConfiguration = instance.getConfig();
         wordsnum = this.getConfig().getInt("words");
         damagetype = new NamespacedKey(this,"damagetype");
         armortype = new NamespacedKey(this,"armortype");
@@ -87,10 +91,12 @@ public final class Mlc extends JavaPlugin {
         }
 
 
-        Backpack.backpackrecipe();
-        Healfood.healfoodrecipe();
-        Elytra.elytrarecipe();
-        Task.task();
+
+        try {
+            Task.task();
+        } catch (URISyntaxException | NoSuchAlgorithmException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
