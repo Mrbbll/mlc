@@ -97,6 +97,16 @@ public class Task {
         Moneyitemrecipe.money_ingot_to_nuggetrecipe();
         Moneyitemrecipe.money_stack_to_ingotrecipe();
         Moneyitemrecipe.money_nugget_to_coinrecipe();
+        Moneyitemrecipe.money_stack_to_money_stack_x1recipe();
+        Moneyitemrecipe.money_stack_x1_to_money_stack_x2recipe();
+        Moneyitemrecipe.money_stack_x2_to_money_stack_x3recipe();
+        Moneyitemrecipe.money_stack_x3_to_money_stack_x4recipe();
+        Moneyitemrecipe.money_stack_x4_to_money_stack_x5recipe();
+        Moneyitemrecipe.money_stack_x1_to_money_stackrecipe();
+        Moneyitemrecipe.money_stack_x2_to_money_stack_x1recipe();
+        Moneyitemrecipe.money_stack_x3_to_money_stack_x2recipe();
+        Moneyitemrecipe.money_stack_x4_to_money_stack_x3recipe();
+        Moneyitemrecipe.money_stack_x5_to_money_stack_x4recipe();
     }
 
 

@@ -26,6 +26,11 @@ public class mlcitems {
     public static ItemStack money_nugget;
     public static ItemStack money_ingot;
     public static ItemStack money_stack;
+    public static ItemStack money_stack_x1;
+    public static ItemStack money_stack_x2;
+    public static ItemStack money_stack_x3;
+    public static ItemStack money_stack_x4;
+    public static ItemStack money_stack_x5;
     public static ItemStack money_gem;
     public static ItemStack money_coin;
     public static void init(){
@@ -91,18 +96,53 @@ public class mlcitems {
         itemMeta_5.setItemModel(NamespacedKey.fromString("mlc:crystal_stack"));
         money_stack.setItemMeta(itemMeta_5);
 
-        money_gem = ItemStack.of(Material.ECHO_SHARD);
-        ItemMeta itemMeta_6 = money_gem.getItemMeta();
-        itemMeta_6.itemName(Component.text("水晶石"));
+        money_stack_x1 = ItemStack.of(Material.ECHO_SHARD);
+        ItemMeta itemMeta_6 = money_stack_x1.getItemMeta();
+        itemMeta_6.itemName(Component.text("水晶块x1"));
         itemMeta_6.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
-        itemMeta_6.setItemModel(NamespacedKey.fromString("mlc:crystal_gem"));
-        money_gem.setItemMeta(itemMeta_6);
+        itemMeta_6.setItemModel(NamespacedKey.fromString("mlc:crystal_stack_x1"));
+        money_stack_x1.setItemMeta(itemMeta_6);
+
+        money_stack_x2 = ItemStack.of(Material.ECHO_SHARD);
+        ItemMeta itemMeta_7 = money_stack_x2.getItemMeta();
+        itemMeta_7.itemName(Component.text("水晶块x2"));
+        itemMeta_7.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        itemMeta_7.setItemModel(NamespacedKey.fromString("mlc:crystal_stack_x2"));
+        money_stack_x2.setItemMeta(itemMeta_7);
+
+        money_stack_x3 = ItemStack.of(Material.ECHO_SHARD);
+        ItemMeta itemMeta_8 = money_stack_x3.getItemMeta();
+        itemMeta_8.itemName(Component.text("水晶块x3"));
+        itemMeta_8.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        itemMeta_8.setItemModel(NamespacedKey.fromString("mlc:crystal_stack_x3"));
+        money_stack_x3.setItemMeta(itemMeta_8);
+
+        money_stack_x4 = ItemStack.of(Material.ECHO_SHARD);
+        ItemMeta itemMeta_9 = money_stack_x4.getItemMeta();
+        itemMeta_9.itemName(Component.text("水晶块x4"));
+        itemMeta_9.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        itemMeta_9.setItemModel(NamespacedKey.fromString("mlc:crystal_stack_x4"));
+        money_stack_x4.setItemMeta(itemMeta_9);
+
+        money_stack_x5 = ItemStack.of(Material.ECHO_SHARD);
+        ItemMeta itemMeta_10 = money_stack_x5.getItemMeta();
+        itemMeta_10.itemName(Component.text("水晶块x5"));
+        itemMeta_10.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        itemMeta_10.setItemModel(NamespacedKey.fromString("mlc:crystal_stack_x5"));
+        money_stack_x5.setItemMeta(itemMeta_10);
+
+        money_gem = ItemStack.of(Material.ECHO_SHARD);
+        ItemMeta itemMeta_11 = money_gem.getItemMeta();
+        itemMeta_11.itemName(Component.text("水晶石"));
+        itemMeta_11.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        itemMeta_11.setItemModel(NamespacedKey.fromString("mlc:crystal_gem"));
+        money_gem.setItemMeta(itemMeta_11);
 
         money_coin = ItemStack.of(Material.ECHO_SHARD);
-        ItemMeta itemMeta_7 = money_coin.getItemMeta();
-        itemMeta_7.itemName(Component.text("水晶币"));
-        itemMeta_7.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
-        itemMeta_7.setItemModel(NamespacedKey.fromString("mlc:crystal_coin"));
-        money_coin.setItemMeta(itemMeta_7);
+        ItemMeta itemMeta_12 = money_coin.getItemMeta();
+        itemMeta_12.itemName(Component.text("水晶币"));
+        itemMeta_12.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        itemMeta_12.setItemModel(NamespacedKey.fromString("mlc:crystal_coin"));
+        money_coin.setItemMeta(itemMeta_12);
     }
 }

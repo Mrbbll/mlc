@@ -12,8 +12,8 @@ public class DropmoneyListener implements Listener {
     public void onDropmoney(BlockBreakEvent event){
         switch (event.getBlock().getType()){
             case ANDESITE, DIORITE, GRANITE, TUFF:
-                if(Math.random()<0.1){
-                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(),money_nugget);
+                if(Math.random()<0.12){
+                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(),money_nugget.clone());
                     event.setDropItems(false);
                 }
                 break;
