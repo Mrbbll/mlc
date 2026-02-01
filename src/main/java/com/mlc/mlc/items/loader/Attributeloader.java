@@ -1,4 +1,4 @@
-package com.mlc.mlc.mlcitem.loader;
+package com.mlc.mlc.items.loader;
 
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
@@ -6,7 +6,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.ConfigurationSection;
-
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Objects;

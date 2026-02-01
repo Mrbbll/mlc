@@ -1,10 +1,11 @@
-package com.mlc.mlc.mlcitem.loader;
+package com.mlc.mlc.items.loader;
 
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
+
 import java.util.HashMap;
 import java.util.Map;
 

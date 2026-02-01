@@ -34,6 +34,10 @@ public class Guilistener implements Listener {
             {
                 player.kick(Component.text("拜拜"));
             }
+            else if(Objects.equals(itemStack.getItemMeta().itemName(), Component.text("back")))
+            {
+
+            }
             else{
                 player.give(itemStack);
             };

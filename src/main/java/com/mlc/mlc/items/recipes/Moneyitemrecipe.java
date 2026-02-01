@@ -1,12 +1,12 @@
 package com.mlc.mlc.items.recipes;
 
-import com.mlc.mlc.items.itemmannager.mlcitems;
+import com.mlc.mlc.items.itemmannager.Mlcitems;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.*;
 
 import static com.mlc.mlc.Mlc.instance;
-import static com.mlc.mlc.items.itemmannager.mlcitems.*;
+import static com.mlc.mlc.items.itemmannager.Mlcitems.*;
 
 public class Moneyitemrecipe {
     public static void money_nugget_to_ingotrecipe(){
@@ -39,7 +39,7 @@ public class Moneyitemrecipe {
         Bukkit.addRecipe(shapedRecipe1);
     }
     public static void money_gemrecipe(){
-        BlastingRecipe blastingRecipe = new BlastingRecipe(new NamespacedKey(instance,"money_gemrecipe"),money_gem, new RecipeChoice.ExactChoice(mlcitems.money_stack),3.0f,102400);
+        BlastingRecipe blastingRecipe = new BlastingRecipe(new NamespacedKey(instance,"money_gemrecipe"),money_gem, new RecipeChoice.ExactChoice(Mlcitems.money_stack),3.0f,102400);
         Bukkit.addRecipe(blastingRecipe);
     }
 

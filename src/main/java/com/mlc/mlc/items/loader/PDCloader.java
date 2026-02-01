@@ -1,4 +1,4 @@
-package com.mlc.mlc.mlcitem.loader;
+package com.mlc.mlc.items.loader;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;

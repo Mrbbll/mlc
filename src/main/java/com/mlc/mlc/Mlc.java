@@ -2,9 +2,6 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.hook.economy.MlcEconomy;
 import com.mlc.mlc.hook.economy.Moneyfilemanager;
-import com.mlc.mlc.items.recipes.Elytra;
-import com.mlc.mlc.items.recipes.Healfood;
-import com.mlc.mlc.items.recipes.Backpack;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -62,7 +59,7 @@ public final class Mlc extends JavaPlugin {
         //目前功能：邮箱，简易物品管理器，跳过睡觉
         this.saveDefaultConfig();
         saveResource("words.txt", false);
-        saveResource("items.yml",false);
+        saveResource("fesitems.yml",false);
         instance = this;
         fileConfiguration = instance.getConfig();
         wordsnum = this.getConfig().getInt("words");

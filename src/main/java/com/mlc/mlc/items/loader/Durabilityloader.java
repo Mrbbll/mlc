@@ -1,4 +1,4 @@
-package com.mlc.mlc.mlcitem.loader;
+package com.mlc.mlc.items.loader;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.meta.Damageable;

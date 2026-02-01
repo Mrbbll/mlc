@@ -19,7 +19,7 @@ import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.miniMessage;
 import static io.papermc.paper.registry.keys.AttributeKeys.ARMOR;
 
-public class mlcitems {
+public class Mlcitems {
     public static ItemStack backpack;
     public static ItemStack healfood;
     public static ItemStack elytraitem;
@@ -33,6 +33,7 @@ public class mlcitems {
     public static ItemStack money_stack_x5;
     public static ItemStack money_gem;
     public static ItemStack money_coin;
+    public static List<ItemStack> itemslist = new ArrayList<>();
     public static void init(){
         //初始化背包
         backpack = ItemStack.of(Material.ECHO_SHARD);
@@ -144,5 +145,20 @@ public class mlcitems {
         itemMeta_12.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
         itemMeta_12.setItemModel(NamespacedKey.fromString("mlc:crystal_coin"));
         money_coin.setItemMeta(itemMeta_12);
+
+
+        itemslist.add(backpack);
+        itemslist.add(healfood);
+        itemslist.add(elytraitem);
+        itemslist.add(money_nugget);
+        itemslist.add(money_ingot);
+        itemslist.add(money_stack);
+        itemslist.add(money_stack_x1);
+        itemslist.add(money_stack_x2);
+        itemslist.add(money_stack_x3);
+        itemslist.add(money_stack_x4);
+        itemslist.add(money_stack_x5);
+        itemslist.add(money_gem);
+        itemslist.add(money_coin);
     }
 }

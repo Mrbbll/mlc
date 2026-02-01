@@ -3,8 +3,6 @@ package com.mlc.mlc.hook.economy.commands;
 import com.mlc.mlc.hook.economy.Moneyfilemanager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,9 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-import static com.mlc.mlc.Mlc.miniMessage;
 import static com.mlc.mlc.hook.economy.Moneyfilemanager.playermoneyMap;
-import static com.mlc.mlc.items.itemmannager.mlcitems.*;
+import static com.mlc.mlc.items.itemmannager.Mlcitems.*;
 
 public class money implements CommandExecutor {
     private Player target;

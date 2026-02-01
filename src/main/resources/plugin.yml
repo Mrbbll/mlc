@@ -4,8 +4,8 @@ main: com.mlc.mlc.Mlc
 api-version: '1.21'
 authors: [Mr_bl]
 commands:
-  mlcgui:
-    description: "打开mlc菜单"
+  mlcitem:
+    description: "打开mlc物品菜单"
     permission: mlc.op
   sendmail:
     description: "发送邮件"
