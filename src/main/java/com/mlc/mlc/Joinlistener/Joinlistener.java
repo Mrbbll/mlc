@@ -1,21 +1,13 @@
-package com.mlc.mlc.listener;
+package com.mlc.mlc.Joinlistener;
 
 
 import com.mlc.mlc.motd.Motd;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-
-import java.io.File;
-
-import static com.mlc.mlc.Mlc.instance;
 
 public class Joinlistener implements Listener {
     @EventHandler

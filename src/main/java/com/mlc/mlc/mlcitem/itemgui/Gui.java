@@ -8,6 +8,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.inventory.*;
 import org.bukkit.entity.Player;
 
@@ -27,6 +29,7 @@ public class Gui {
     }
 
     public static void loadgui(Player player, Guitype guitype, int num) {
+        Gui.num = num;
         inv = Bukkit.createInventory(player, 9 * 5, Component.text("mlc", TextColor.fromHexString("#f73636")));
         switch (guitype){
             case CRATESITEMSGUI:
@@ -49,9 +52,14 @@ public class Gui {
 
     public static void open(Player player){
         loadGui(player);
+        inv.setItem(36,ItemStack.of(Material.ARROW));
+        inv.setItem(44,ItemStack.of(Material.ARROW));
+        inv.setItem(39,ItemStack.of(Material.ARROW));
+        inv.setItem(40,ItemStack.of(Material.ARROW));
+        inv.setItem(41,ItemStack.of(Material.ARROW));
         player.openInventory(inv);
     }
-    public void refresh(Guitype guitype, Player player, int num){
+    public static void refresh(Guitype guitype, Player player, int num){
         loadgui(player, guitype, num);
         player.updateInventory();
     }

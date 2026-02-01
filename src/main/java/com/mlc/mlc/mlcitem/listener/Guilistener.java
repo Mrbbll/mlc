@@ -1,5 +1,7 @@
 package com.mlc.mlc.mlcitem.listener;
 
+import com.mlc.mlc.items.itemmannager.Mlcitems;
+import com.mlc.mlc.mlcitem.itemgui.Guitype;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.entity.Player;
@@ -11,6 +13,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 import java.util.Objects;
+
+import static com.mlc.mlc.mlcitem.itemgui.Gui.*;
 
 public class Guilistener implements Listener {
 
@@ -25,6 +29,28 @@ public class Guilistener implements Listener {
             {
                 return;
             };
+            if(e.getRawSlot()==36)
+            {
+                //pageup
+                if(num-36>=0){
+                    num-=36;
+                    refresh(Guitype.MLCITEMSGUI,player,num);
+                }
+            } else if (e.getRawSlot()==44) {
+                //pagedown
+                if(num+36 < Mlcitems.itemslist.size()){
+                    num+=36;
+                    refresh(Guitype.MLCITEMSGUI,player,num);
+                }
+            } else if (e.getRawSlot()==39) {
+                //changemenu
+                refresh(Guitype.CRATESITEMSGUI,player,0);
+            } else if (e.getRawSlot()==40) {
+                refresh(Guitype.FESITEMSGUI,player,0);
+            } else if (e.getRawSlot()==41) {
+                refresh(Guitype.MLCITEMSGUI,player,0);
+            }
+
             ItemStack itemStack = e.getCurrentItem();
             if(itemStack == null)
             {
