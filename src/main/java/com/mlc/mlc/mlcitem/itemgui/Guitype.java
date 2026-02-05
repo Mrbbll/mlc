@@ -4,4 +4,5 @@ public enum Guitype {
     CRATESITEMSGUI,
     FESITEMSGUI,
     MLCITEMSGUI
+
 }

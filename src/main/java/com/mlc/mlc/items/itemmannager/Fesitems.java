@@ -21,9 +21,9 @@ import static com.mlc.mlc.Mlc.miniMessage;
 import static com.mlc.mlc.items.loader.Itemflagloader.applyItemFlags;
 
 public class Fesitems {
-    public static List<ItemStack> itemslist = new ArrayList<>();
-    public static int num = 0;
+    public static Map<Integer,ItemStack> itemsmap;
     public static void init(){
+        itemsmap = new HashMap<>();
         File file = new File(instance.getDataFolder(),"fesitems.yml");
         if (!file.exists()) {
             instance.saveResource("fesitems.yml", false);
@@ -35,7 +35,6 @@ public class Fesitems {
             for(String itemid:itemids){
 
                 loaditem(itemid,configurationSection);
-                num++;
             }
         }
     }
@@ -101,7 +100,7 @@ public class Fesitems {
             }
 
             itemStack.setItemMeta(meta);
-            itemslist.add(itemStack);
+            itemsmap.put(Integer.parseInt(itemid), itemStack);
 
         }
     }

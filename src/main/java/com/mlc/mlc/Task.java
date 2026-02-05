@@ -25,6 +25,7 @@ import com.mlc.mlc.maxhealth.Eatlistener;
 import com.mlc.mlc.mlcitem.command.mlcitemgui;
 import com.mlc.mlc.mlcitem.listener.Guilistener;
 import com.mlc.mlc.motd.Motd;
+import com.mlc.mlc.reload.reload;
 import com.mlc.mlc.respacksender.packsender;
 import com.mlc.mlc.rightclickheavest.Heavestlistener;
 import com.mlc.mlc.sit.command.Sit;
@@ -68,6 +69,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new com.mlc.mlc.respacksender.Listener.Joinlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new DropmoneyListener(), instance);
 
+        Objects.requireNonNull(Bukkit.getPluginCommand("reload")).setExecutor(new reload());
         Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
@@ -83,8 +85,14 @@ public class Task {
         Objects.requireNonNull(Bukkit.getPluginCommand("money")).setExecutor(new money());
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new Mlceco().register();
-            System.out.println("\n\nmlcdomain placeholder registered\n\n");
+            System.out.println("\n\nmlc placeholder registered\n\n");
         }
+
+
+
+        Cratesitems.init();
+        Fesitems.init();
+        Mlcitems.init();
 
         //注册物品配方
         Backpack.backpackrecipe();
@@ -108,11 +116,6 @@ public class Task {
         Moneyitemrecipe.money_stack_x4_to_money_stack_x3recipe();
         Moneyitemrecipe.money_stack_x5_to_money_stack_x4recipe();
 
-
-
-        Cratesitems.init();
-        Fesitems.init();
-        Mlcitems.init();
     }
 
 

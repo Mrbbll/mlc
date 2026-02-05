@@ -29,7 +29,6 @@ public final class Mlc extends JavaPlugin {
     public static List<Material> crops = new ArrayList<>();
     public static NamespacedKey damagetype;
     public static NamespacedKey armortype;
-    public static Map<UUID,Double> EconomyMap = new HashMap<>();
     public static Map<UUID,UUID> Tpamap = new HashMap<>();
     public static Map<UUID,UUID> Tpaheremap = new HashMap<>();
     public static FileConfiguration backpackfile;

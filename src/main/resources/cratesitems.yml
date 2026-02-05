@@ -1,0 +1,34 @@
+items:
+  1:
+    name: "<#ff3300>1111"
+    type: ECHO_SHARD
+    resource: "mlc:item"
+    head: false
+    lore:
+      - "<#ff3300>1111"
+    tooltips: "mlc:mlc"
+    tagged:
+      armortype:
+      damagetype:
+    durability:
+      max_custom_durability: 114514
+      usages: 0
+      unbreakable: false
+    enchants:
+    #      sharpness: 100
+    item_flags:
+    #      - HIDE_ATTRIBUTES
+    #      - HIDE_DESTROYS
+    #      - HIDE_ENCHANTS
+    #      - HIDE_PLACED_ON
+    #      - HIDE_POTION_EFFECTS
+    #      - HIDE_UNBREAKABLE
+    attribute_modifiers:
+#     ATTACK_DAMAGE: 19
+#     attack_speed: 1.1
+#     MAX_HEALTH: 1.1
+#     MOVEMENT_SPEED: -1
+#     armor: 20
+#     armortoughness: 1.1
+#     ATTACK_KNOCKBACK: 1.1
+#     luck: 1.1

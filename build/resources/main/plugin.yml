@@ -1,11 +1,14 @@
 name: mlc
-version: 1.0.326
+version: 1.0.211
 main: com.mlc.mlc.Mlc
 api-version: '1.21'
 authors: [Mr_bl]
 commands:
-  mlcgui:
-    description: "打开mlc菜单"
+  reload:
+    description: "重载配置"
+    permission: mlc.op
+  mlcitem:
+    description: "打开mlc物品菜单"
     permission: mlc.op
   sendmail:
     description: "发送邮件"

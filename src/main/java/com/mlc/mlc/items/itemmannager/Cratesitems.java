@@ -12,6 +12,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.EquippableComponent;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
@@ -22,9 +23,10 @@ import static com.mlc.mlc.items.loader.Itemflagloader.applyItemFlags;
 
 
 public class Cratesitems {
-    public static List<ItemStack> itemslist = new ArrayList<>();
+    public static Map<Integer,ItemStack> itemsmap;
     public static int num = 0;
     public static void init(){
+        itemsmap = new HashMap<>();
         File file = new File(instance.getDataFolder(),"cratesitems.yml");
         if (!file.exists()) {
             instance.saveResource("cratesitems.yml", false);
@@ -32,17 +34,17 @@ public class Cratesitems {
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
         ConfigurationSection configurationSection =fileConfiguration.getConfigurationSection("items");
         if (configurationSection != null) {
-            Set<String> itemids = configurationSection.getKeys(false);
+            @NotNull Set<String> itemids = configurationSection.getKeys(false);
             for(String itemid:itemids){
 
-                loaditem(itemid,configurationSection);
+                loaditem(Integer.parseInt(itemid),configurationSection);
                 num++;
             }
         }
     }
 
-    public static void loaditem(String itemid,ConfigurationSection configurationSection){
-        ConfigurationSection configurationSection_item = configurationSection.getConfigurationSection(itemid);
+    public static void loaditem(Integer itemid,ConfigurationSection configurationSection){
+        ConfigurationSection configurationSection_item = configurationSection.getConfigurationSection(itemid.toString());
 
         if (configurationSection_item != null) {
             if(!configurationSection_item.contains("type")){
@@ -102,7 +104,7 @@ public class Cratesitems {
             }
 
             itemStack.setItemMeta(meta);
-            itemslist.add(itemStack);
+            itemsmap.put(itemid, itemStack);
 
         }
     }

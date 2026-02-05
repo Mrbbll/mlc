@@ -4,6 +4,9 @@ main: com.mlc.mlc.Mlc
 api-version: '1.21'
 authors: [Mr_bl]
 commands:
+  reload:
+    description: "重载配置"
+    permission: mlc.op
   mlcitem:
     description: "打开mlc物品菜单"
     permission: mlc.op

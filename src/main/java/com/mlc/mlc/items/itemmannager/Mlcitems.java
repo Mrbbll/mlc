@@ -13,7 +13,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.FoodComponent;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.miniMessage;
@@ -33,8 +35,9 @@ public class Mlcitems {
     public static ItemStack money_stack_x5;
     public static ItemStack money_gem;
     public static ItemStack money_coin;
-    public static List<ItemStack> itemslist = new ArrayList<>();
+    public static Map<Integer,ItemStack> itemsmap;
     public static void init(){
+        itemsmap = new HashMap<>();
         //初始化背包
         backpack = ItemStack.of(Material.ECHO_SHARD);
         ItemMeta itemMeta = backpack.getItemMeta();
@@ -147,18 +150,18 @@ public class Mlcitems {
         money_coin.setItemMeta(itemMeta_12);
 
 
-        itemslist.add(backpack);
-        itemslist.add(healfood);
-        itemslist.add(elytraitem);
-        itemslist.add(money_nugget);
-        itemslist.add(money_ingot);
-        itemslist.add(money_stack);
-        itemslist.add(money_stack_x1);
-        itemslist.add(money_stack_x2);
-        itemslist.add(money_stack_x3);
-        itemslist.add(money_stack_x4);
-        itemslist.add(money_stack_x5);
-        itemslist.add(money_gem);
-        itemslist.add(money_coin);
+        itemsmap.put(1,backpack);
+        itemsmap.put(2,healfood);
+        itemsmap.put(3,elytraitem);
+        itemsmap.put(4,money_nugget);
+        itemsmap.put(5,money_ingot);
+        itemsmap.put(6,money_stack);
+        itemsmap.put(7,money_stack_x1);
+        itemsmap.put(8,money_stack_x2);
+        itemsmap.put(9,money_stack_x3);
+        itemsmap.put(10,money_stack_x4);
+        itemsmap.put(11,money_stack_x5);
+        itemsmap.put(12,money_gem);
+        itemsmap.put(13,money_coin);
     }
 }

@@ -12,10 +12,10 @@ public class Crates {
     public static Inventory inventory;
     public static void getitems(Player player){
         java.util.Random random = new java.util.Random();
-        int maxnum = Cratesitems.itemslist.size();
+        int maxnum = Cratesitems.itemsmap.size();
         int randomnum = random.nextInt(maxnum);
-        player.give(Cratesitems.itemslist.get(randomnum));
-        player.sendMessage(Component.text("你获得了" + Cratesitems.itemslist.get(randomnum).getItemMeta().displayName()));
+        player.give(Cratesitems.itemsmap.get(randomnum));
+        player.sendMessage(Component.text("你获得了" + Cratesitems.itemsmap.get(randomnum).getItemMeta().displayName()));
     }
 
 

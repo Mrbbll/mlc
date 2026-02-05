@@ -15,14 +15,14 @@ items:
       usages: 0
       unbreakable: false
     enchants:
-#      sharpness: 100
+    #      sharpness: 100
     item_flags:
-#      - HIDE_ATTRIBUTES
-#      - HIDE_DESTROYS
-#      - HIDE_ENCHANTS
-#      - HIDE_PLACED_ON
-#      - HIDE_POTION_EFFECTS
-#      - HIDE_UNBREAKABLE
+    #      - HIDE_ATTRIBUTES
+    #      - HIDE_DESTROYS
+    #      - HIDE_ENCHANTS
+    #      - HIDE_PLACED_ON
+    #      - HIDE_POTION_EFFECTS
+    #      - HIDE_UNBREAKABLE
     attribute_modifiers:
 #     ATTACK_DAMAGE: 19
 #     attack_speed: 1.1

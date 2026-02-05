@@ -1,13 +1,17 @@
 package com.mlc.mlc.mlcitem.listener;
 
+import com.mlc.mlc.items.itemmannager.Cratesitems;
+import com.mlc.mlc.items.itemmannager.Fesitems;
 import com.mlc.mlc.items.itemmannager.Mlcitems;
 import com.mlc.mlc.mlcitem.itemgui.Guitype;
+import com.mlc.mlc.mlcitem.itemgui.Openedgui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
@@ -15,6 +19,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import static com.mlc.mlc.mlcitem.itemgui.Gui.*;
+import static com.mlc.mlc.mlcitem.itemgui.Guitype.CRATESITEMSGUI;
 
 public class Guilistener implements Listener {
 
@@ -22,49 +27,57 @@ public class Guilistener implements Listener {
     //mlcitem界面事件监听
     public void onClick(InventoryClickEvent e) throws IOException {
         Player player = (Player) e.getWhoClicked();
-        InventoryView inv = player.getOpenInventory();
-        if (inv.title().equals(Component.text("mlc", TextColor.fromHexString("#f73636")))) {
+        Inventory inv = player.getOpenInventory().getTopInventory();
+        if (openinvmap.containsKey(player) && inv.equals(openinvmap.get(player).getInv())) {
             e.setCancelled(true);
+            Openedgui openedgui = openinvmap.get(player);
+            int num = openinvmap.get(player).getNum();
+            Guitype guitype = openinvmap.get(player).getGuitype();
             if(e.getRawSlot()<0||e.getRawSlot()>=e.getInventory().getSize())
             {
                 return;
             };
-            if(e.getRawSlot()==36)
+            if(e.getRawSlot()==45)
             {
                 //pageup
-                if(num-36>=0){
-                    num-=36;
-                    refresh(Guitype.MLCITEMSGUI,player,num);
+                if(num-45>0){
+                    num-=45;
+                    refresh(guitype,player,num,openedgui);
                 }
-            } else if (e.getRawSlot()==44) {
+                return;
+            } else if (e.getRawSlot()==53) {
                 //pagedown
-                if(num+36 < Mlcitems.itemslist.size()){
-                    num+=36;
-                    refresh(Guitype.MLCITEMSGUI,player,num);
+                player.sendMessage(Component.text("num:"+num, TextColor.fromHexString("#f73636")));
+
+                int maxnum = switch (guitype) {
+                    case CRATESITEMSGUI -> Cratesitems.itemsmap.size();
+                    case FESITEMSGUI -> Fesitems.itemsmap.size();
+                    case MLCITEMSGUI -> Mlcitems.itemsmap.size();
+                };
+                player.sendMessage(Component.text("maxnum:"+maxnum, TextColor.fromHexString("#f73636")));
+                if(num+45 < maxnum){
+                    num+=45;
+                    refresh(guitype,player,num,openedgui);
+                    player.sendMessage(Component.text("num1:"+num, TextColor.fromHexString("#f73636")));
                 }
-            } else if (e.getRawSlot()==39) {
+                return;
+            } else if (e.getRawSlot()==50) {
                 //changemenu
-                refresh(Guitype.CRATESITEMSGUI,player,0);
-            } else if (e.getRawSlot()==40) {
-                refresh(Guitype.FESITEMSGUI,player,0);
-            } else if (e.getRawSlot()==41) {
-                refresh(Guitype.MLCITEMSGUI,player,0);
+                refresh(CRATESITEMSGUI,player,1,openedgui);
+                return;
+            } else if (e.getRawSlot()==49) {
+                refresh(Guitype.FESITEMSGUI,player,1,openedgui);
+                return;
+            } else if (e.getRawSlot()==48) {
+                refresh(Guitype.MLCITEMSGUI,player,1,openedgui);
+                return;
             }
 
             ItemStack itemStack = e.getCurrentItem();
             if(itemStack == null)
             {
                 return;
-            };
-            if(Objects.equals(itemStack.getItemMeta().itemName(), Component.text("exit")))
-            {
-                player.kick(Component.text("拜拜"));
-            }
-            else if(Objects.equals(itemStack.getItemMeta().itemName(), Component.text("back")))
-            {
-
-            }
-            else{
+            }else {
                 player.give(itemStack);
             };
         };
