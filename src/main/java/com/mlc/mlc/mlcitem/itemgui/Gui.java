@@ -122,6 +122,8 @@ public class Gui {
         player.openInventory(inv);
         openinvmap.put(player,openedgui);
     }
+
+    //刷新gui
     public static void refresh(Guitype guitype, Player player, int num, Openedgui openedgui){
         loadgui(player, guitype, num,openedgui);
     }
