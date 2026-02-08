@@ -34,13 +34,13 @@ public class Fesitems {
             Set<String> itemids = configurationSection.getKeys(false);
             for(String itemid:itemids){
 
-                loaditem(itemid,configurationSection);
+                loaditem(Integer.parseInt(itemid),configurationSection);
             }
         }
     }
 
-    public static void loaditem(String itemid,ConfigurationSection configurationSection){
-        ConfigurationSection configurationSection_item = configurationSection.getConfigurationSection(itemid);
+    public static void loaditem(Integer itemid,ConfigurationSection configurationSection){
+        ConfigurationSection configurationSection_item = configurationSection.getConfigurationSection(itemid.toString());
 
         if (configurationSection_item != null) {
             if(!configurationSection_item.contains("type")){
@@ -96,11 +96,11 @@ public class Fesitems {
             }
 
             if(configurationSection_item.contains("tagged")){
-                PDCloader.loadpdc(configurationSection_item,meta);
+                PDCloader.loadpdc(configurationSection_item,meta,itemid);
             }
 
             itemStack.setItemMeta(meta);
-            itemsmap.put(Integer.parseInt(itemid), itemStack);
+            itemsmap.put(itemid, itemStack);
 
         }
     }

@@ -35,6 +35,7 @@ public class Mlcitems {
     public static ItemStack money_stack_x5;
     public static ItemStack money_gem;
     public static ItemStack money_coin;
+    public static ItemStack crate;
     public static Map<Integer,ItemStack> itemsmap;
     public static void init(){
         itemsmap = new HashMap<>();
@@ -149,6 +150,17 @@ public class Mlcitems {
         itemMeta_12.setItemModel(NamespacedKey.fromString("mlc:crystal_coin"));
         money_coin.setItemMeta(itemMeta_12);
 
+        crate = ItemStack.of(Material.ECHO_SHARD);
+        ItemMeta itemMeta_13 = crate.getItemMeta();
+        itemMeta_13.itemName(Component.text("抽奖箱子"));
+        itemMeta_13.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        itemMeta_13.setItemModel(NamespacedKey.fromString("mlc:crate"));
+        List<Component> crateLorelist = new ArrayList<>();
+        crateLorelist.add(miniMessage.deserialize("<!i>手上右键打开").color(TextColor.color(0x7CFF4D)));
+        itemMeta_13.lore(crateLorelist);
+        crate.setItemMeta(itemMeta_13);
+
+
 
         itemsmap.put(1,backpack);
         itemsmap.put(2,healfood);
@@ -163,5 +175,6 @@ public class Mlcitems {
         itemsmap.put(11,money_stack_x5);
         itemsmap.put(12,money_gem);
         itemsmap.put(13,money_coin);
+        itemsmap.put(14,crate);
     }
 }

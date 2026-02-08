@@ -12,6 +12,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.EquippableComponent;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -24,6 +25,9 @@ import static com.mlc.mlc.items.loader.Itemflagloader.applyItemFlags;
 
 public class Cratesitems {
     public static Map<Integer,ItemStack> itemsmap;
+    public static List<Integer> t1list;
+    public static List<Integer> t2list;
+    public static List<Integer> t3list;
     public static int num = 0;
     public static void init(){
         itemsmap = new HashMap<>();
@@ -100,11 +104,12 @@ public class Cratesitems {
             }
 
             if(configurationSection_item.contains("tagged")){
-                PDCloader.loadpdc(configurationSection_item,meta);
+                PDCloader.loadpdc(configurationSection_item,meta,itemid);
             }
 
             itemStack.setItemMeta(meta);
             itemsmap.put(itemid, itemStack);
+
 
         }
     }

@@ -29,6 +29,7 @@ public final class Mlc extends JavaPlugin {
     public static List<Material> crops = new ArrayList<>();
     public static NamespacedKey damagetype;
     public static NamespacedKey armortype;
+    public static NamespacedKey raritytier;
     public static Map<UUID,UUID> Tpamap = new HashMap<>();
     public static Map<UUID,UUID> Tpaheremap = new HashMap<>();
     public static FileConfiguration backpackfile;
@@ -64,6 +65,8 @@ public final class Mlc extends JavaPlugin {
         wordsnum = this.getConfig().getInt("words");
         damagetype = new NamespacedKey(this,"damagetype");
         armortype = new NamespacedKey(this,"armortype");
+        raritytier = new NamespacedKey(this,"raritytier");
+
 
         //minimessage初始化
         miniMessage = MiniMessage.miniMessage();

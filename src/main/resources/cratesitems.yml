@@ -10,6 +10,7 @@ items:
     tagged:
       armortype:
       damagetype:
+      cratesraritytier:
     durability:
       max_custom_durability: 114514
       usages: 0
