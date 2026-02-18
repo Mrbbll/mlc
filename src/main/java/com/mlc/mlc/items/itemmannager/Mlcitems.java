@@ -39,6 +39,7 @@ public class Mlcitems {
     public static Map<Integer,ItemStack> itemsmap;
     public static void init(){
         itemsmap = new HashMap<>();
+
         //初始化背包
         backpack = ItemStack.of(Material.ECHO_SHARD);
         ItemMeta itemMeta = backpack.getItemMeta();

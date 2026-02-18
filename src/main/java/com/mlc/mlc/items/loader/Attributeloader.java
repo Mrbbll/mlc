@@ -26,6 +26,8 @@ public class Attributeloader {
                 ConfigurationSection operationSection = configurationSection.getConfigurationSection(operationName);
                 if (operationSection != null) {
                     //生效栏位
+                    AttributeModifier.Operation operation = AttributeModifier.Operation.valueOf(operationName.toUpperCase());
+
                     for (String slotName : operationSection.getKeys(false)) {
                         ConfigurationSection slotSection = operationSection.getConfigurationSection(slotName);
                         if (slotSection != null) {
@@ -33,8 +35,17 @@ public class Attributeloader {
                             for (String attributeName : slotSection.getKeys(false)) {
                                 long timeMillis = System.currentTimeMillis();
                                 double value = slotSection.getDouble(attributeName, 0);
-                                AttributeModifier attributeModifier = new AttributeModifier(Objects.requireNonNull(NamespacedKey.fromString("mlc:" + timeMillis)), value, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.ANY);
-                                Attribute attribute = RegistryAccess.registryAccess().getRegistry(RegistryKey.ATTRIBUTE).get(NamespacedKey.minecraft(attributeName.toLowerCase()));
+
+                                AttributeModifier attributeModifier = new AttributeModifier(
+                                        Objects.requireNonNull(NamespacedKey.fromString("mlc:" + timeMillis)),
+                                        value,
+                                        AttributeModifier.Operation.valueOf(operationName.toUpperCase()),
+                                Objects.requireNonNull(EquipmentSlotGroup.getByName(slotName.toUpperCase())));
+
+                                Attribute attribute = RegistryAccess.registryAccess()
+                                                .getRegistry(RegistryKey.ATTRIBUTE)
+                                                        .get(NamespacedKey.minecraft(attributeName
+                                                                .toLowerCase()));
                                 if (attribute != null) {
                                     meta.addAttributeModifier(attribute, attributeModifier);
                                 }

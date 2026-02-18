@@ -23,6 +23,9 @@ import static com.mlc.mlc.items.loader.Itemflagloader.applyItemFlags;
 public class Fesitems {
     public static Map<Integer,ItemStack> itemsmap;
     public static void init(){
+        if(itemsmap!=null && !itemsmap.isEmpty()){
+            itemsmap.clear();
+        }
         itemsmap = new HashMap<>();
         File file = new File(instance.getDataFolder(),"fesitems.yml");
         if (!file.exists()) {
