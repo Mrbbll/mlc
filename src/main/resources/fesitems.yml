@@ -25,14 +25,38 @@ items:
 #      - HIDE_POTION_EFFECTS
 #      - HIDE_UNBREAKABLE
     attribute_modifiers:
-#     ATTACK_DAMAGE: 19
-#     attack_speed: 1.1
-#     MAX_HEALTH: 1.1
-#     MOVEMENT_SPEED: -1
-#     armor: 20
-#     armortoughness: 1.1
-#     ATTACK_KNOCKBACK: 1.1
-#     luck: 1.1
+      - ADD_NUMBER:
+          - ANY:
+            ATTACK_DAMAGE: 19
+
+  #operation:
+  #      - ADD_NUMBER:
+  #      - ADD_SCALAR:
+  #      - MULTIPLY_SCALAR_1:
+
+    #slot:
+  #      - ANY:
+  #      - AROMR:
+  #      - BODY:
+  #      - CHEST:
+  #      - FEET:
+  #      - HAND:
+  #      - HEAD:
+  #      - LEGS:
+  #      - MAINHAND:
+  #      - OFFHAND:
+  #      - SADDLE:
+
+      #attribute:
+  #     ATTACK_DAMAGE: 19
+  #     ATTACK_DAMAGE: 19
+  #     attack_speed: 1.1
+  #     MAX_HEALTH: 1.1
+  #     MOVEMENT_SPEED: -1
+  #     armor: 20
+  #     armortoughness: 1.1
+  #     ATTACK_KNOCKBACK: 1.1
+  #     luck: 1.1
   2:
     type: ECHO_SHARD
   3:
