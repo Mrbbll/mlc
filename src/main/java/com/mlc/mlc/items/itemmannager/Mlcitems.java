@@ -22,6 +22,7 @@ import static com.mlc.mlc.Mlc.miniMessage;
 import static io.papermc.paper.registry.keys.AttributeKeys.ARMOR;
 
 public class Mlcitems {
+    public static ItemStack mlcwaystone;
     public static ItemStack backpack;
     public static ItemStack healfood;
     public static ItemStack elytraitem;
@@ -161,7 +162,13 @@ public class Mlcitems {
         itemMeta_13.lore(crateLorelist);
         crate.setItemMeta(itemMeta_13);
 
-
+        //初始化waystone
+        mlcwaystone = ItemStack.of(Material.ECHO_SHARD);
+        ItemMeta itemMeta_14 = mlcwaystone.getItemMeta();
+        itemMeta_14.setItemModel(NamespacedKey.fromString("mlc:waystone"));
+        itemMeta_14.itemName(Component.text("传送石碑"));
+        itemMeta_14.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        mlcwaystone.setItemMeta(itemMeta_14);
 
         itemsmap.put(1,backpack);
         itemsmap.put(2,healfood);
@@ -177,5 +184,6 @@ public class Mlcitems {
         itemsmap.put(12,money_gem);
         itemsmap.put(13,money_coin);
         itemsmap.put(14,crate);
+        itemsmap.put(15,mlcwaystone);
     }
 }
