@@ -1,7 +1,7 @@
 package com.mlc.mlc;
 
-import com.mlc.mlc.hook.economy.MlcEconomy;
-import com.mlc.mlc.hook.economy.Moneyfilemanager;
+import com.mlc.mlc.mlcmain.hook.economy.MlcEconomy;
+import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -36,14 +36,16 @@ public final class Mlc extends JavaPlugin {
     public static File playerfiledir;
     public static MiniMessage miniMessage;
 
+
+
     @Override
     public void onEnable() {
-        // Plugin startup logic
-        getLogger().info("\n\nmlc核心插件加载成功\n\n");
+
+
         //注册经济系统
         MlcEconomy mlcEconomy = new MlcEconomy(this);
         getServer().getServicesManager().register(Economy.class, mlcEconomy, this, ServicePriority.Normal);
-        // 验证注册
+
         RegisteredServiceProvider<Economy> rsp = getServer()
                 .getServicesManager()
                 .getRegistration(Economy.class);
@@ -56,10 +58,14 @@ public final class Mlc extends JavaPlugin {
             getLogger().warning("经济服务注册失败");
         }
 
-        //目前功能：邮箱，简易物品管理器，跳过睡觉
+        //初试化文件
         this.saveDefaultConfig();
         saveResource("words.txt", false);
         saveResource("fesitems.yml",false);
+        saveResource("cratesitems.yml",false);
+
+
+        //初始化静态变量
         instance = this;
         fileConfiguration = instance.getConfig();
         wordsnum = this.getConfig().getInt("words");
@@ -68,10 +74,11 @@ public final class Mlc extends JavaPlugin {
         raritytier = new NamespacedKey(this,"raritytier");
 
 
+
         //minimessage初始化
         miniMessage = MiniMessage.miniMessage();
 
-        //加右键收获作物
+        //加右键收获作物列表
         crops.add(Material.CARROTS);
         crops.add(Material.POTATOES);
         crops.add(Material.BEETROOTS);
@@ -79,9 +86,9 @@ public final class Mlc extends JavaPlugin {
 
         //初始化背包文件
         backpackfile = YamlConfiguration.loadConfiguration(backpackfilecreater());
-        //初始化player文件夹
+        //初始化player文件夹，因为玩家文件分开保持，只初始化文件夹
         playerfiledir = playerfiledircreater();
-        //初始化货币文件夹
+        //初始化货币数据库文件
         try {
             new Moneyfilemanager();
             getLogger().info("\n\n货币数据库建立成功\n\n");
@@ -90,12 +97,15 @@ public final class Mlc extends JavaPlugin {
         }
 
 
-
+        //指令配方注入等
         try {
             Task.task();
         } catch (URISyntaxException | NoSuchAlgorithmException | IOException e) {
             throw new RuntimeException(e);
         }
+
+
+        getLogger().info("\n\nmlc核心插件加载成功\n\n");
     }
 
 

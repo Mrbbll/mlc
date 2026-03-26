@@ -1,36 +1,38 @@
 package com.mlc.mlc;
 
-import com.mlc.mlc.backpack.listener.Backpacklistener;
-import com.mlc.mlc.dialog.Listener.ServerJoinListener;
-import com.mlc.mlc.dropmoney.DropmoneyListener;
-import com.mlc.mlc.enchantments.Enchantlistener;
-import com.mlc.mlc.ess.listener.Tplistener;
-import com.mlc.mlc.ess.command.*;
-import com.mlc.mlc.hook.economy.commands.money;
-import com.mlc.mlc.hook.placeholderapi.Mlceco;
-import com.mlc.mlc.items.itemmannager.Cratesitems;
-import com.mlc.mlc.items.itemmannager.Fesitems;
-import com.mlc.mlc.items.itemmannager.Mlcitems;
-import com.mlc.mlc.items.recipes.Backpack;
-import com.mlc.mlc.items.recipes.Elytra;
-import com.mlc.mlc.items.recipes.Healfood;
-import com.mlc.mlc.items.recipes.Moneyitemrecipe;
-import com.mlc.mlc.Joinlistener.*;
-import com.mlc.mlc.mail.command.mymail;
-import com.mlc.mlc.mail.command.sendmail;
-import com.mlc.mlc.mail.command.sendmailtoall;
-import com.mlc.mlc.mail.listener.Maillistener;
-import com.mlc.mlc.maxhealth.Deadlistener;
-import com.mlc.mlc.maxhealth.Eatlistener;
-import com.mlc.mlc.mlcitem.command.mlcitemgui;
-import com.mlc.mlc.mlcitem.listener.Guilistener;
-import com.mlc.mlc.motd.Motd;
-import com.mlc.mlc.reload.reload;
-import com.mlc.mlc.respacksender.packsender;
-import com.mlc.mlc.rightclickheavest.Heavestlistener;
-import com.mlc.mlc.sit.command.Sit;
-import com.mlc.mlc.sit.listener.Unsitlistener;
-import com.mlc.mlc.sleep.Sleeplistener;
+import com.mlc.mlc.mlcmain.backpack.listener.Backpacklistener;
+import com.mlc.mlc.mlcmain.chat.commands.Item;
+import com.mlc.mlc.mlcmain.dialog.Listener.ServerJoinListener;
+import com.mlc.mlc.mlcmain.dropmoney.DropmoneyListener;
+import com.mlc.mlc.mlcmain.enchantments.Enchantlistener;
+import com.mlc.mlc.mlcmain.ess.listener.Tplistener;
+import com.mlc.mlc.mlcmain.ess.command.*;
+import com.mlc.mlc.mlcmain.hook.economy.commands.money;
+import com.mlc.mlc.mlcmain.hook.placeholderapi.Mlceco;
+import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
+import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
+import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
+import com.mlc.mlc.mlcmain.items.recipes.Backpack;
+import com.mlc.mlc.mlcmain.items.recipes.Elytra;
+import com.mlc.mlc.mlcmain.items.recipes.Healfood;
+import com.mlc.mlc.mlcmain.items.recipes.Moneyitemrecipe;
+import com.mlc.mlc.mlcmain.Joinlistener.*;
+import com.mlc.mlc.mlcmain.mail.command.mymail;
+import com.mlc.mlc.mlcmain.mail.command.sendmail;
+import com.mlc.mlc.mlcmain.mail.command.sendmailtoall;
+import com.mlc.mlc.mlcmain.mail.listener.Maillistener;
+import com.mlc.mlc.mlcmain.maxhealth.Deadlistener;
+import com.mlc.mlc.mlcmain.maxhealth.Eatlistener;
+import com.mlc.mlc.mlcmain.mlcitem.command.mlcitemgui;
+import com.mlc.mlc.mlcmain.mlcitem.listener.Guilistener;
+import com.mlc.mlc.mlcmain.motd.Motd;
+import com.mlc.mlc.mlcmain.reload.reload;
+import com.mlc.mlc.mlcmain.respacksender.packsender;
+import com.mlc.mlc.mlcmain.rightclickheavest.Heavestlistener;
+import com.mlc.mlc.mlcmain.signin.Listener.JoinMoneyListener;
+import com.mlc.mlc.mlcmain.sit.command.Sit;
+import com.mlc.mlc.mlcmain.sit.listener.Unsitlistener;
+import com.mlc.mlc.mlcmain.sleep.Sleeplistener;
 import org.bukkit.Bukkit;
 
 import java.io.IOException;
@@ -39,8 +41,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 import static com.mlc.mlc.Mlc.instance;
-import static com.mlc.mlc.dialog.Serverjoindialog.initserverjoindialog;
-import static com.mlc.mlc.dialog.Serverlinks.setserverLinks;
+import static com.mlc.mlc.mlcmain.dialog.Serverjoindialog.initserverjoindialog;
+import static com.mlc.mlc.mlcmain.dialog.Serverlinks.setserverLinks;
 
 public class Task {
     public static void task() throws URISyntaxException, NoSuchAlgorithmException, IOException {
@@ -66,8 +68,9 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new Sleeplistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Maillistener(), instance);
         Bukkit.getPluginManager().registerEvents(new ServerJoinListener(), instance);
-        Bukkit.getPluginManager().registerEvents(new com.mlc.mlc.respacksender.Listener.Joinlistener(), instance);
+        Bukkit.getPluginManager().registerEvents(new com.mlc.mlc.mlcmain.respacksender.Listener.Joinlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new DropmoneyListener(), instance);
+        Bukkit.getPluginManager().registerEvents(new JoinMoneyListener(), instance);
 
         Objects.requireNonNull(Bukkit.getPluginCommand("reload")).setExecutor(new reload());
         Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));
@@ -83,6 +86,8 @@ public class Task {
         Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());
         Objects.requireNonNull(Bukkit.getPluginCommand("sit")).setExecutor((new Sit()));
         Objects.requireNonNull(Bukkit.getPluginCommand("money")).setExecutor(new money());
+        Objects.requireNonNull(Bukkit.getPluginCommand("item")).setExecutor(new Item());
+
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new Mlceco().register();
             System.out.println("\n\nmlc placeholder registered\n\n");
