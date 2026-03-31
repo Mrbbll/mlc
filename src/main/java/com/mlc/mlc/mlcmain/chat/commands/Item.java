@@ -4,6 +4,7 @@ import me.clip.placeholderapi.libs.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -30,7 +31,7 @@ public class Item implements CommandExecutor {
 
 
             String itemname = PlainTextComponentSerializer.plainText().serialize(itemStack.effectiveName());
-            Component component = Component.text(player.getName() + "展示了手上的东西：").append(Component.text(itemname)).hoverEvent(itemStack.asHoverEvent());
+            Component component = Component.text(player.getName() + "展示了手上的东西：", TextColor.color(42, 255, 195)).append(Component.text(itemname)).hoverEvent(itemStack.asHoverEvent());
 
             player.sendMessage(component);
 
