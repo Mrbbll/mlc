@@ -1,12 +1,15 @@
 package com.mlc.mlc.mlcmain.items.loader;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.mlc.mlc.Mlc.*;
@@ -37,29 +40,34 @@ public class PDCloader {
                 }
                 //稀有度
                 if(type.equals("cratesraritytier")){
-                    persistentDataContainer.set(raritytier, PersistentDataType.INTEGER, section.getInt("raritytier",5));
+                    persistentDataContainer.set(raritytier, PersistentDataType.INTEGER, section.getInt("raritytier",3));
                     List<Component> lore = meta.lore();
                     Component component = null;
-                            switch (section.getInt("raritytier", 0)) {
+                            switch (section.getInt("cratesraritytier", 0)) {
                         case 3 -> {
-                            component = Component.text("T3 RARITY").color(TextColor.color(0x2AFFF5));
+                            component = miniMessage.deserialize("<#2AFFF5><!i>T3 RARITY");
                             t3list.add(itemid);
                         }
                         case 2 -> {
-                            component = Component.text("T2 RARITY").color(TextColor.color(0xFFD71C));
+                            component = miniMessage.deserialize("<#FFD71C><!i>T2 RARITY");
                             t2list.add(itemid);
                         }
                         case 1 -> {
-                            component = Component.text("T1 RARITY").color(TextColor.color(0xFF0000));
+                            component = miniMessage.deserialize("<#FF0000><!i>T1 RARITY");
                             t1list.add(itemid);
                         }
                     };
                     if (lore != null) {
                         lore.addLast(component);
-                    meta.lore(lore);
+                        meta.lore(lore);
+                    } else {
+                        List<Component> itemLore = new ArrayList<>();
+                        itemLore.add(component);
+                        meta.lore(itemLore);
+
+                    }
                 }
             }
         }
     }
-}
 }

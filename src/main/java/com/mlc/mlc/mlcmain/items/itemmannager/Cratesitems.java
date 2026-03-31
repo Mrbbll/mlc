@@ -30,6 +30,9 @@ public class Cratesitems {
     public static int num = 0;
     public static void init(){
         itemsmap = new HashMap<>();
+        t1list = new ArrayList<>();
+        t2list = new ArrayList<>();
+        t3list = new ArrayList<>();
         File file = new File(instance.getDataFolder(),"cratesitems.yml");
         if (!file.exists()) {
             instance.saveResource("cratesitems.yml", false);

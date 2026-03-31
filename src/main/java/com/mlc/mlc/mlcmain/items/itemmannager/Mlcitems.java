@@ -157,6 +157,7 @@ public class Mlcitems {
         itemMeta_13.itemName(Component.text("抽奖箱子"));
         itemMeta_13.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
         itemMeta_13.setItemModel(NamespacedKey.fromString("mlc:crate"));
+        itemMeta_13.setMaxStackSize(1);
         List<Component> crateLorelist = new ArrayList<>();
         crateLorelist.add(miniMessage.deserialize("<!i>手上右键打开").color(TextColor.color(0x7CFF4D)));
         itemMeta_13.lore(crateLorelist);

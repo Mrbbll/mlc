@@ -30,8 +30,7 @@ public class Item implements CommandExecutor {
             }
 
 
-            String itemname = PlainTextComponentSerializer.plainText().serialize(itemStack.effectiveName());
-            Component component = Component.text(player.getName() + "展示了手上的东西：", TextColor.color(42, 255, 195)).append(Component.text(itemname)).hoverEvent(itemStack.asHoverEvent());
+            Component component = Component.text(player.getName() + "展示了手上的东西：", TextColor.color(42, 255, 195)).append(itemStack.effectiveName()).hoverEvent(itemStack.asHoverEvent());
 
             player.sendMessage(component);
 

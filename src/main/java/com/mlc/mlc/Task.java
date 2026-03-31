@@ -2,6 +2,7 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.mlcmain.backpack.listener.Backpacklistener;
 import com.mlc.mlc.mlcmain.chat.commands.Item;
+import com.mlc.mlc.mlcmain.crates.listener.Opencreates;
 import com.mlc.mlc.mlcmain.dialog.Listener.ServerJoinListener;
 import com.mlc.mlc.mlcmain.dropmoney.DropmoneyListener;
 import com.mlc.mlc.mlcmain.enchantments.Enchantlistener;
@@ -71,6 +72,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new com.mlc.mlc.mlcmain.respacksender.Listener.Joinlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new DropmoneyListener(), instance);
         Bukkit.getPluginManager().registerEvents(new JoinMoneyListener(), instance);
+        Bukkit.getPluginManager().registerEvents(new Opencreates(), instance);
 
         Objects.requireNonNull(Bukkit.getPluginCommand("reload")).setExecutor(new reload());
         Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));

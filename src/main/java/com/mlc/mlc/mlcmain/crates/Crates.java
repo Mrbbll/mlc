@@ -5,6 +5,8 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+import static com.mlc.mlc.Mlc.miniMessage;
+
 public class Crates {
     public static Inventory inventory;
     public static void getitems(Player player){
@@ -35,7 +37,7 @@ public class Crates {
         }else{
             player.give(Cratesitems.itemsmap.get(itemid));
         }
-        player.sendMessage(Component.text("你获得了" + Cratesitems.itemsmap.get(itemid).getItemMeta().displayName()));
+        player.sendMessage(Component.text("你获得了").append(Cratesitems.itemsmap.get(itemid).effectiveName()));
     }
 
 
