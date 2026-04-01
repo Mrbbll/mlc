@@ -13,10 +13,7 @@ import com.mlc.mlc.mlcmain.hook.placeholderapi.Mlceco;
 import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
-import com.mlc.mlc.mlcmain.items.recipes.Backpack;
-import com.mlc.mlc.mlcmain.items.recipes.Elytra;
-import com.mlc.mlc.mlcmain.items.recipes.Healfood;
-import com.mlc.mlc.mlcmain.items.recipes.Moneyitemrecipe;
+import com.mlc.mlc.mlcmain.items.recipes.*;
 import com.mlc.mlc.mlcmain.Joinlistener.*;
 import com.mlc.mlc.mlcmain.mail.command.mymail;
 import com.mlc.mlc.mlcmain.mail.command.sendmail;
@@ -122,6 +119,7 @@ public class Task {
         Moneyitemrecipe.money_stack_x3_to_money_stack_x2recipe();
         Moneyitemrecipe.money_stack_x4_to_money_stack_x3recipe();
         Moneyitemrecipe.money_stack_x5_to_money_stack_x4recipe();
+        Crate.crateRecipe();
 
     }
 
