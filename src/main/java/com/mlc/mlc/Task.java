@@ -85,7 +85,9 @@ public class Task {
         Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());
         Objects.requireNonNull(Bukkit.getPluginCommand("sit")).setExecutor((new Sit()));
         Objects.requireNonNull(Bukkit.getPluginCommand("money")).setExecutor(new money());
+        Objects.requireNonNull(Bukkit.getPluginCommand("money")).setTabCompleter(new money());
         Objects.requireNonNull(Bukkit.getPluginCommand("item")).setExecutor(new Item());
+
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new Mlceco().register();

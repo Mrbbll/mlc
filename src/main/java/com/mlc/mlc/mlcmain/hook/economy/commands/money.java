@@ -1,21 +1,26 @@
 package com.mlc.mlc.mlcmain.hook.economy.commands;
 
 import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
+import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
+import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Objects;
 
 import static com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager.playermoneyMap;
 import static com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems.*;
 
-public class money implements CommandExecutor {
+public class money implements TabExecutor {
     private Player target;
     private int money;
     @Override
@@ -35,7 +40,7 @@ public class money implements CommandExecutor {
                 commandSender.sendMessage("你的水晶币为: " + Moneyfilemanager.getPlayerMoney(player.getUniqueId()));
                 break;
             case "top":
-//                commandSender.sendMessage("货币排行榜: " + Moneyfilemanager.getTopPlayers());
+                commandSender.sendMessage("货币排行榜: " + Moneyfilemanager.getTopPlayers());
                 break;
             case "give":
                 if(!player.isOp()){
@@ -141,22 +146,58 @@ public class money implements CommandExecutor {
                     Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + money);
                     item.setAmount(0);
                 }
-
-
-//                for(ItemStack item : player.getInventory().getStorageContents()){
-//                    if(item == null) {
-//                        continue;
-//                    }else if(Objects.equals(item.getItemMeta(), money_ingot.getItemMeta())){
-//                        int money = item.getAmount();
-//                        player.sendMessage(Component.text("存入"+money+"水晶碎块").color(NamedTextColor.GREEN));
-//                        Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + money);
-//                        item.setAmount(0);
-//
-//                    }
-//
-//                }
-
+                break;
+            case "drop":
+                if(Moneyfilemanager.getPlayerMoney(player.getUniqueId()) >= 64){
+                    ItemStack coin = money_coin.clone();
+                    coin.setAmount(64);
+                    if(player.getInventory().firstEmpty() == -1){
+                        player.getWorld().dropItemNaturally(player.getLocation(), coin);
+                        Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) - 64);
+                        player.sendMessage(
+                                Component.text("取出64个水晶币,剩余")
+                                        .append(Component.text(Moneyfilemanager.getPlayerMoney(player.getUniqueId()))).color(NamedTextColor.GREEN)
+                                        .append(Component.text("个")));
+                    }else {
+                        player.give(coin);
+                        Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) - 64);
+                        player.sendMessage(
+                                Component.text("取出64个水晶币,剩余")
+                                        .append(Component.text(Moneyfilemanager.getPlayerMoney(player.getUniqueId()))).color(NamedTextColor.GREEN)
+                                        .append(Component.text("个")));
+                    }
+                    break;
+                }else {
+                    int num = Moneyfilemanager.getPlayerMoney(player.getUniqueId());
+                    if(num<=0){
+                        player.sendMessage("余额不足");
+                        return false;
+                    }
+                    ItemStack coin = money_coin.clone();
+                    coin.setAmount(num);
+                    if(player.getInventory().firstEmpty() == -1){
+                        player.getWorld().dropItemNaturally(player.getLocation(), coin);
+                        Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) - num);
+                        player.sendMessage(
+                                Component.text("取出"+num+"个水晶币,剩余")
+                                        .append(Component.text(Moneyfilemanager.getPlayerMoney(player.getUniqueId()))).color(NamedTextColor.GREEN)
+                                        .append(Component.text("个")));
+                    }else {
+                        player.give(coin);
+                        Moneyfilemanager.setPlayerMoney(player.getUniqueId(), Moneyfilemanager.getPlayerMoney(player.getUniqueId()) - num);
+                        player.sendMessage(
+                                Component.text("取出"+num+"个水晶币,剩余")
+                                        .append(Component.text(Moneyfilemanager.getPlayerMoney(player.getUniqueId()))).color(NamedTextColor.GREEN)
+                                        .append(Component.text("个")));
+                    }
+                    break;
+                }
     }
         return false;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        return List.of("money","top","set","pay","save","drop");
     }
 }

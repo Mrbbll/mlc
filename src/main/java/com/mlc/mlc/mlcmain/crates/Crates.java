@@ -2,8 +2,14 @@ package com.mlc.mlc.mlcmain.crates;
 
 import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static com.mlc.mlc.Mlc.miniMessage;
 
@@ -32,12 +38,37 @@ public class Crates {
     }
 
     private static void giveitem(Player player, Integer itemid) {
-        if(player.getInventory().firstEmpty() == -1){
-            player.getWorld().dropItemNaturally(player.getLocation(),Cratesitems.itemsmap.get(itemid));
-        }else{
-            player.give(Cratesitems.itemsmap.get(itemid));
+        ItemStack item = Cratesitems.itemsmap.get(itemid);
+        if(item.effectiveName().equals(Component.text("随机附魔书"))){
+            item = getrandombook();
+        }else if(item.effectiveName().equals(Component.text("随机纹饰"))) {
+            item = getrandompotion();
+        }else if(item.effectiveName().equals(Component.text("随机陶罐碎片"))){
+            item = getrandompotion();
+        }else if(item.effectiveName().equals(Component.text("随机旗帜图案"))){
+            item = getrandompotion();
         }
-        player.sendMessage(Component.text("你获得了").append(Cratesitems.itemsmap.get(itemid).effectiveName()));
+
+        giveitem(player, item);
+
+        player.sendMessage(Component.text("你获得了").append(item.effectiveName()));
+    }
+
+    private static ItemStack getrandombook() {
+        Random random = new Random();
+        int randomlevel = random.nextInt(3);
+        List<ItemStack> booklist = new ArrayList<>();
+        booklist.add(new ItemStack(Material.ENCHANTED_BOOK));
+
+        return new ItemStack(Material.BOOK);
+    }
+
+    private static void giveitem(Player player, ItemStack item) {
+        if(player.getInventory().firstEmpty() == -1){
+            player.getWorld().dropItemNaturally(player.getLocation(), item);
+        }else{
+            player.give(item);
+        }
     }
 
 

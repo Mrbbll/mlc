@@ -87,6 +87,26 @@ public class Moneyfilemanager {
         }
 
     }
+    public static String getTopPlayers(){
+        String query = "SELECT player_uuid, player_name, money FROM money_data ORDER BY money DESC LIMIT 5";
+        StringBuilder topPlayers = new StringBuilder();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()){
+
+            // 从数据库加载玩家货币数据
+            while (resultSet.next()) {
+                UUID playerUUID = UUID.fromString(resultSet.getString("player_uuid"));
+                String playerName = resultSet.getString("player_name");
+                int money = resultSet.getInt("money");
+                topPlayers.append(playerName).append(" ---------- ").append(money).append("\n");
+            }
+        } catch (SQLException e) {
+            instance.getLogger().severe("\n\n数据库加载玩家货币数据失败: " + e.getMessage() + "\n\n");
+        }
+        return topPlayers.toString();
+    }
+
     public static int getPlayerMoney(UUID playerUUID) {
         if(!hasPlayer(playerUUID)){
             createPlayer(playerUUID, playerUUID.toString());
