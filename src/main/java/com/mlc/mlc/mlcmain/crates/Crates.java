@@ -2,6 +2,7 @@ package com.mlc.mlc.mlcmain.crates;
 
 import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -20,7 +21,7 @@ import static com.mlc.mlc.Mlc.miniMessage;
 public class Crates {
     public static Inventory inventory;
     public  static  List<ItemStack> booklist;
-
+    public static PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
 
     public static void getitems(Player player){
         java.util.Random random = new java.util.Random();
@@ -46,18 +47,20 @@ public class Crates {
 
     private static void giveitem(Player player, Integer itemid) {
         ItemStack item = Cratesitems.itemsmap.get(itemid);
-        if(item.effectiveName().equals(Component.text("随机附魔书"))){
+
+
+        if(serializer.serialize(item.effectiveName()).equals("随机附魔书")){
             item = getrandombook();
-        }else if(item.effectiveName().equals(Component.text("随机纹饰"))) {
+        }else if(serializer.serialize(item.effectiveName()).equals("随机纹饰")) {
             item = getrandomtrimpattern();
-        }else if(item.effectiveName().equals(Component.text("随机陶罐碎片"))){
+        }else if(serializer.serialize(item.effectiveName()).equals("随机陶罐碎片")){
             item = getrandompotterysherd();
-        }else if(item.effectiveName().equals(Component.text("随机旗帜图案"))){
+        }else if(serializer.serialize(item.effectiveName()).equals("随机旗帜图案")){
             item = getrandombannerpattern();
         }
 
         giveitem(player, item);
-
+        player.sendMessage(serializer.serialize(item.effectiveName()));
         player.sendMessage(Component.text("你获得了").append(item.effectiveName()));
     }
 
@@ -97,6 +100,4 @@ public class Crates {
             player.give(item);
         }
     }
-
-
 }

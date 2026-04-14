@@ -57,17 +57,10 @@ public class PDCloader {
                             t1list.add(itemid);
                         }
                     };
-                    if (lore != null) {
-                        lore.addLast(component);
-                        meta.lore(lore);
-                    } else {
-                        List<Component> itemLore = new ArrayList<>();
-                        itemLore.add(component);
-                        meta.lore(itemLore);
 
                     }
                 }
             }
         }
     }
-}
+
