@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -32,7 +31,6 @@ public final class Mlc extends JavaPlugin {
     public static NamespacedKey raritytier;
     public static Map<UUID,UUID> Tpamap = new HashMap<>();
     public static Map<UUID,UUID> Tpaheremap = new HashMap<>();
-    public static FileConfiguration backpackfile;
     public static File playerfiledir;
     public static MiniMessage miniMessage;
 
@@ -84,8 +82,6 @@ public final class Mlc extends JavaPlugin {
         crops.add(Material.BEETROOTS);
         crops.add(Material.WHEAT);
 
-        //初始化背包文件
-        backpackfile = YamlConfiguration.loadConfiguration(backpackfilecreater());
         //初始化player文件夹，因为玩家文件分开保持，只初始化文件夹
         playerfiledir = playerfiledircreater();
         //初始化货币数据库文件
@@ -124,24 +120,6 @@ public final class Mlc extends JavaPlugin {
         BufferedReader reader = new BufferedReader(inputStreamReader);
 
         return reader.lines().toList();
-    }
-
-    public File backpackfilecreater(){
-        File backpackDir = new File(instance.getDataFolder(), "backpacks");
-        if(!backpackDir.exists()){
-            backpackDir.mkdirs();
-        }
-        String string = "backpack" + ".yml";
-        File file = new File(backpackDir,string);
-        if(!file.exists())
-        {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return file;
     }
 
     public File playerfiledircreater(){

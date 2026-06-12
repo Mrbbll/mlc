@@ -38,11 +38,12 @@ public class Mlcitems {
     public static ItemStack money_coin;
     public static ItemStack crate;
     public static Map<Integer,ItemStack> itemsmap;
+
     public static void init(){
         itemsmap = new HashMap<>();
 
         //初始化背包
-        backpack = ItemStack.of(Material.ECHO_SHARD);
+        backpack = ItemStack.of(Material.SHULKER_BOX);
         ItemMeta itemMeta = backpack.getItemMeta();
         itemMeta.setItemModel(NamespacedKey.fromString("mlc:mlc_backpack"));
         itemMeta.itemName(Component.text("背包"));
