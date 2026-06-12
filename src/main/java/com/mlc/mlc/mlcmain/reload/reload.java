@@ -3,6 +3,8 @@ package com.mlc.mlc.mlcmain.reload;
 import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
+import com.mlc.mlc.mlcmain.mlcitem.itemgui.Gui;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,6 +17,9 @@ public class reload implements CommandExecutor {
         Fesitems.init();
         Mlcitems.init();
 
+        // 清除缓存的GUI，使玩家重新打开/mlcitem时能获取到刷新后的物品
+        Gui.openinvmap.clear();
+        commandSender.sendMessage(Component.text("已刷新"));
         return true;
     }
 }

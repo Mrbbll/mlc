@@ -6,7 +6,7 @@ authors: [Mr_bl]
 commands:
   item:
     description: "展示物品"
-  reload:
+  mlcreload:
     description: "重载配置"
     permission: mlc.op
   mlcitem:

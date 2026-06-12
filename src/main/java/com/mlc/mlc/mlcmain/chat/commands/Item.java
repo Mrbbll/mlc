@@ -17,6 +17,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+import static com.mlc.mlc.Mlc.instance;
+
 public class Item implements CommandExecutor {
 
     @Override
@@ -32,7 +34,7 @@ public class Item implements CommandExecutor {
 
             Component component = Component.text(player.getName() + "展示了手上的东西：", TextColor.color(42, 255, 195)).append(itemStack.effectiveName()).hoverEvent(itemStack.asHoverEvent());
 
-            player.sendMessage(component);
+            instance.getServer().broadcast(component);
 
         }else {
             return false;

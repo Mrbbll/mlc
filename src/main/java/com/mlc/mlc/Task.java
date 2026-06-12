@@ -71,7 +71,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new JoinMoneyListener(), instance);
         Bukkit.getPluginManager().registerEvents(new Opencreates(), instance);
 
-        Objects.requireNonNull(Bukkit.getPluginCommand("reload")).setExecutor(new reload());
+        Objects.requireNonNull(Bukkit.getPluginCommand("mlcreload")).setExecutor(new reload());
         Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmail")).setExecutor((new sendmail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));

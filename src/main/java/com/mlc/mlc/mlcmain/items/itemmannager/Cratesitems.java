@@ -42,7 +42,6 @@ public class Cratesitems {
         if (configurationSection != null) {
             @NotNull Set<String> itemids = configurationSection.getKeys(false);
             for(String itemid:itemids){
-
                 loaditem(Integer.parseInt(itemid),configurationSection);
                 num++;
             }
