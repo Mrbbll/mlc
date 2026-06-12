@@ -37,3 +37,5 @@ commands:
     description: "回到上个路径点"
   money:
     description: "操作货币"
+  rtp:
+    description: "随机传送"
