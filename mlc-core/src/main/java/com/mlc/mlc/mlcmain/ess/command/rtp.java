@@ -15,6 +15,9 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 public class rtp implements CommandExecutor {
+    private static final int RTP_MIN = -50000;
+    private static final int RTP_MAX = 50000;
+
     private static final org.bukkit.Material[] DANGEROUS_GROUND = {
         org.bukkit.Material.LAVA,
         org.bukkit.Material.FIRE,
@@ -27,11 +30,12 @@ public class rtp implements CommandExecutor {
         if (commandSender instanceof Player player) {
             Random random = new Random();
             World world = player.getWorld();
-            int x = random.nextInt(-50000, 50000);
-            int z = random.nextInt(-50000, 50000);
+            int x = random.nextInt(RTP_MIN, RTP_MAX);
+            int z = random.nextInt(RTP_MIN, RTP_MAX);
 
-            // 先生成区块，再获取地表高度
+            // 先异步加载区块，再获取地表高度
             world.getChunkAtAsync(x >> 4, z >> 4).thenAccept(chunk -> {
+                // 在已加载的 chunk 上同步获取高度（此时 chunk 已加载，不会卡）
                 int groundY = world.getHighestBlockYAt(x, z);
                 Location safeLocation = findSafeLocation(world, x, groundY, z);
 
