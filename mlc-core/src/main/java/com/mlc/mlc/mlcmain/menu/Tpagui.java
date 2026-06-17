@@ -48,7 +48,7 @@ public class Tpagui {
                 Component.text("传送请求 - 选择玩家", TextColor.fromHexString("#f73636")));
 
         // 填充玻璃边框
-        ItemStack border = Mlcmenu.createMenuItem(Material.BLACK_STAINED_GLASS_PANE, " ", new String[]{});
+        ItemStack border = Mlcmenu.createMenuItem(Material.BLACK_STAINED_GLASS_PANE, " ", null,new String[]{});
         // 最后一行全部用边框填充
         for (int i = 45; i < 54; i++) {
             inv.setItem(i, border);

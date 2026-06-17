@@ -87,11 +87,6 @@ public class menuopenlistener implements Listener {
                 player.performCommand("mlcitem");
                 break;
 
-            case Mlcmenu.SLOT_CRATES:
-                player.closeInventory();
-                player.performCommand("choujiang");
-                break;
-
             case Mlcmenu.SLOT_ITEMSHOW:
                 player.closeInventory();
                 player.performCommand("item");
