@@ -19,6 +19,10 @@ import com.mlc.mlc.mlcmain.mail.command.mymail;
 import com.mlc.mlc.mlcmain.mail.command.sendmail;
 import com.mlc.mlc.mlcmain.mail.command.sendmailtoall;
 import com.mlc.mlc.mlcmain.mail.listener.Maillistener;
+import com.mlc.mlc.mlcmain.menu.Mlcmenu;
+import com.mlc.mlc.mlcmain.menu.commands.menu;
+import com.mlc.mlc.mlcmain.menu.listener.menuopenlistener;
+import com.mlc.mlc.mlcmain.menu.listener.Tpalistener;
 import com.mlc.mlc.mlcmain.maxhealth.Deadlistener;
 import com.mlc.mlc.mlcmain.maxhealth.Eatlistener;
 import com.mlc.mlc.mlcmain.mlcitem.command.mlcitemgui;
@@ -70,6 +74,8 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new DropmoneyListener(), instance);
         Bukkit.getPluginManager().registerEvents(new JoinMoneyListener(), instance);
         Bukkit.getPluginManager().registerEvents(new Opencreates(), instance);
+        Bukkit.getPluginManager().registerEvents(new menuopenlistener(), instance);
+        Bukkit.getPluginManager().registerEvents(new Tpalistener(), instance);
 
         Objects.requireNonNull(Bukkit.getPluginCommand("mlcreload")).setExecutor(new reload());
         Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));
@@ -88,6 +94,7 @@ public class Task {
         Objects.requireNonNull(Bukkit.getPluginCommand("money")).setTabCompleter(new money());
         Objects.requireNonNull(Bukkit.getPluginCommand("item")).setExecutor(new Item());
         Objects.requireNonNull(Bukkit.getPluginCommand("rtp")).setExecutor(new rtp());
+        Objects.requireNonNull(Bukkit.getPluginCommand("menu")).setExecutor(new menu());
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new Mlceco().register();
@@ -99,6 +106,7 @@ public class Task {
         Cratesitems.init();
         Fesitems.init();
         Mlcitems.init();
+        Mlcmenu.initmenuinv();
 
         //注册物品配方
         Backpack.backpackrecipe();

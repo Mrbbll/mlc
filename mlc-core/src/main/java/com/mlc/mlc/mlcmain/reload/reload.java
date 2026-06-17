@@ -10,13 +10,16 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import static com.mlc.mlc.mlcmain.dialog.Serverjoindialog.gonggao;
+import static com.mlc.mlc.mlcmain.dialog.Serverjoindialog.initserverjoindialog;
+
 public class reload implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         Cratesitems.init();
         Fesitems.init();
         Mlcitems.init();
-
+        initserverjoindialog();
         // 清除缓存的GUI，使玩家重新打开/mlcitem时能获取到刷新后的物品
         Gui.openinvmap.clear();
         commandSender.sendMessage(Component.text("已刷新"));

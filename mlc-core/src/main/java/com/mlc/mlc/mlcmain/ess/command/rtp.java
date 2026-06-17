@@ -79,7 +79,7 @@ public class rtp implements CommandExecutor {
             }
             y++;
         }
-        // 兜底: 返回最高方块上方
+        //返回最高方块上方
         return new Location(world, x + 0.5, startY + 1, z + 0.5);
     }
 }

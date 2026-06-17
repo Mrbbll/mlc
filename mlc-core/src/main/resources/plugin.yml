@@ -41,6 +41,8 @@ commands:
     description: "操作货币"
   rtp:
     description: "随机传送"
+  menu:
+    description: "打开MLC功能菜单"
   reloadwaystone:
     description: "重新加载传送石碑"
     permission: mlcwaystone.reload
