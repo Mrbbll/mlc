@@ -2,6 +2,9 @@ package com.mlc.mlc.mlcmain.menu.listener;
 
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
 import com.mlc.mlc.mlcmain.menu.Tpagui;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -52,19 +55,9 @@ public class menuopenlistener implements Listener {
                 player.performCommand("rtp");
                 break;
 
-            case Mlcmenu.SLOT_HOME:
-                player.closeInventory();
-                player.performCommand("home");
-                break;
-
             case Mlcmenu.SLOT_TPA:
                 player.closeInventory();
                 Tpagui.open(player);
-                break;
-
-            case Mlcmenu.SLOT_BACK:
-                player.closeInventory();
-                player.performCommand("back");
                 break;
 
             case Mlcmenu.SLOT_SIT:
@@ -82,9 +75,20 @@ public class menuopenlistener implements Listener {
                 player.performCommand("mymail");
                 break;
 
-            case Mlcmenu.SLOT_MLCITEM:
+            case Mlcmenu.SLOT_MAP:
                 player.closeInventory();
-                player.performCommand("mlcitem");
+                sendUrlToChat(player,
+                        "» 点击打开 网页地图",
+                        "查看服务器在线地图",
+                        Mlcmenu.MAP_URL);
+                break;
+
+            case Mlcmenu.SLOT_QUESTION:
+                player.closeInventory();
+                sendUrlToChat(player,
+                        "» 点击打开 在线文档",
+                        "查看服务器在线文档",
+                        Mlcmenu.DOCS_URL);
                 break;
 
             case Mlcmenu.SLOT_ITEMSHOW:
@@ -92,14 +96,26 @@ public class menuopenlistener implements Listener {
                 player.performCommand("item");
                 break;
 
-            case Mlcmenu.SLOT_RELOAD:
-                player.closeInventory();
-                player.performCommand("mlcreload");
-                break;
-
             default:
                 // 点击边框或其他区域，不做处理
                 break;
         }
+    }
+
+    /**
+     * 向玩家聊天栏发送可点击的超链接
+     * @param player 目标玩家
+     * @param mainText 主文本
+     * @param hoverText 鼠标悬浮提示
+     * @param url 目标链接
+     */
+    private void sendUrlToChat(Player player, String mainText, String hoverText, String url) {
+        player.sendMessage(
+                Component.text()
+                        .append(Component.text("[MLC] ", TextColor.fromHexString("#f73636")))
+                        .append(Component.text(mainText, TextColor.fromHexString("#e5fe67")))
+                        .hoverEvent(Component.text(hoverText))
+                        .clickEvent(ClickEvent.openUrl(url))
+        );
     }
 }

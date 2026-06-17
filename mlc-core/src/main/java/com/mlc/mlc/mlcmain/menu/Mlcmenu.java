@@ -2,18 +2,23 @@ package com.mlc.mlc.mlcmain.menu;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.miniMessage;
 
 public class Mlcmenu {
@@ -21,18 +26,17 @@ public class Mlcmenu {
 
     // 菜单物品槽位
     public static final int SLOT_RTP = 10;
-    public static final int SLOT_HOME = 11;
     public static final int SLOT_TPA = 12;
-    public static final int SLOT_BACK = 13;
     public static final int SLOT_SIT = 14;
-
     public static final int SLOT_MONEY = 15;
     public static final int SLOT_MAIL = 16;
-    public static final int SLOT_MLCITEM = 20;
     public static final int SLOT_MAP = 21;
     public static final int SLOT_ITEMSHOW = 22;
     public static final int SLOT_QUESTION = 23;
-    public static final int SLOT_RELOAD = 24;
+
+    // 超链接URL
+    public static final String MAP_URL = "http://43.248.188.28:19423/";
+    public static final String DOCS_URL = "https://docs.qq.com/aio/DRnp3YU9sRmxWYnVB";
 
     public static void initmenuinv() {
         menuinv = Bukkit.createInventory(null, 9 * 6,
@@ -147,6 +151,44 @@ public class Mlcmenu {
      */
     private static Component formatLegacy(String text) {
         return miniMessage.deserialize(text);
+    }
+
+    /**
+     * 创建自定义玩家头颅物品
+     * @param name 显示名称 (&颜色代码)
+     * @param uuid 材质哈希 (http://textures.minecraft.net/texture/ 后面的部分)
+     * @param modelSpace 自定义物品模型命名空间 (可为null)
+     * @param lore 物品描述
+     * @return 创建好的头颅 ItemStack
+     */
+    public static ItemStack createSkullItem(String name, String uuid, String modelSpace, String... lore) {
+        ItemStack head = ItemStack.of(Material.PLAYER_HEAD);
+        SkullMeta meta = (SkullMeta) head.getItemMeta();
+        // 设置自定义皮肤材质
+        if (uuid != null && !uuid.isEmpty()) {
+            OfflinePlayer offlinePlayer = instance.getServer().getOfflinePlayer(UUID.fromString(uuid));
+            meta.setOwningPlayer(offlinePlayer);
+        }
+
+        // 设置自定义物品模型
+        if (modelSpace != null) {
+            meta.setItemModel(NamespacedKey.fromString(modelSpace));
+        }
+
+        meta.displayName(formatLegacy(name));
+
+        if (lore != null && lore.length > 0) {
+            List<Component> loreList = new ArrayList<>();
+            for (String line : lore) {
+                if (!line.isEmpty()) {
+                    loreList.add(formatLegacy(line));
+                }
+            }
+            meta.lore(loreList);
+        }
+
+        head.setItemMeta(meta);
+        return head;
     }
 
     public static void open(Player player) {

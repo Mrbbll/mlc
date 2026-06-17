@@ -19,6 +19,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 
@@ -139,7 +140,7 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true,priority = EventPriority.LOWEST)
     public  void opengui(PlayerInteractEvent event){
         //监听打开gui
         if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
