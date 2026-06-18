@@ -83,9 +83,9 @@ public class Task {
         Objects.requireNonNull(Bukkit.getPluginCommand("mymail")).setExecutor((new mymail()));
         Objects.requireNonNull(Bukkit.getPluginCommand("mlcitem")).setExecutor(new mlcitemgui());
         Objects.requireNonNull(Bukkit.getPluginCommand("sendmailtoall")).setExecutor(new sendmailtoall());
-        Objects.requireNonNull(Bukkit.getPluginCommand("home")).setExecutor(new home());
-        Objects.requireNonNull(Bukkit.getPluginCommand("sethome")).setExecutor(new sethome());
-        Objects.requireNonNull(Bukkit.getPluginCommand("delhome")).setExecutor(new delhome());
+//        Objects.requireNonNull(Bukkit.getPluginCommand("home")).setExecutor(new home());
+//        Objects.requireNonNull(Bukkit.getPluginCommand("sethome")).setExecutor(new sethome());
+//        Objects.requireNonNull(Bukkit.getPluginCommand("delhome")).setExecutor(new delhome());
         Objects.requireNonNull(Bukkit.getPluginCommand("tpa")).setExecutor(new tpa());
         Objects.requireNonNull(Bukkit.getPluginCommand("tpaccept")).setExecutor(new tpaccept());
         Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());

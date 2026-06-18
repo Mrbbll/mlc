@@ -121,7 +121,7 @@ public class Bluemapapi {
                     }
                 });
 
-                instance.getLogger().info("已为领地 " + domainName + " 创建BlueMap标记");
+//                instance.getLogger().info("已为领地 " + domainName + " 创建BlueMap标记");
 
             } catch (Exception e) {
                 instance.getLogger().warning("创建BlueMap标记失败: " + e.getMessage());

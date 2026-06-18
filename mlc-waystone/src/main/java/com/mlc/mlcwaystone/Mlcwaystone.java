@@ -44,6 +44,9 @@ public final class Mlcwaystone {
         // Load existing data
         loadData();
 
+        // Initialize BlueMap integration
+        Bluemapapi.init();
+
         // Register listener and command
         Bukkit.getPluginManager().registerEvents(new WaystoneListener(), instance);
         Objects.requireNonNull(Bukkit.getPluginCommand("reloadwaystone")).setExecutor(new Reload());
@@ -92,17 +95,25 @@ public final class Mlcwaystone {
 
     /**
      * Add a new waystone to the map and persist to disk.
+     * Syncs public waystones to BlueMap.
      */
     public static void addWaystone(WaystoneData data) {
         waystoneDataMap.put(data.getId(), data);
         saveData();
+        if (data.isPublic()) {
+            Bluemapapi.createWaystoneMarker(data);
+        }
     }
 
     /**
      * Remove a waystone from the map and persist to disk.
+     * Removes BlueMap marker if it was public.
      */
     public static void removeWaystone(UUID id) {
-        waystoneDataMap.remove(id);
+        WaystoneData data = waystoneDataMap.remove(id);
+        if (data != null && data.isPublic()) {
+            Bluemapapi.removeWaystoneMarker(data);
+        }
         saveData();
     }
 

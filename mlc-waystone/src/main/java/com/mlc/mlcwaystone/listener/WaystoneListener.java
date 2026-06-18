@@ -1,5 +1,6 @@
 package com.mlc.mlcwaystone.listener;
 
+import com.mlc.mlcwaystone.Bluemapapi;
 import com.mlc.mlcwaystone.Mlcwaystone;
 import com.mlc.mlcwaystone.WaystoneData;
 import com.mlc.mlcwaystone.WaystoneGUI;
@@ -65,11 +66,25 @@ public class WaystoneListener implements Listener {
         WaystoneData existing = getWaystoneAt(lodestoneLoc);
 
         if (existing != null) {
+            // Handle BlueMap sync for type change
+            boolean wasPublic = existing.isPublic();
+            String oldType = existing.getType();
+
             // Update existing waystone type/owner
             existing.setType(waystoneType);
             existing.setOwner(player.getUniqueId());
             existing.setOwnerName(player.getName());
             saveData();
+
+            // Sync BlueMap if visibility changed
+            if (!wasPublic && existing.isPublic()) {
+                Bluemapapi.createWaystoneMarker(existing);
+            } else if (wasPublic && existing.isPrivate()) {
+                Bluemapapi.removeWaystoneMarker(existing);
+            } else if (wasPublic && existing.isPublic()) {
+                Bluemapapi.updateWaystoneMarker(existing);
+            }
+
             String typeName = waystoneType.equals("PRIVATE") ? "私人" : "公共";
             player.sendMessage(Component.text("传送石碑类型已更新为" + typeName)
                     .color(TextColor.fromHexString("#00ff33")));
@@ -247,6 +262,9 @@ public class WaystoneListener implements Listener {
             waystone.setIconType(iconType);
             waystone.setIconName(iconName);
             saveData();
+            if (waystone.isPublic()) {
+                Bluemapapi.updateWaystoneMarker(waystone);
+            }
 
             player.sendMessage(Component.text("传送石碑图标已更新为: " + iconName)
                     .color(TextColor.fromHexString("#00ff33")));

@@ -28,6 +28,7 @@ public class WaystoneGUI {
     // Per-player state tracking
     public static final Map<Player, Integer> playerPageMap = new HashMap<>();
     public static final Map<Player, List<UUID>> playerWaystoneOrder = new HashMap<>();
+    public static final Map<Player, Inventory> playerCurrentInv = new HashMap<>();
     public static final Set<Inventory> openInvs = new HashSet<>();
 
     /**
@@ -41,8 +42,11 @@ public class WaystoneGUI {
      * Open the waystone GUI for a player at a specific page.
      */
     public static void open(Player player, int page) {
-        // Build sorted list of waystones: private first, then public
+        // Filter: only show public waystones + the player's own private waystones
+        // Build sorted list: private first, then public
+        UUID playerUuid = player.getUniqueId();
         List<WaystoneData> sorted = waystoneDataMap.values().stream()
+                .filter(data -> player.isOp() || data.isPublic() || data.getOwner().equals(playerUuid))
                 .sorted(Comparator
                         .comparing(WaystoneData::isPrivate).reversed()   // true (private) before false (public)
                         .thenComparingLong(WaystoneData::getCreatedAt))
@@ -57,6 +61,12 @@ public class WaystoneGUI {
         // Clamp page to valid range
         if (page < 1) page = 1;
         if (page > totalPages) page = totalPages;
+
+        // Remove previous inventory from tracking so its close event won't cleanup
+        Inventory oldInv = playerCurrentInv.get(player);
+        if (oldInv != null) {
+            openInvs.remove(oldInv);
+        }
 
         // Save player state
         playerPageMap.put(player, page);
@@ -100,6 +110,7 @@ public class WaystoneGUI {
         inv.setItem(51, createTipItem("私人 = 灵魂灯笼+磁石", "公共 = 信标+磁石"));
 
         openInvs.add(inv);
+        playerCurrentInv.put(player, inv);
         player.openInventory(inv);
     }
 
@@ -125,6 +136,7 @@ public class WaystoneGUI {
     public static void cleanup(Player player) {
         playerPageMap.remove(player);
         playerWaystoneOrder.remove(player);
+        playerCurrentInv.remove(player);
     }
 
     // --- Item creation helpers ---

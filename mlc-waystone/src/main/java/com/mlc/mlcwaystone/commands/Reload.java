@@ -27,6 +27,7 @@ public class Reload implements CommandExecutor {
         WaystoneGUI.openInvs.clear();
         WaystoneGUI.playerPageMap.clear();
         WaystoneGUI.playerWaystoneOrder.clear();
+        WaystoneGUI.playerCurrentInv.clear();
 
         sender.sendMessage(Component.text("传送石碑数据已重新加载，当前传送点数量: "
                         + Mlcwaystone.waystoneDataMap.size())
