@@ -2,9 +2,8 @@ package com.mlc.mlcdomain.listener;
 
 import com.mlc.mlcdomain.dataManager.Databasemanager;
 import com.mlc.mlcdomain.dataManager.DomainData;
-import com.mlc.mlcdomain.uilts.Checkflag;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import org.bukkit.Location;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -14,118 +13,97 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.jetbrains.annotations.NotNull;
 
 
 public class Environment implements Listener {
-//    @EventHandler
-//    public void onPlayerJoin(org.bukkit.event.player.PlayerJoinEvent event) {
-//        event.getPlayer().sendMessage("Welcome to the server!");
-//    }
+
+    /**
+     * 检查指定位置是否在高等级领地内(level>=3)，如果是则取消事件。
+     * 先检查事件是否已取消，避免不必要的数据库查询。
+     */
+    private static boolean isProtectedLocation(Location loc, Cancellable event) {
+        if (event.isCancelled()) return true; // 已被取消，无需再次查询
+        DomainData domainData = Databasemanager.getDomainAt(
+                loc.getWorld().getName(),
+                loc.getChunk().getX(),
+                loc.getChunk().getZ());
+        return domainData != null && domainData.getLevel() >= 3;
+    }
+
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle(EntityDamageByEntityEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getEntity().getWorld().getName(), event.getEntity().getLocation().getChunk().getX(), event.getEntity().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getEntity().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
+
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle1(EntityExplodeEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getEntity().getWorld().getName(), event.getEntity().getLocation().getChunk().getX(), event.getEntity().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getEntity().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle2(BlockExplodeEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getBlock().getWorld().getName(), event.getBlock().getLocation().getChunk().getX(), event.getBlock().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getBlock().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle3(HangingBreakByEntityEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getEntity().getWorld().getName(), event.getEntity().getLocation().getChunk().getX(), event.getEntity().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getEntity().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle4(EntityTeleportEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getEntity().getWorld().getName(), event.getEntity().getLocation().getChunk().getX(), event.getEntity().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getEntity().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle5(CreatureSpawnEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getEntity().getWorld().getName(), event.getEntity().getLocation().getChunk().getX(), event.getEntity().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getEntity().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
+
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle6(BlockIgniteEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getBlock().getWorld().getName(), event.getBlock().getLocation().getChunk().getX(), event.getBlock().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getBlock().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle7(BlockFormEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getBlock().getWorld().getName(), event.getBlock().getLocation().getChunk().getX(), event.getBlock().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getBlock().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle8(BlockFadeEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getBlock().getWorld().getName(), event.getBlock().getLocation().getChunk().getX(), event.getBlock().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getBlock().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle9(BlockFromToEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getBlock().getWorld().getName(), event.getBlock().getLocation().getChunk().getX(), event.getBlock().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getBlock().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
+
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle10(BlockPistonExtendEvent event) {
-        DomainData domainData = Databasemanager.getDomainAt(event.getBlock().getWorld().getName(), event.getBlock().getLocation().getChunk().getX(), event.getBlock().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
-            return;
+        if (isProtectedLocation(event.getBlock().getLocation(), event)) {
+            event.setCancelled(true);
         }
-        if (event.isCancelled()) return;
-        event.setCancelled(true);
     }
 }

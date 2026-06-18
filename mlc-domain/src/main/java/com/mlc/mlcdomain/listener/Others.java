@@ -9,6 +9,7 @@ import com.mlc.mlcdomain.uilts.Creatdomain;
 import com.mlc.mlcdomain.uilts.Renamedomain;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -122,24 +123,24 @@ public class Others implements Listener {
                 return;
             }
 
-            switch (oldLevel){
-                case 0:
-                    player.sendMessage(Component.text("当前区块权限为：无更改")
-                            .color(TextColor.fromHexString("#00FF00")));
-                    break;
-                case 1:
-                    player.sendMessage(Component.text("当前区块权限为：其他人不得破坏和放置（默认，一般机器可以开这个）")
-                            .color(TextColor.fromHexString("#00ffcb")));
-                    break;
-                case 2:
-                    player.sendMessage(Component.text("当前区块权限为：其他人不得交互")
-                            .color(TextColor.fromHexString("#fb00ff")));
-                    break;
-                case 3:
-                    player.sendMessage(Component.text("当前区块权限为：其他人不得交互（观赏性建筑使用）")
-                            .color(TextColor.fromHexString("#ff3c00")));
-                    break;
-            }
+//            switch (oldLevel){
+//                case 0:
+//                    player.sendMessage(Component.text("当前区块权限为：无更改")
+//                            .color(TextColor.fromHexString("#00FF00")));
+//                    break;
+//                case 1:
+//                    player.sendMessage(Component.text("当前区块权限为：其他人不得破坏和放置（默认，一般机器可以开这个）")
+//                            .color(TextColor.fromHexString("#00ffcb")));
+//                    break;
+//                case 2:
+//                    player.sendMessage(Component.text("当前区块权限为：其他人不得交互")
+//                            .color(TextColor.fromHexString("#fb00ff")));
+//                    break;
+//                case 3:
+//                    player.sendMessage(Component.text("当前区块权限为：其他人不得交互（观赏性建筑使用）")
+//                            .color(TextColor.fromHexString("#ff3c00")));
+//                    break;
+//            }
 
             switch (newLevel){
                 case 0:
@@ -215,34 +216,36 @@ public class Others implements Listener {
     }
 
     @EventHandler
-    public void playermove(PlayerMoveEvent event){
-        Player player = event.getPlayer();
-        int player_x = player.getLocation().getChunk().getX();
-        int player_z = player.getLocation().getChunk().getZ();
-        int player_last_x = Playerlastloc.playerlastloc.get(player.getUniqueId()).getChunk().getX();
-        int player_last_z = Playerlastloc.playerlastloc.get(player.getUniqueId()).getChunk().getZ();
-        DomainData domainData = Databasemanager.getDomainAt(player.getWorld().getName(), player_x, player_z);
-        DomainData lastDomainData = Databasemanager.getDomainAt(player.getWorld().getName(), player_last_x, player_last_z);
-        //进入
-        if(domainData != null && lastDomainData == null){
-            player.sendMessage(Component.text("你进入了领地：" + domainData.getDomain() + "   owner:" + domainData.getPlayerName())
-                    .color(TextColor.fromHexString("#ffb000")));
-            Playerlastloc.playerlastloc.put(player.getUniqueId(), player.getLocation());
+    public void playermove(PlayerMoveEvent event) {
+        // 只有玩家跨越了chunk边界才检查领地
+        Location from = event.getFrom();
+        Location to = event.getTo();
+
+        int fromX = from.getChunk().getX(), fromZ = from.getChunk().getZ();
+        int toX = to.getChunk().getX(), toZ = to.getChunk().getZ();
+
+        if (fromX == toX && fromZ == toZ && from.getWorld().equals(to.getWorld())) {
             return;
         }
-        //离开
-        if(lastDomainData != null && domainData == null){
+
+        Player player = event.getPlayer();
+        DomainData domainData = Databasemanager.getDomainAt(player.getWorld().getName(), toX, toZ);
+        DomainData lastDomainData = Databasemanager.getDomainAt(player.getWorld().getName(), fromX, fromZ);
+
+        // 进入领地
+        if (domainData != null && lastDomainData == null) {
+            player.sendMessage(Component.text("你进入了领地：" + domainData.getDomain() + "   owner:" + domainData.getPlayerName())
+                    .color(TextColor.fromHexString("#ffb000")));
+        }
+        // 离开领地
+        else if (lastDomainData != null && domainData == null) {
             player.sendMessage(Component.text("你离开了领地：" + lastDomainData.getDomain() + "   owner:" + lastDomainData.getPlayerName())
                     .color(TextColor.fromHexString("#ffb000")));
-            Playerlastloc.playerlastloc.put(player.getUniqueId(), player.getLocation());
-            return;
         }
-        //变更
-        if(domainData != null && lastDomainData != null && !domainData.getDomain().equals(lastDomainData.getDomain())){
+        // 在不同领地间切换
+        else if (domainData != null && lastDomainData != null && !domainData.getDomain().equals(lastDomainData.getDomain())) {
             player.sendMessage(Component.text("你进入了领地：" + domainData.getDomain() + "   owner:" + domainData.getPlayerName())
                     .color(TextColor.fromHexString("#ffb000")));
-            Playerlastloc.playerlastloc.put(player.getUniqueId(), player.getLocation());
-            return;
         }
     }
 }

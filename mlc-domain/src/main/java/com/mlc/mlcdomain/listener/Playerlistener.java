@@ -49,11 +49,11 @@ public class Playerlistener implements Listener {
     
     @EventHandler(priority = EventPriority.LOWEST)
     public void handle(EntityPlaceEvent event) {
+        if (event.isCancelled()) return;
         DomainData domainData = Databasemanager.getDomainAt(event.getBlock().getWorld().getName(), event.getBlock().getLocation().getChunk().getX(), event.getBlock().getLocation().getChunk().getZ());
-        if (domainData == null ||domainData.getLevel() < 3) {
+        if (domainData == null || domainData.getLevel() < 3) {
             return;
         }
-        if (event.isCancelled()) return;
         event.setCancelled(true);
     }
 

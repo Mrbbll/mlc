@@ -36,35 +36,37 @@ public class MlcdomainPlaceholderExpansion extends PlaceholderExpansion {
     @Override
     @NotNull
     public String onPlaceholderRequest(Player player, @NotNull String params) {
-        DomainData domainData = Databasemanager.getDomainAt(player.getWorld().getName(),player.getLocation().getChunk().getX(),player.getLocation().getChunk().getZ());
-        PlayerData playerData = Databasemanager.getPlayer(player.getUniqueId());
+        // 按需查询：只有请求domain相关占位符时才查domains表
         // %mlcdomain_domain_name%
-        if(params.equals("domain_name")){
-            if (domainData != null) {
-                return domainData.getDomain();
+        switch (params) {
+            case "domain_name" -> {
+                DomainData domainData = Databasemanager.getDomainAt(
+                        player.getWorld().getName(),
+                        player.getLocation().getChunk().getX(),
+                        player.getLocation().getChunk().getZ());
+                return domainData != null ? domainData.getDomain() : "";
             }
-            else return "";
-        }
-        // %mlcdomain_domain_count%
-        if(params.equals("domain_count")){
-            if (playerData != null) {
-                return String.valueOf(playerData.getChunkCount());
+
+            // %mlcdomain_domain_owner%
+            case "domain_owner" -> {
+                DomainData domainData = Databasemanager.getDomainAt(
+                        player.getWorld().getName(),
+                        player.getLocation().getChunk().getX(),
+                        player.getLocation().getChunk().getZ());
+                return domainData != null ? domainData.getPlayerName() : "";
             }
-            else return "";
-        }
-        // %mlcdomain_domain_owner%
-        if(params.equals("domain_owner")){
-            if (domainData != null) {
-                return domainData.getPlayerName();
+
+            // %mlcdomain_domain_count%
+            case "domain_count" -> {
+                PlayerData playerData = Databasemanager.getPlayer(player.getUniqueId());
+                return playerData != null ? String.valueOf(playerData.getChunkCount()) : "";
             }
-            return "";
-        }
-        // %mlcdomain_domain_remain_days%
-        if(params.equals("domain_remain_days")){
-            if (playerData != null) {
-                return String.valueOf(playerData.getRemainDays());
+
+            // %mlcdomain_domain_remain_days%
+            case "domain_remain_days" -> {
+                PlayerData playerData = Databasemanager.getPlayer(player.getUniqueId());
+                return playerData != null ? String.valueOf(playerData.getRemainDays()) : "";
             }
-            else return "";
         }
         return "";
     }

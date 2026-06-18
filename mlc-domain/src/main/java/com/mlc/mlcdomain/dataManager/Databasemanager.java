@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +37,21 @@ public class Databasemanager {
 
     public Databasemanager() throws SQLException {
         initializeDataSource();
+        preloadDomainCache();
+    }
+
+    /**
+     * 启动时一次性加载全部领地到缓存。
+     */
+    private static void preloadDomainCache() {
+        List<DomainData> allDomains = getDomainDataList();
+        if (allDomains != null) {
+            for (DomainData domain : allDomains) {
+                String key = domain.getWorld() + "_" + domain.getX() + "_" + domain.getZ();
+                Domaincache.addCache(key, domain);
+            }
+            instance.getLogger().info("✓ 领地缓存预热完成: " + Domaincache.size() + " 个领地区块");
+        }
     }
 
 
@@ -306,7 +320,7 @@ public class Databasemanager {
             """;
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, domainName);
             pstmt.setString(2, playerUuid.toString());
@@ -319,17 +333,24 @@ public class Databasemanager {
             int rows = pstmt.executeUpdate();
 
             if (rows > 0) {
+                // 获取自增id并直接构造缓存对象
+                int generatedId = 0;
+                try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        generatedId = keys.getInt(1);
+                    }
+                }
+
+                // 直接构造 DomainData 加入缓存
+                DomainData domainData = new DomainData(
+                        generatedId, domainName, playerUuid, playerName,
+                        world, x, z, level, new Timestamp(System.currentTimeMillis()));
+                Domaincache.addCache(world + "_" + x + "_" + z, domainData);
+
                 // 更新地图上的领地标记
                 Bluemapapi.createDomainMarker(domainName, playerName, Bukkit.getWorld(world), x, z, level);
                 // 更新玩家领地数量
                 updatePlayerChunkCount(playerUuid, 1);
-
-
-                // 缓存新领地
-                DomainData domainData = Databasemanager.getDomainAt(world, x, z);
-                if (domainData != null) {
-                    Domaincache.addCache(world + "_" + x + "_" + z, domainData);
-                }
 
                 return true;
             }
@@ -341,46 +362,10 @@ public class Databasemanager {
     }
 
     /**
-     * 获取指定位置的领地
+     * 获取指定位置的领地（仅走缓存，启动时已全量加载）。
      */
     public static DomainData getDomainAt(String world, int x, int z) {
-        // 先检查缓存
-        String cacheKey = world + "_" + x + "_" + z;
-        if (Domaincache.hasCache(cacheKey)) {
-            return Domaincache.getCache(cacheKey);
-        }
-
-        String sql = "SELECT * FROM domains WHERE world = ? AND x = ? AND z = ?";
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ){
-            pstmt.setString(1, world);
-            pstmt.setInt(2, x);
-            pstmt.setInt(3, z);
-            try(ResultSet rs = pstmt.executeQuery();) {
-            if (rs.next()) {
-                DomainData domainData = new DomainData(
-                        rs.getInt("id"),
-                        rs.getString("domain"),
-                        UUID.fromString(rs.getString("player_uuid")),
-                        rs.getString("player_name"),
-                        rs.getString("world"),
-                        rs.getInt("x"),
-                        rs.getInt("z"),
-                        rs.getInt("level"),
-                        rs.getTimestamp("created_at")
-                );
-                // 缓存结果
-                Domaincache.addCache(cacheKey,domainData);
-                return domainData;
-            }
-            }
-
-        } catch (SQLException e) {
-            instance.getLogger().warning("获取位置领地失败: " + e.getMessage());
-        }
-        return null;
+        return Domaincache.getCache(world + "_" + x + "_" + z);
     }
 
     /**
