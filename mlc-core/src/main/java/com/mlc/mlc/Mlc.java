@@ -107,6 +107,9 @@ public final class Mlc extends JavaPlugin {
         // Initialize waystone (传送石碑) system
         com.mlc.mlcwaystone.Mlcwaystone.init(this);
 
+        // Initialize mlc-styte system
+        com.mlc.mlcstyte.MlcStyte.init(this);
+
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
     }
 

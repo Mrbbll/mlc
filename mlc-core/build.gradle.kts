@@ -14,6 +14,7 @@ dependencies {
     // Bundle subproject code into this plugin
     implementation(project(":mlc-domain"))
     implementation(project(":mlc-waystone"))
+    implementation(project(":mlc-styte"))
 }
 
 tasks {
