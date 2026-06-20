@@ -3,5 +3,4 @@ dependencies {
     compileOnly(libs.vault) {
         exclude("org.bukkit", "bukkit")
     }
-    compileOnly(libs.adventure.serializer.legacy)
 }

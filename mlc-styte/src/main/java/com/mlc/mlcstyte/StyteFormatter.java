@@ -2,14 +2,15 @@ package com.mlc.mlcstyte;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static net.kyori.adventure.text.minimessage.MiniMessage.miniMessage;
+
 /**
  * Chat formatting utilities ported from VaultChatFormatter.
- * Uses Adventure Components and LegacyComponentSerializer for modern Paper API.
+ * Uses Adventure Components with MiniMessage for color parsing.
  */
 public final class StyteFormatter {
 
@@ -20,42 +21,34 @@ public final class StyteFormatter {
     public static final String PREFIX_PLACEHOLDER = "{prefix}";
     public static final String SUFFIX_PLACEHOLDER = "{suffix}";
 
-    /** The default format */
-    public static final String DEFAULT_FORMAT = "<" + PREFIX_PLACEHOLDER + NAME_PLACEHOLDER + SUFFIX_PLACEHOLDER + "> " + MESSAGE_PLACEHOLDER;
+//    public static final String DEFAULT_FORMAT = "<" + PREFIX_PLACEHOLDER + NAME_PLACEHOLDER + SUFFIX_PLACEHOLDER + "> " + MESSAGE_PLACEHOLDER;
 
     /** Pattern matching any placeholder token */
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile(
             "\\{prefix}|\\{suffix}|\\{name}|\\{displayname}|\\{message}"
     );
 
-    /**
-     * Serializer that converts legacy '&' color codes (including &#rrggbb hex) to Adventure Components.
-     */
-    private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
-            .character('&')
-            .hexColors()
-            .build();
-
     private StyteFormatter() {
         // Utility class — prevent instantiation
     }
 
     /**
-     * Converts a legacy color-coded string (using & codes) into an Adventure Component.
+     * Converts a MiniMessage-formatted string into an Adventure Component.
      *
-     * @param legacyText the text with & color codes
-     * @return the corresponding Component, or {@link Component#empty()} if input is null
+     * @param miniMessageText the text with MiniMessage markup
+     * @return the corresponding Component, or {@link Component#empty()} if input is null/empty
      */
-    public static Component toComponent(String legacyText) {
-        if (legacyText == null || legacyText.isEmpty()) {
+    public static Component toComponent(String miniMessageText) {
+        if (miniMessageText == null || miniMessageText.isEmpty()) {
             return Component.empty();
         }
-        return LEGACY_SERIALIZER.deserialize(legacyText);
+        return miniMessage().deserialize(miniMessageText);
     }
 
     /**
      * Builds a formatted chat Component from the format pattern and placeholder values.
-     * Text between placeholders is parsed for & color codes via LegacyComponentSerializer.
+     * Literal text between placeholders is appended as plain text (no parsing).
+     * Vault prefix/suffix should be pre-parsed via {@link #toComponent(String)}.
      *
      * @param format      the format string with placeholders
      * @param prefix      Vault prefix Component
@@ -76,10 +69,10 @@ public final class StyteFormatter {
         int lastEnd = 0;
 
         while (matcher.find()) {
-            // Append literal text before this placeholder (with legacy color parsing)
+            // Append literal text before this placeholder — plain text, no parsing
             String before = format.substring(lastEnd, matcher.start());
             if (!before.isEmpty()) {
-                builder.append(LEGACY_SERIALIZER.deserialize(before));
+                builder.append(Component.text(before));
             }
 
             // Append the replacement Component for the placeholder
@@ -95,10 +88,10 @@ public final class StyteFormatter {
             lastEnd = matcher.end();
         }
 
-        // Append remaining literal text after the last placeholder
+        // Append remaining literal text after the last placeholder — plain text
         String after = format.substring(lastEnd);
         if (!after.isEmpty()) {
-            builder.append(LEGACY_SERIALIZER.deserialize(after));
+            builder.append(Component.text(after));
         }
 
         return builder.build();
