@@ -74,6 +74,7 @@ public final class StyteFormatter {
             if (!before.isEmpty()) {
                 builder.append(Component.text(before));
             }
+
             // Append the replacement Component for the placeholder
             String placeholder = matcher.group();
             switch (placeholder) {
