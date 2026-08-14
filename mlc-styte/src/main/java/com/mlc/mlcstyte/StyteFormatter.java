@@ -88,6 +88,7 @@ public final class StyteFormatter {
             lastEnd = matcher.end();
         }
 
+
         // Append remaining literal text after the last placeholder — plain text
         String after = format.substring(lastEnd);
         if (!after.isEmpty()) {
