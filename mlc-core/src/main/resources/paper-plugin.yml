@@ -1,0 +1,7 @@
+name: mlc
+version: ${version}
+main: com.mlc.mlc.Mlc
+description: MLC server core plugin
+api-version: '1.21.11'
+bootstrapper: com.mlc.mlc.Mlc
+loader: com.mlc.mlc.Mlc
