@@ -25,7 +25,7 @@ import java.util.Objects;
 
 import static com.mlc.mlc.Mlc.instance;
 
-public class Enchantlistener implements Listener {
+public class EnchantUpgradelistener implements Listener {
     @EventHandler
     public void oncilck(PlayerInteractEvent event){
         Player player = event.getPlayer();
