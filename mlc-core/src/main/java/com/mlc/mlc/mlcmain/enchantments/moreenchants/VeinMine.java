@@ -23,15 +23,19 @@ import java.util.Set;
 public class VeinMine implements Listener {
     public static final TypedKey<Enchantment> VEINMINE_KEY = TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("mlc:veinmine"));
 
-    private static final Enchantment VEINMINE = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(VEINMINE_KEY);
+    public static final Enchantment VEINMINE = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(VEINMINE_KEY);
 
     @EventHandler
     public void onBlockbreak(BlockBreakEvent event){
         Player player = event.getPlayer();
+        if(player.isSneaking()){
+            return;
+        }
         ItemStack tool = player.getInventory().getItemInMainHand();
         if (tool.getEnchantmentLevel(VEINMINE) == 0) return;   // 没这把附魔就不管
 
         Material block = event.getBlock().getType();
+        int durability = tool.getItemMeta();
 
         int limit = tool.getEnchantmentLevel(VEINMINE) * 8;    // 等级越高挖越多
         breakVein(event.getBlock(), block, limit, tool);

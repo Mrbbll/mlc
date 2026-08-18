@@ -5,7 +5,7 @@ import com.mlc.mlc.mlcmain.chat.commands.Item;
 import com.mlc.mlc.mlcmain.crates.listener.Opencreates;
 import com.mlc.mlc.mlcmain.dialog.Listener.ServerJoinListener;
 import com.mlc.mlc.mlcmain.dropmoney.DropmoneyListener;
-import com.mlc.mlc.mlcmain.enchantments.EnchantUpgradelistener;
+import com.mlc.mlc.mlcmain.enchantments.listener.EnchantUpgradelistener;
 import com.mlc.mlc.mlcmain.ess.listener.Tplistener;
 import com.mlc.mlc.mlcmain.ess.command.*;
 import com.mlc.mlc.mlcmain.hook.economy.commands.money;

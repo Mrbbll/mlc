@@ -30,10 +30,10 @@ public class BootStrapTask {
 
                     event.registry().register(
                             VeinMine.VEINMINE_KEY,
-                            b -> b.description(Component.text("Veinmine").color(NamedTextColor.GRAY))
+                            b -> b.description(Component.text("enchantment.mlc.veinmine").color(NamedTextColor.GRAY))
                                     .supportedItems(excavatorSet)
-                                    .weight(2)
-                                    .maxLevel(5)
+                                    .weight(1)
+                                    .maxLevel(1)
                                     .minimumCost(EnchantmentRegistryEntry.EnchantmentCost.of(15, 9))
                                     .maximumCost(EnchantmentRegistryEntry.EnchantmentCost.of(65, 9))
                                     .anvilCost(4)

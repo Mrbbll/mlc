@@ -1,5 +1,6 @@
-package com.mlc.mlc.mlcmain.enchantments;
+package com.mlc.mlc.mlcmain.enchantments.listener;
 
+import com.mlc.mlc.mlcmain.enchantments.EnchantmentMaxLevel;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
@@ -18,6 +19,7 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,8 +66,14 @@ public class EnchantUpgradelistener implements Listener {
                         player.sendMessage(Component.text("魔咒冲突、非法或者附魔书为空、等级太低", TextColor.fromHexString("#f73636")));
                         return;
                     }
-                    //合并魔咒
-                    ItemStack toolfinal = mergeEnchants(tool.clone(),bookenchants,player);
+                    //合并魔咒并检查附魔上限
+                    Map<Enchantment, Integer> mergedEnchants = getmergedEnchantmentMap(tool, bookenchants);
+                    if(checkHasInvalidEnchants(mergedEnchants,player)){
+                        return;
+                    }
+
+                    ItemStack toolfinal = mergeEnchants(tool.clone(),mergedEnchants);
+
                     //粒子效果
                     Location location = center.getLocation().clone().add(0.5,1,0.5);
                     World world = location.getWorld();
@@ -96,6 +104,19 @@ public class EnchantUpgradelistener implements Listener {
             }
         }
 
+    }
+
+    private boolean checkHasInvalidEnchants(Map<Enchantment, Integer> mergedEnchants,Player player) {
+
+        for (Map.Entry<Enchantment, Integer> entry : mergedEnchants.entrySet()) {
+            Enchantment enchantment = entry.getKey();
+            int level = entry.getValue();
+            if (enchantment.getMaxLevel() < level) {
+                player.sendMessage(Component.text("附魔等级超过最大等级", TextColor.fromHexString("#f73636")));
+                return true;
+            }
+        }
+        return false;
     }
 
     private void enchantparticle(Location location, World world, Player player,ItemStack tool) {
@@ -163,7 +184,24 @@ public class EnchantUpgradelistener implements Listener {
 
     }
 
-    public static ItemStack mergeEnchants(ItemStack item, Map<Enchantment, Integer> bookenchants,Player player) {
+    public static ItemStack mergeEnchants(ItemStack item,Map<Enchantment, Integer> mergedEnchants) {
+
+        // 应用合并后的附魔到物品
+        ItemStack result = item.clone();
+        ItemMeta meta = result.getItemMeta();
+        // 清除原有附魔
+        for (Enchantment enchant : item.getEnchantments().keySet()) {
+            meta.removeEnchant(enchant);
+        }
+        // 添加合并后的附魔
+        for (Map.Entry<Enchantment, Integer> entry : mergedEnchants.entrySet()) {
+            meta.addEnchant(entry.getKey(), entry.getValue(), true);
+        }
+        result.setItemMeta(meta);
+        return result;
+    }
+
+    private static @NotNull Map<Enchantment, Integer> getmergedEnchantmentMap(ItemStack item, Map<Enchantment, Integer> bookenchants) {
         // 创建合并后的附魔集合
         Map<Enchantment, Integer> mergedEnchants = new HashMap<>(item.getEnchantments());
         for (Map.Entry<Enchantment, Integer> entry : bookenchants.entrySet()) {
@@ -186,19 +224,7 @@ public class EnchantUpgradelistener implements Listener {
                 mergedEnchants.put(enchant, bookLevel);
             }
         }
-        // 应用合并后的附魔到物品
-        ItemStack result = item.clone();
-        ItemMeta meta = result.getItemMeta();
-        // 清除原有附魔
-        for (Enchantment enchant : item.getEnchantments().keySet()) {
-            meta.removeEnchant(enchant);
-        }
-        // 添加合并后的附魔
-        for (Map.Entry<Enchantment, Integer> entry : mergedEnchants.entrySet()) {
-            meta.addEnchant(entry.getKey(), entry.getValue(), true);
-        }
-        result.setItemMeta(meta);
-        return result;
+        return mergedEnchants;
     }
 
     public static boolean canApplyEnchants(ItemStack item, Map<Enchantment, Integer> enchants,Player player) {
@@ -210,37 +236,30 @@ public class EnchantUpgradelistener implements Listener {
         for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
             Enchantment enchant = entry.getKey();
             //检查是否有非法魔咒
-            //允许附魔：锋利度、效率、耐久度、保护、采集量
-            if(enchant.equals(Enchantment.SHARPNESS)||
-                    enchant.equals(Enchantment.EFFICIENCY)||
-                    enchant.equals(Enchantment.UNBREAKING)||
-                    enchant.equals(Enchantment.PROTECTION)||
-                    enchant.equals(Enchantment.FORTUNE)
-            ){
-                //检查附魔是否适用于该物品类型
-                if (!enchant.canEnchantItem(item)) {
-                    player.sendMessage("不能用于这个物品");
-                    return false;
-                }
-                //检查与已有附魔的冲突与等级
-                for (Enchantment existingEnchant : item.getEnchantments().keySet()) {
-                    if (existingEnchant.conflictsWith(enchant) && existingEnchant!=enchant) {
-                        player.sendMessage("conflict");
-                        return false;
-                    } ;
-                    if(enchants.containsKey(existingEnchant)){
-                        int existingLevel = item.getEnchantmentLevel(existingEnchant);
-                        int booklevel = enchants.get(existingEnchant);
-                        if(existingLevel > booklevel+1){
-                            player.sendMessage("lowlevel");
-                            return false;
-                        }
-                    }
-                }
-            }
-            else {
+            if(!EnchantmentMaxLevel.maxLevelMap.containsKey(enchant)){
                 player.sendMessage("该附魔未解锁该功能");
                 return false;
+            }
+            //检查附魔是否适用于该物品类型
+            if (!enchant.canEnchantItem(item)) {
+                player.sendMessage("不能用于这个物品");
+                return false;
+            }
+            //检查与已有附魔的冲突与等级
+            for (Enchantment existingEnchant : item.getEnchantments().keySet()) {
+                if (existingEnchant.conflictsWith(enchant) && existingEnchant!=enchant) {
+                    player.sendMessage("conflict");
+                    return false;
+                } ;
+                if(enchants.containsKey(existingEnchant)){
+                    int existingLevel = item.getEnchantmentLevel(existingEnchant);
+                    int booklevel = enchants.get(existingEnchant);
+                    if(existingLevel > booklevel+1){
+                        player.sendMessage("book level is lower than item");
+                        return false;
+                    }
+
+                }
             }
         }
         return true;
