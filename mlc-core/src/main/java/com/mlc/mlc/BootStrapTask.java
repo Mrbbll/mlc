@@ -1,5 +1,6 @@
 package com.mlc.mlc;
 
+import com.mlc.mlc.mlcmain.enchantments.moreenchants.EnchantmentKeys;
 import com.mlc.mlc.mlcmain.enchantments.moreenchants.VeinMine;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 import io.papermc.paper.registry.RegistryKey;
@@ -29,8 +30,8 @@ public class BootStrapTask {
                     );
 
                     event.registry().register(
-                            VeinMine.VEINMINE_KEY,
-                            b -> b.description(Component.text("enchantment.mlc.veinmine").color(NamedTextColor.GRAY))
+                            EnchantmentKeys.VEINMINE,
+                            b -> b.description(Component.translatable("enchantment.mlc.veinmine").color(NamedTextColor.GRAY))
                                     .supportedItems(excavatorSet)
                                     .weight(1)
                                     .maxLevel(1)
