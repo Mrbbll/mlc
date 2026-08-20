@@ -118,8 +118,8 @@ public class Mlcmenu {
     /**
      * 创建菜单物品
      * @param material 物品材质
-     * @param name 显示名称 (支持 & 颜色代码)
-     * @param lore 物品描述 (支持 & 颜色代码)
+     * @param name 显示名称
+     * @param lore 物品描述
      * @return 创建好的 ItemStack
      */
     public static ItemStack createMenuItem(Material material, String name, String model_space ,String... lore) {
