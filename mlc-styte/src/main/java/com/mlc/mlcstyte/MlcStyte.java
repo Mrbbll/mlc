@@ -10,26 +10,19 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * <p>Provides Vault-based chat formatting with placeholders:
  * {prefix}, {suffix}, {name}, {displayname}, {message}.
- * Supports &#rrggbb hex colors and & color codes.</p>
+ * Supports &#rrggbb hex colors.</p>
  *
  * <p>This is a library module bundled into mlc-core — it is NOT a standalone plugin.
  * Initialized via {@link #init(JavaPlugin)} from {@code Mlc.onEnable()}.</p>
  */
 public final class MlcStyte {
     public static JavaPlugin instance;
-
-    /** The current Vault Chat implementation registered on the server. */
     public static Chat vaultChat = null;
 
-    /**
-     * The chat format string.
-     * Supports placeholders: {prefix}, {suffix}, {name}, {displayname}, {message}.
-     * Edit this value directly to change the chat format — no external config needed.
-     */
     public static final String FORMAT = "<{prefix}{name}{suffix}> {message}";
 
     private MlcStyte() {
-        // Utility class — prevent instantiation
+        // 防止实例化
     }
 
     /**

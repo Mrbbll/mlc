@@ -1,5 +1,6 @@
 package com.mlc.mlcstyte;
 
+import io.papermc.paper.chat.ChatRenderer;
 import io.papermc.paper.event.player.AsyncChatEvent;
 
 import net.kyori.adventure.text.Component;
@@ -23,24 +24,29 @@ public class StyteChatListener implements Listener {
      */
     @EventHandler(priority = EventPriority.LOW)
     public void onAsyncChat(AsyncChatEvent event) {
-        event.renderer((source, sourceDisplayName, message, viewer) -> {
-            Component prefix;
-            Component suffix;
 
-            if (MlcStyte.vaultChat != null) {
-                prefix = StyteFormatter.toComponent(MlcStyte.vaultChat.getPlayerPrefix(source));
-                suffix = StyteFormatter.toComponent(MlcStyte.vaultChat.getPlayerSuffix(source));
-            } else {
-                prefix = Component.empty();
-                suffix = Component.empty();
-            }
+        event.renderer(ChatRenderer.viewerUnaware((
+                source, sourceDisplayName,message)->{
+                    Component prefix = Component.empty();
+                    Component suffix = Component.empty();
 
-            Component name = Component.text(source.getName());
+                    Chat chat = MlcStyte.vaultChat;
+                    if(chat!=null){
+                        prefix = StyteFormatter.toComponent(chat.getPlayerPrefix(source));
+                        suffix = StyteFormatter.toComponent(chat.getPlayerSuffix(source));
+                    }
 
-            return StyteFormatter.buildFormat(
-                    MlcStyte.FORMAT, prefix, name, suffix, message, sourceDisplayName
-            );
-        });
+                    return StyteFormatter.buildFormat(
+                            MlcStyte.FORMAT,
+                            prefix,
+                            Component.text(source.getName()),
+                            suffix,
+                            message,
+                            sourceDisplayName
+                    );
+                }
+            )
+        );
     }
 
     /**
@@ -57,7 +63,7 @@ public class StyteChatListener implements Listener {
      * Refresh Vault Chat when a service is unregistered.
      */
     @EventHandler
-    public void onServiceUnregister(ServiceRegisterEvent event) {
+    public void onServiceUnregister(ServiceUnregisterEvent event) {
         if (event.getProvider().getService() == Chat.class) {
             MlcStyte.refreshVault();
         }
