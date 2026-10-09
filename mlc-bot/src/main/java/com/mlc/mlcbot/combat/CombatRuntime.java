@@ -1,6 +1,7 @@
 package com.mlc.mlcbot.combat;
 
 import com.mlc.mlcbot.BotSession;
+import com.mlc.mlcbot.BotTargets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,15 +57,14 @@ public final class CombatRuntime implements AutoCloseable {
         CombatRuntime runtime = current;
         if (runtime == null) throw new IllegalStateException("Combat action scheduled outside its bot session");
         BukkitTask[] task = new BukkitTask[1];
+        UUID scheduledTarget = runtime.session.target;
         task[0] = Bukkit.getScheduler().runTaskLater(plugin, () -> {
             runtime.tasks.remove(task[0]);
             runtime.run(() -> {
-                Player owner = Bukkit.getPlayer(runtime.session.owner);
+                if (scheduledTarget == null || !scheduledTarget.equals(runtime.session.target)) return;
+                Player target = Bukkit.getPlayer(scheduledTarget);
                 Player bot = runtime.session.handle.getBukkitEntity();
-                if (!bot.isValid() || bot.isDead() || owner == null || owner.isDead()
-                        || !bot.getWorld().equals(owner.getWorld())
-                        || owner.getGameMode() == org.bukkit.GameMode.CREATIVE
-                        || owner.getGameMode() == org.bukkit.GameMode.SPECTATOR) return;
+                if (!bot.isValid() || bot.isDead() || !BotTargets.isEligible(bot, target)) return;
                 try { action.run(); }
                 catch (RuntimeException failure) {
                     plugin.getLogger().log(java.util.logging.Level.SEVERE, "mlc-bot 延迟策略失败，已停止该机器人", failure);
@@ -154,7 +154,7 @@ public final class CombatRuntime implements AutoCloseable {
         BlockState old = anchor.getState();
         anchor.setType(Material.AIR, false);
         // Keep native explosion damage/knockback and protection events, with an identifiable bot source.
-        boolean exploded = center.getWorld().createExplosion(center, 5.0F, false, false, bot);
+        boolean exploded = center.getWorld().createExplosion(center, 5.0F, false, true, bot);
         if (!exploded && anchor.getType().isAir()) old.update(true, false);
         runtime.record(anchor, old);
         return exploded;

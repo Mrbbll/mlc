@@ -16,24 +16,19 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import io.papermc.paper.event.entity.EntityKnockbackEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
@@ -104,23 +99,16 @@ public final class BotManager implements Listener, AutoCloseable {
         for (BotSession session : new ArrayList<>(sessions.values())) {
             Player owner = Bukkit.getPlayer(session.owner);
             Player bot = session.handle.getBukkitEntity();
-            if (session.brain.isStopped() || owner == null || !owner.isOnline() || owner.isDead() || bot.isDead() || !bot.isValid()
-                    || !owner.getWorld().equals(bot.getWorld())
-                    || owner.getLocation().distanceSquared(bot.getLocation()) > 48 * 48
+            if (session.brain.isStopped() || owner == null || !owner.isOnline() || bot.isDead() || !bot.isValid()
                     || !bot.getWorld().isChunkLoaded(bot.getLocation().getBlockX() >> 4, bot.getLocation().getBlockZ() >> 4)) {
                 remove(session.owner);
                 continue;
             }
-            if (owner.getGameMode() == GameMode.CREATIVE || owner.getGameMode() == GameMode.SPECTATOR) {
-                session.brain.pause();
-                continue;
-            }
-            // Replenish a consumed totem from the fixed finite reserve after the native resurrection completes.
-            if (session.totems > 0 && bot.getInventory().getItemInOffHand().getType().isAir()) {
-                bot.getInventory().setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING));
-            }
             try {
-                session.brain.tick(session, owner, tick);
+                TotemInventory.refillOffhand(bot.getInventory());
+                Player target = BotTargets.nearest(bot, Bukkit.getOnlinePlayers());
+                session.brain.selectTarget(target);
+                if (target != null) session.brain.tick(session, target, tick);
             } catch (RuntimeException | LinkageError error) {
                 plugin.getLogger().log(Level.SEVERE, "mlc-bot 战斗更新失败，已清理机器人", error);
                 remove(session.owner);
@@ -167,12 +155,11 @@ public final class BotManager implements Listener, AutoCloseable {
     }
 
     @EventHandler public void onQuit(PlayerQuitEvent event) { remove(event.getPlayer().getUniqueId()); }
-    @EventHandler public void onWorldChange(PlayerChangedWorldEvent event) { remove(event.getPlayer().getUniqueId()); }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onDeath(PlayerDeathEvent event) {
         BotSession session = entities.get(event.getEntity().getUniqueId());
-        if (session == null) { remove(event.getEntity().getUniqueId()); return; }
+        if (session == null) return;
         event.getDrops().clear();
         event.setDroppedExp(0);
         event.setKeepInventory(true);
@@ -181,12 +168,6 @@ public final class BotManager implements Listener, AutoCloseable {
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (sessions.get(session.owner) == session) remove(session.owner);
         });
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onResurrect(EntityResurrectEvent event) {
-        BotSession session = entities.get(event.getEntity().getUniqueId());
-        if (session != null) session.totems = Math.max(0, session.totems - 1);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -213,21 +194,6 @@ public final class BotManager implements Listener, AutoCloseable {
         if (entities.containsKey(event.getPlayer().getUniqueId())) {
             event.setDropItems(false);
             event.setExpToDrop(0);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onCrystalExplosion(EntityExplodeEvent event) {
-        if (entities.containsKey(event.getEntity().getUniqueId())) {
-            event.blockList().clear();
-            return;
-        }
-        for (BotSession session : sessions.values()) {
-            if (session.brain.ownsCrystal(event.getEntity().getUniqueId())) {
-                // A training crystal deals native damage but leaves the arena blocks intact.
-                event.blockList().clear();
-                return;
-            }
         }
     }
 

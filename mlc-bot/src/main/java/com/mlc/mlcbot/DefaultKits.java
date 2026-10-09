@@ -8,7 +8,7 @@ import org.bukkit.inventory.PlayerInventory;
 
 /** Fixed defaults adapted from PracticeBot x/j.java, x/bs.java and default_inv.yml. */
 public final class DefaultKits {
-    public static final int TOTEMS = 99;
+    public static final int CPVP_TOTEMS = 65;
 
     private DefaultKits() { }
 
@@ -23,7 +23,7 @@ public final class DefaultKits {
         inv.setItem(0, enchanted(Material.NETHERITE_SWORD, Enchantment.SHARPNESS, 5));
         inv.setItem(1, enchanted(Material.NETHERITE_AXE, Enchantment.SHARPNESS, 5));
         inv.setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING));
-        // Totems are stored as normal non-stackable items and replenished from a finite reserve.
+        // One physical spare; replenishment moves this item rather than creating another.
         inv.setItem(35, new ItemStack(Material.TOTEM_OF_UNDYING));
         if (type == BotType.CPVP) {
             inv.getItem(0).addUnsafeEnchantment(Enchantment.KNOCKBACK, 1);

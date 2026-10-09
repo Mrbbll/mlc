@@ -13,7 +13,7 @@ public final class BotSession {
     public final BotPlayer handle;
     public final BotNavigator navigator = new BotNavigator();
     public final CombatBrain brain = new CombatBrain();
-    public int totems = DefaultKits.TOTEMS;
+    public UUID target;
 
     public BotSession(UUID owner, BotType type, BotStrength strength, BotPlayer handle) {
         this.owner = owner;

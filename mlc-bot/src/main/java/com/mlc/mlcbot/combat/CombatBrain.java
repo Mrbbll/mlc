@@ -2,6 +2,9 @@ package com.mlc.mlcbot.combat;
 
 import com.mlc.mlcbot.BotSession;
 import com.mlc.mlcbot.BotType;
+import com.mlc.mlcbot.BotTargets;
+import com.mlc.mlcbot.DefaultKits;
+import com.mlc.mlcbot.TotemInventory;
 import com.mlc.mlcbot.practice.BotTrait;
 import com.mlc.mlcbot.practice.PracticeBotPlugin;
 import com.mlc.mlcbot.practice.bridge.NPC;
@@ -32,9 +35,9 @@ public final class CombatBrain {
         npc = new NPC(session);
         trait.attach(npc);
         trait.setOwner(session.owner);
-        trait.setBoundTarget(session.owner);
         trait.setGuiEnabled(false);
-        trait.setTotemCount(session.totems);
+        trait.setTotemCount(session.type.isCpvp() ? DefaultKits.CPVP_TOTEMS
+                : TotemInventory.count(session.handle.getBukkitEntity().getInventory()));
         trait.setBotType(session.type.isCpvp() ? PracticeBotMode.CPVP : session.type == BotType.DUMMY ? PracticeBotMode.DUMMY : PracticeBotMode.NORMAL);
         trait.onSpawn();
         cpvp = new CpvpCombatController(plugin);
@@ -66,7 +69,7 @@ public final class CombatBrain {
         runtime.run(() -> {
             Player bot = session.handle.getBukkitEntity();
             session.handle.steer(new Vector(), false);
-            trait.setTotemCount(session.totems);
+            trait.setTotemCount(TotemInventory.count(bot.getInventory()));
             if (session.type == BotType.DUMMY) {
                 Vector delta = target.getEyeLocation().toVector().subtract(bot.getEyeLocation().toVector());
                 bot.setRotation((float)Math.toDegrees(Math.atan2(-delta.getX(), delta.getZ())),
@@ -138,12 +141,21 @@ public final class CombatBrain {
     }
 
     private void faceAfterHit() {
-        if (npc != null && session != null) {
+        if (npc != null && session != null && session.target != null) {
             npc.getNavigator().cancelNavigation();
-            Player bot = session.handle.getBukkitEntity(), target = Bukkit.getPlayer(session.owner);
+            Player bot = session.handle.getBukkitEntity(), target = Bukkit.getPlayer(session.target);
+            if (!BotTargets.isEligible(bot, target)) return;
             if (session.type.isCpvp()) cpvp.b(npc, bot, target, trait.getCpvpSettings());
             else if (session.type == BotType.NORMAL) melee.a(npc, bot, target);
         }
+    }
+
+    public void selectTarget(Player target) {
+        UUID next = target == null ? null : target.getUniqueId();
+        if (java.util.Objects.equals(session.target, next)) return;
+        pause();
+        session.target = next;
+        trait.setBoundTarget(next);
     }
 
     public void pause() {
