@@ -2,6 +2,10 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
+val mockitoAgent = configurations.create("mockitoAgent") {
+    isTransitive = false
+}
+
 dependencies {
     compileOnly(libs.vault) {
         exclude("org.bukkit", "bukkit")
@@ -16,6 +20,19 @@ dependencies {
     implementation(project(":mlc-waystone"))
     implementation(project(":mlc-styte"))
     implementation(project(":mlc-bot"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testCompileOnly("io.papermc.paper:paper-api:26.3.build.+")
+    testImplementation("org.mockito:mockito-core:5.24.0")
+    mockitoAgent("org.mockito:mockito-core:5.24.0")
+    testRuntimeOnly(files(sourceSets.main.get().compileClasspath))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    jvmArgumentProviders.add(CommandLineArgumentProvider {
+        listOf("-javaagent:${mockitoAgent.singleFile.absolutePath}")
+    })
 }
 
 tasks {
