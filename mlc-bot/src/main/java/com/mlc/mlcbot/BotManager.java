@@ -13,7 +13,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
-import net.minecraft.world.level.GameType;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -35,7 +34,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
@@ -69,9 +67,8 @@ public final class BotManager implements Listener, AutoCloseable {
         BotPlayer handle = new BotPlayer(plugin, at, "Bot_" + UUID.randomUUID().toString().substring(0, 8));
         BotSession session = new BotSession(owner.getUniqueId(), type, strength, handle);
         try {
-            handle.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
-            handle.getBukkitEntity().setMetadata("NPC", new FixedMetadataValue(plugin, true));
-            handle.getBukkitEntity().setMetadata("mlc-bot", new FixedMetadataValue(plugin, true));
+            BotIdentity.mark(handle.getBukkitEntity());
+            handle.getBukkitEntity().setGameMode(GameMode.SURVIVAL);
             DefaultKits.equip(handle.getBukkitEntity(), type);
             session.brain.initialize(combat, session);
             // Clients must know the profile before the world tracker sends the PLAYER spawn packet.

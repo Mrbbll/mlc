@@ -2,9 +2,23 @@ name: mlc
 version: ${version}
 main: com.mlc.mlc.Mlc
 description: MLC server core plugin
-api-version: '1.21.11'
-bootstrapper: com.mlc.mlc.Mlc
-loader: com.mlc.mlc.Mlc
+api-version: '26.3'
+bootstrapper: com.mlc.mlc.MlcBootstrap
+authors: [Mr_bl]
+dependencies:
+  server:
+    PlaceholderAPI:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    Vault:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    BlueMap:
+      load: BEFORE
+      required: false
+      join-classpath: true
 permissions:
   mlc.bot:
     description: "生成和移除自己的 PvP 机器人"

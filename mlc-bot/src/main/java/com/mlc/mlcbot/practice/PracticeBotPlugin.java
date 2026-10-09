@@ -1,5 +1,5 @@
 package com.mlc.mlcbot.practice;
-import com.mlc.mlcbot.practice.x.b;
+import com.mlc.mlcbot.practice.x.PracticeCombatConfig;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import org.bukkit.Material;
@@ -11,20 +11,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class PracticeBotPlugin {
     private static PracticeBotPlugin instance;
     private final JavaPlugin plugin;
-    private final b config;
+    private final PracticeCombatConfig config;
     private final CombatManager manager = new CombatManager();
     public PracticeBotPlugin(JavaPlugin plugin) {
         this.plugin=plugin;
         var stream=plugin.getResource("META-INF/mlc-bot/practicebot-defaults.yml");
         if(stream==null) throw new IllegalStateException("Missing built-in PracticeBot combat defaults");
         try(var reader=new InputStreamReader(stream,StandardCharsets.UTF_8)) {
-            config=new b(YamlConfiguration.loadConfiguration(reader));
+            config=new PracticeCombatConfig(YamlConfiguration.loadConfiguration(reader));
         } catch(java.io.IOException e) { throw new IllegalStateException(e); }
         instance=this;
     }
     public JavaPlugin plugin(){return plugin;}
     public static PracticeBotPlugin getInstance(){return instance;}
-    public b getConfigManager(){return config;}
+    public PracticeCombatConfig getConfigManager(){return config;}
     public CombatManager getBotManager(){return manager;}
     public org.bukkit.configuration.file.FileConfiguration getDefaultInvConfig(){return null;}
     public void addCombatTag(org.bukkit.entity.Player player){}

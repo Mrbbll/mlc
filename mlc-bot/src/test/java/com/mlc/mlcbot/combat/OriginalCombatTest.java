@@ -2,10 +2,10 @@ package com.mlc.mlcbot.combat;
 
 import com.mlc.mlcbot.BotStrength;
 import com.mlc.mlcbot.BotType;
-import com.mlc.mlcbot.practice.x.ae;
-import com.mlc.mlcbot.practice.x.g1;
-import com.mlc.mlcbot.practice.x.j0;
-import com.mlc.mlcbot.practice.x.k1;
+import com.mlc.mlcbot.practice.x.CpvpSettings;
+import com.mlc.mlcbot.practice.x.PearlTrajectoryPredictor;
+import com.mlc.mlcbot.practice.x.ExplosionDamageEvaluator;
+import com.mlc.mlcbot.practice.x.CombatGeometry;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -14,8 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class OriginalCombatTest {
     @Test void difficultyKeepsOriginalTimingAndHumanizedMistakes() {
-        ae easy = PracticeProfiles.cpvp(BotType.ADVANCED, BotStrength.EASY);
-        ae pro = PracticeProfiles.cpvp(BotType.ADVANCED, BotStrength.EXPERT);
+        CpvpSettings easy = PracticeProfiles.cpvp(BotType.ADVANCED, BotStrength.EASY);
+        CpvpSettings pro = PracticeProfiles.cpvp(BotType.ADVANCED, BotStrength.EXPERT);
         assertEquals(220, easy.aW());
         assertEquals(320, easy.aX());
         assertEquals(35, easy.bB());
@@ -33,9 +33,9 @@ class OriginalCombatTest {
     }
 
     @Test void presetStateCannotLeakAcrossBots() {
-        ae anchor = PracticeProfiles.cpvp(BotType.ANCHOR, BotStrength.HARD);
-        ae mace = PracticeProfiles.cpvp(BotType.MACE, BotStrength.NORMAL);
-        ae full = PracticeProfiles.cpvp(BotType.ADVANCED, BotStrength.EXPERT);
+        CpvpSettings anchor = PracticeProfiles.cpvp(BotType.ANCHOR, BotStrength.HARD);
+        CpvpSettings mace = PracticeProfiles.cpvp(BotType.MACE, BotStrength.NORMAL);
+        CpvpSettings full = PracticeProfiles.cpvp(BotType.ADVANCED, BotStrength.EXPERT);
         assertTrue(anchor.aQ());
         assertFalse(anchor.aL());
         assertTrue(mace.aL());
@@ -48,7 +48,7 @@ class OriginalCombatTest {
     }
 
     @Test void rejectsLethalAndBadExplosionTrades() {
-        j0 damage = new j0(new k1());
+        ExplosionDamageEvaluator damage = new ExplosionDamageEvaluator(new CombatGeometry());
         assertFalse(damage.a(20, 20, 100), "lethal self damage must never be traded for target damage");
         assertFalse(damage.a(3.99, 4, 30), "low HP must retain the original survival margin");
         assertFalse(damage.a(9, 20, 10), "expensive unfavorable explosion must be rejected");
@@ -57,7 +57,7 @@ class OriginalCombatTest {
     }
 
     @Test void pearlVerticalSolverMatchesItsNativeDragAndGravityModel() {
-        g1 trajectory = new g1(null);
+        PearlTrajectoryPredictor trajectory = new PearlTrajectoryPredictor(null);
         for (double height : new double[]{-3, 0, 2, 8}) {
             for (int ticks : new int[]{12, 20, 30}) {
                 double vertical = trajectory.a(height, ticks);
@@ -67,7 +67,7 @@ class OriginalCombatTest {
     }
 
     @Test void pearlAimKeepsOriginalSpeedAndRejectsInvalidInputs() {
-        g1 trajectory = new g1(null);
+        PearlTrajectoryPredictor trajectory = new PearlTrajectoryPredictor(null);
         Location start = new Location(null, 0, 65, 0);
         Location target = new Location(null, 16, 66, 8);
         Vector velocity = trajectory.a(start, target, 20);

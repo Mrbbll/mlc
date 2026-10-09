@@ -1,6 +1,7 @@
 package com.mlc.mlcwaystone;
 
 import com.mlc.mlcwaystone.commands.Reload;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import com.mlc.mlcwaystone.listener.WaystoneListener;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -12,7 +13,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,7 +49,8 @@ public final class Mlcwaystone {
 
         // Register listener and command
         Bukkit.getPluginManager().registerEvents(new WaystoneListener(), instance);
-        Objects.requireNonNull(Bukkit.getPluginCommand("reloadwaystone")).setExecutor(new Reload());
+        instance.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
+                event -> event.registrar().register("reloadwaystone", "重新加载传送石碑", new Reload()));
 
         instance.getLogger().info("传送石碑系统加载成功，当前传送点数量: " + waystoneDataMap.size());
     }

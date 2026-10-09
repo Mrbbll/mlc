@@ -1,5 +1,6 @@
 package com.mlc.mlc.mlcmain.maxhealth;
 
+import com.mlc.mlcbot.BotIdentity;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -16,7 +17,7 @@ public class Deadlistener implements Listener {
     @EventHandler
     public void ondead(PlayerDeathEvent event) {
         Player player = event.getPlayer();
-        if (player.hasMetadata("mlc-bot")) {
+        if (BotIdentity.isBot(player)) {
             return;
         }
 

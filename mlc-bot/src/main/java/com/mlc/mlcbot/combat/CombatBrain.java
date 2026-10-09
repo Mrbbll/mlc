@@ -5,11 +5,11 @@ import com.mlc.mlcbot.BotType;
 import com.mlc.mlcbot.practice.BotTrait;
 import com.mlc.mlcbot.practice.PracticeBotPlugin;
 import com.mlc.mlcbot.practice.bridge.NPC;
-import com.mlc.mlcbot.practice.x.a;
-import com.mlc.mlcbot.practice.x.av;
-import com.mlc.mlcbot.practice.x.v;
-import com.mlc.mlcbot.practice.x.x;
-import com.mlc.mlcbot.practice.x.y;
+import com.mlc.mlcbot.practice.x.PracticeBotMode;
+import com.mlc.mlcbot.practice.x.CpvpCombatController;
+import com.mlc.mlcbot.practice.x.MeleeCombatController;
+import com.mlc.mlcbot.practice.x.MeleeMovementController;
+import com.mlc.mlcbot.practice.x.ShieldController;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -20,10 +20,10 @@ public final class CombatBrain {
     private final BotTrait trait = new BotTrait();
     private CombatRuntime runtime;
     private NPC npc;
-    private av cpvp;
-    private v melee;
-    private x movement;
-    private y shield;
+    private CpvpCombatController cpvp;
+    private MeleeCombatController melee;
+    private MeleeMovementController movement;
+    private ShieldController shield;
     private BotSession session;
 
     public void initialize(PracticeBotPlugin plugin, BotSession session) {
@@ -35,12 +35,12 @@ public final class CombatBrain {
         trait.setBoundTarget(session.owner);
         trait.setGuiEnabled(false);
         trait.setTotemCount(session.totems);
-        trait.setBotType(session.type.isCpvp() ? a.CPVP : session.type == BotType.DUMMY ? a.DUMMY : a.NORMAL);
+        trait.setBotType(session.type.isCpvp() ? PracticeBotMode.CPVP : session.type == BotType.DUMMY ? PracticeBotMode.DUMMY : PracticeBotMode.NORMAL);
         trait.onSpawn();
-        cpvp = new av(plugin);
-        shield = new y(plugin);
-        melee = new v(plugin, shield);
-        movement = new x(plugin);
+        cpvp = new CpvpCombatController(plugin);
+        shield = new ShieldController(plugin);
+        melee = new MeleeCombatController(plugin, shield);
+        movement = new MeleeMovementController(plugin);
         if (session.type.isCpvp()) {
             trait.setCpvpSettings(PracticeProfiles.cpvp(session.type, session.strength, plugin.getConfigManager().e()));
             trait.setCpvpEnabled(true);
@@ -88,7 +88,7 @@ public final class CombatBrain {
 
     /** Extracted pre-controller state updates from PracticeBot x/u.java. */
     private void updateStates(Player bot, Player target, long now) {
-        boolean grounded = x.a(bot);
+        boolean grounded = MeleeMovementController.a(bot);
         double velocityY = bot.getVelocity().getY(), height = bot.getLocation().getY();
         trait.isInWater = false;
         if (bot.isInWater()) movement.a(bot, target, trait, npc);

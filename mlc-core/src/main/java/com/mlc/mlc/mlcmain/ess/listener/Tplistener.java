@@ -1,5 +1,6 @@
 package com.mlc.mlc.mlcmain.ess.listener;
 
+import com.mlc.mlcbot.BotIdentity;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -19,7 +20,7 @@ import static com.mlc.mlc.Mlc.playerfiledir;
 public class Tplistener implements Listener {
     @EventHandler
     public void onteleport(PlayerTeleportEvent event) throws IOException {
-        if (event.getPlayer().hasMetadata("mlc-bot")) {
+        if (BotIdentity.isBot(event.getPlayer())) {
             return;
         }
         PlayerTeleportEvent.TeleportCause cause = event.getCause();
@@ -45,7 +46,7 @@ public class Tplistener implements Listener {
     @EventHandler
     public void ondead(PlayerDeathEvent event) throws IOException {
         Player player = event.getPlayer();
-        if (player.hasMetadata("mlc-bot")) {
+        if (BotIdentity.isBot(player)) {
             return;
         }
         UUID uuid = player.getUniqueId();

@@ -1,9 +1,9 @@
 // Runtime combat state extracted from PracticeBot; persistence/editor lifecycle omitted.
 package com.mlc.mlcbot.practice;
 
-import com.mlc.mlcbot.practice.x.a;
-import com.mlc.mlcbot.practice.x.ae;
-import com.mlc.mlcbot.practice.x.af;
+import com.mlc.mlcbot.practice.x.PracticeBotMode;
+import com.mlc.mlcbot.practice.x.CpvpSettings;
+import com.mlc.mlcbot.practice.x.CpvpDefaults;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.UUID;
@@ -38,7 +38,7 @@ public class BotTrait extends Trait {
    private boolean frozen = false;
    private boolean shieldInMainHand = false;
    private boolean guiEnabled = true;
-   private a botType = a.NORMAL;
+   private PracticeBotMode botType = PracticeBotMode.NORMAL;
    private String frozenAnchorWorld = null;
    private double frozenAnchorX = 0.0;
    private double frozenAnchorY = 0.0;
@@ -82,7 +82,7 @@ public class BotTrait extends Trait {
    private int pvpCritChance = 2;
    private int pvpCritSpeed = 0;
    private boolean cpvpEnabled = false;
-   private ae cpvpSettings = null;
+   private CpvpSettings cpvpSettings = null;
    public long shieldDisabledUntil = 0L;
    public long lastAttackTime = 0L;
    public boolean pendingDelayedAttack = false;
@@ -155,17 +155,17 @@ public class BotTrait extends Trait {
    public boolean followDisabledByKnockback = false;
    public long lastRandomWalkTime = 0L;
 
-   public a getBotType() {
+   public PracticeBotMode getBotType() {
       return this.botType;
    }
 
-   public void setBotType(a var1) {
-      this.botType = var1 == null ? a.NORMAL : var1;
+   public void setBotType(PracticeBotMode var1) {
+      this.botType = var1 == null ? PracticeBotMode.NORMAL : var1;
       this.enforceCpvpLookLock();
    }
 
    private boolean isCpvpBotMode() {
-      return this.botType == a.CPVP || this.cpvpEnabled;
+      return this.botType == PracticeBotMode.CPVP || this.cpvpEnabled;
    }
 
    private void enforceCpvpLookLock() {
@@ -805,7 +805,7 @@ public class BotTrait extends Trait {
       }
    }
 
-   public ae getCpvpSettings() {
+   public CpvpSettings getCpvpSettings() {
       if (this.cpvpSettings == null) {
          this.initializeCpvpSettingsInternal();
       }
@@ -814,10 +814,10 @@ public class BotTrait extends Trait {
    }
 
    private void initializeCpvpSettingsInternal() {
-      this.cpvpSettings = new ae();
+      this.cpvpSettings = new CpvpSettings();
       PracticeBotPlugin var1 = PracticeBotPlugin.getInstance();
       if (var1 != null && var1.getConfigManager() != null) {
-         af var2 = var1.getConfigManager().e();
+         CpvpDefaults var2 = var1.getConfigManager().e();
          if (var2 != null) {
             this.cpvpSettings.a(var2);
          }
@@ -828,7 +828,7 @@ public class BotTrait extends Trait {
       this.initializeCpvpSettingsInternal();
    }
 
-   public void setCpvpSettings(ae var1) {
+   public void setCpvpSettings(CpvpSettings var1) {
       this.cpvpSettings = var1;
    }
 

@@ -2,8 +2,6 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.mlcmain.hook.economy.MlcEconomy;
 import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
-import io.papermc.paper.plugin.bootstrap.BootstrapContext;
-import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -21,8 +19,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 
-public final class Mlc extends JavaPlugin implements PluginBootstrap {
-
+public final class Mlc extends JavaPlugin {
 
     public static JavaPlugin instance;
     public static FileConfiguration fileConfiguration;
@@ -35,12 +32,6 @@ public final class Mlc extends JavaPlugin implements PluginBootstrap {
     public static Map<UUID,UUID> Tpaheremap = new HashMap<>();
     public static File playerfiledir;
     public static MiniMessage miniMessage;
-
-
-    @Override
-    public void bootstrap(BootstrapContext context) {
-        BootStrapTask.run(context);
-    }
 
 
     @Override

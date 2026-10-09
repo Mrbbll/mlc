@@ -29,16 +29,17 @@ tasks {
     }
     processResources {
         inputs.property("version", version)
-        filesMatching("**/plugin.yml") {
-            expand(project.properties)
+        filesMatching(listOf("**/plugin.yml", "**/paper-plugin.yml")) {
+            expand(mapOf("version" to inputs.properties["version"]))
         }
     }
 }
 
 // Copy shadow jar to target/
 tasks.register<Copy>("copyJar") {
+    val outputJarName = "mlc-${project.version}.jar"
     dependsOn(tasks.shadowJar)
     from(tasks.shadowJar.flatMap { it.archiveFile })
     into(rootProject.layout.projectDirectory.dir("target"))
-    rename { "mlc-${project.version}.jar" }
+    rename { outputJarName }
 }
