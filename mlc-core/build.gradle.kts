@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":mlc-domain"))
     implementation(project(":mlc-waystone"))
     implementation(project(":mlc-styte"))
+    implementation(project(":mlc-bot"))
 }
 
 tasks {

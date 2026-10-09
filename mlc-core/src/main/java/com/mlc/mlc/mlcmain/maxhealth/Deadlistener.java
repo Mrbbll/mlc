@@ -16,6 +16,9 @@ public class Deadlistener implements Listener {
     @EventHandler
     public void ondead(PlayerDeathEvent event) {
         Player player = event.getPlayer();
+        if (player.hasMetadata("mlc-bot")) {
+            return;
+        }
 
         // 假人不参与死亡扣生命
         String isFake = PlaceholderAPI.setPlaceholders(

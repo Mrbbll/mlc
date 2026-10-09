@@ -117,12 +117,15 @@ public final class Mlc extends JavaPlugin implements PluginBootstrap {
         // Initialize mlc-styte system
         com.mlc.mlcstyte.MlcStyte.init(this);
 
+        com.mlc.mlcbot.MlcBot.init(this);
+
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
     }
 
 
     @Override
     public void onDisable() {
+        com.mlc.mlcbot.MlcBot.shutdown();
         // Plugin shutdown logic
         Bukkit.resetRecipes();
         getLogger().info("\n\nmlc核心插件卸载成功\n\n");

@@ -19,6 +19,9 @@ import static com.mlc.mlc.Mlc.playerfiledir;
 public class Tplistener implements Listener {
     @EventHandler
     public void onteleport(PlayerTeleportEvent event) throws IOException {
+        if (event.getPlayer().hasMetadata("mlc-bot")) {
+            return;
+        }
         PlayerTeleportEvent.TeleportCause cause = event.getCause();
 
         if(cause.equals(PlayerTeleportEvent.TeleportCause.PLUGIN)){
@@ -42,6 +45,9 @@ public class Tplistener implements Listener {
     @EventHandler
     public void ondead(PlayerDeathEvent event) throws IOException {
         Player player = event.getPlayer();
+        if (player.hasMetadata("mlc-bot")) {
+            return;
+        }
         UUID uuid = player.getUniqueId();
         File playerfile = new File(playerfiledir,uuid+".yml");
         if(!playerfile.exists()){

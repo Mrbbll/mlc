@@ -44,18 +44,18 @@ subprojects {
     }
 
     java {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+        toolchain.languageVersion.set(JavaLanguageVersion.of(25))
     }
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
         options.compilerArgs.add("-Xlint:deprecation")
-        options.release.set(21)
+        options.release.set(25)
     }
 
     // All subprojects need Paper API
     dependencies {
-        "compileOnly"("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+        "compileOnly"("io.papermc.paper:paper-api:26.3.build.+")
     }
 }
 
@@ -64,6 +64,6 @@ subprojects {
 // ============================================================
 tasks {
     runServer {
-        minecraftVersion("1.21.8")
+        minecraftVersion("26.3")
     }
 }

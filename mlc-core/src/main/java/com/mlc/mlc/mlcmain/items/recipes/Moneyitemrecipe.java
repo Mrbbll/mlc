@@ -39,17 +39,17 @@ public class Moneyitemrecipe {
         Bukkit.addRecipe(shapedRecipe1);
     }
     public static void money_gemrecipe(){
-        BlastingRecipe blastingRecipe = new BlastingRecipe(new NamespacedKey(instance,"money_gemrecipe"),money_gem, new RecipeChoice.ExactChoice(Mlcitems.money_stack),3.0f,102400);
+        BlastingRecipe blastingRecipe = new BlastingRecipe(new NamespacedKey(instance,"money_gemrecipe"),money_gem, RecipeChoice.exactChoice(Mlcitems.money_stack),3.0f,102400);
         Bukkit.addRecipe(blastingRecipe);
     }
 
     public static void money_nugget_to_coinrecipe(){
-       StonecuttingRecipe stonecuttingRecipe = new StonecuttingRecipe(new NamespacedKey(instance,"money_nugget_to_coinrecipe"),money_coin, new RecipeChoice.ExactChoice(money_nugget));
+       StonecuttingRecipe stonecuttingRecipe = new StonecuttingRecipe(new NamespacedKey(instance,"money_nugget_to_coinrecipe"),money_coin, RecipeChoice.exactChoice(money_nugget));
        Bukkit.addRecipe(stonecuttingRecipe);
     }
 
     public static void money_coin_to_nuggetrecipe(){
-        FurnaceRecipe furnaceRecipe = new FurnaceRecipe(new NamespacedKey(instance,"money_coin_to_nuggetrecipe"),money_nugget, new RecipeChoice.ExactChoice(money_coin),1.0f,200);
+        FurnaceRecipe furnaceRecipe = new FurnaceRecipe(new NamespacedKey(instance,"money_coin_to_nuggetrecipe"),money_nugget, RecipeChoice.exactChoice(money_coin),1.0f,200);
         Bukkit.addRecipe(furnaceRecipe);
     }
 

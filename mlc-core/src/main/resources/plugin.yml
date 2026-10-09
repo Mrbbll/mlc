@@ -5,6 +5,10 @@ api-version: '1.21'
 authors: [Mr_bl]
 depend: ["PlaceholderAPI","Vault"]
 softdepend: ["BlueMap"]
+permissions:
+  mlc.bot:
+    description: "生成和移除自己的 PvP 机器人"
+    default: op
 commands:
   item:
     description: "展示物品"

@@ -1,0 +1,146 @@
+# Embedded original combat defaults; never saved to a server config.
+cpvp:
+  defaults:
+    skill-level: MEDIUM
+    aggression-weight: 1.3
+    use-pearls: true
+    use-mace: false
+    use-golden-apples: false
+    place-obsidian: true
+    break-blocks: false
+    strafing-enabled: true
+    anchoring-mode: false
+    heal-threshold: 0.4
+    low-hp-crystal-lethal-reserve: 0.05
+    pearl-cooldown-ms: 1800
+    fov-degrees: 120.0
+  difficulty-levels:
+    EASY:
+      aggression-weight: 0.7
+      place-delay-min-ms: 220
+      place-delay-max-ms: 320
+      break-delay-min-ms: 130
+      break-delay-max-ms: 190
+      sword-delay-ms: 800
+      reaction-hesitation-chance-percent: 35
+      reaction-hesitation-min-ms: 180
+      reaction-hesitation-max-ms: 380
+      crystal-miss-chance-percent: 18
+      crystal-miss-min-ms: 160
+      crystal-miss-max-ms: 360
+      non-urgent-pearl-restraint-chance-percent: 45
+    MEDIUM:
+      aggression-weight: 1.3
+      place-delay-min-ms: 120
+      place-delay-max-ms: 190
+      break-delay-min-ms: 80
+      break-delay-max-ms: 135
+      sword-delay-ms: 600
+      reaction-hesitation-chance-percent: 14
+      reaction-hesitation-min-ms: 70
+      reaction-hesitation-max-ms: 160
+      crystal-miss-chance-percent: 7
+      crystal-miss-min-ms: 90
+      crystal-miss-max-ms: 210
+      non-urgent-pearl-restraint-chance-percent: 18
+    HARD:
+      aggression-weight: 1.5
+      place-delay-min-ms: 15
+      place-delay-max-ms: 35
+      break-delay-min-ms: 13
+      break-delay-max-ms: 45
+      sword-delay-ms: 500
+      reaction-hesitation-chance-percent: 4
+      reaction-hesitation-min-ms: 20
+      reaction-hesitation-max-ms: 55
+      crystal-miss-chance-percent: 2
+      crystal-miss-min-ms: 40
+      crystal-miss-max-ms: 90
+      non-urgent-pearl-restraint-chance-percent: 5
+    PRO:
+      aggression-weight: 2.0
+      place-delay-min-ms: 3
+      place-delay-max-ms: 14
+      break-delay-min-ms: 2
+      break-delay-max-ms: 18
+      sword-delay-ms: 500
+      reaction-hesitation-chance-percent: 0
+      reaction-hesitation-min-ms: 0
+      reaction-hesitation-max-ms: 0
+      crystal-miss-chance-percent: 0
+      crystal-miss-min-ms: 0
+      crystal-miss-max-ms: 0
+      non-urgent-pearl-restraint-chance-percent: 0
+  performance:
+    adaptive-enabled: true
+    low-bot-threshold: 10
+    medium-bot-threshold: 20
+    high-bot-threshold: 35
+    low-scan-period-ticks: 3
+    medium-scan-period-ticks: 4
+    high-scan-period-ticks: 6
+    anchor-count-cache-ticks: 3
+    crystal-search-cache-ticks: 2
+    navigation-retarget-ms: 250
+    high-load-navigation-retarget-ms: 1200
+ai:
+  tick-interval: 1
+  random-walk-radius: 6.0
+pvp:
+  base-cooldown-ms: 500
+  crit-cooldowns:
+    slow: 550      # More careful, harder hits
+    normal: 440    # Balanced timing
+    fast: 340      # Aggressive rapid crits
+  aggression-cooldown-multipliers:
+    low: 1.5       # 50% slower (more defensive)
+    medium: 1.2    # 20% slower (balanced)
+    high: 1.0      # Normal speed (aggressive)
+  aggression-damage-modifiers:
+    low: 1.0       # Normal damage
+    medium: 1.05   # 5% more damage
+    high: 1.1      # 10% more damage
+  crit-multiplier: 1.5
+  reach-distances:
+    short: 2.0      # Conservative reach
+    normal: 3.0     # Vanilla Minecraft reach
+    extended: 3.5   # Slightly extended
+    advanced: 4.0   # Maximum reach
+  chase-speeds:
+    low: 1.0        # Normal walking speed
+    medium: 1.2     # 20% faster
+    high: 1.4       # 40% faster
+  knockback:
+    horizontal: 0.4
+    vertical: 0.36
+    wtap-multiplier: 1.0
+    wtap-bonus: 0.3
+  strafe:
+    speeds:
+      low: 0.16       # Slow, predictable
+      medium: 0.20    # Balanced
+      high: 0.24      # Fast, hard to hit
+    switch-intervals:
+      low: 800        # Slow direction changes
+      medium: 550     # Moderate changes
+      high: 350       # Rapid direction changes
+  approach-strafe:
+    speeds:
+      low: 0.10
+      medium: 0.13
+      high: 0.16
+    switch-intervals:
+      low: 700
+      medium: 500
+      high: 350
+    chase-speeds:
+      low: 0.16
+      medium: 0.20
+      high: 0.24
+shield:
+  stun-duration-ms: 5000
+  block-angle: 180.0
+  block-delay-ms: 100
+debug:
+  verbose-ai: false
+  verbose-pvp: false
