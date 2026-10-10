@@ -31,7 +31,8 @@ public class BootStrapTask {
 
                     event.registry().register(
                             EnchantmentKeys.VEINMINE,
-                            b -> b.description(Component.translatable("enchantment.mlc.veinmine").color(NamedTextColor.GRAY))
+                            // b -> b.description(Component.translatable("enchantment.mlc.veinmine").color(NamedTextColor.GRAY))
+                            b -> b.description(Component.text("连锁挖掘").color(NamedTextColor.YELLOW))
                                     .supportedItems(excavatorSet)
                                     .weight(1)
                                     .maxLevel(1)
