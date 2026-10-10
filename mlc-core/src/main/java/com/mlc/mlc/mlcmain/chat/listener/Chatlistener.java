@@ -1,6 +1,5 @@
 package com.mlc.mlc.mlcmain.chat.listener;
 
-import com.mlc.mlc.mlcmain.chat.Chatmanager;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentIteratorFlag;
@@ -24,7 +23,6 @@ public class Chatlistener implements Listener {
             if (itemname != null) {
                 String replaced = messageStr.replace("[item]", itemname.toString());
                 event.message(Component.text(replaced));
-
         }
     }
 

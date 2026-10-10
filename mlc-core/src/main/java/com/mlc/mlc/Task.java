@@ -2,9 +2,11 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.mlcmain.backpack.listener.Backpacklistener;
 import com.mlc.mlc.mlcmain.chat.commands.Item;
+import com.mlc.mlc.mlcmain.chat.listener.Chatlistener;
 import com.mlc.mlc.mlcmain.crates.listener.Opencreates;
 import com.mlc.mlc.mlcmain.dialog.Listener.ServerJoinListener;
 import com.mlc.mlc.mlcmain.dropmoney.DropmoneyListener;
+import com.mlc.mlc.mlcmain.enchantments.listener.EnchantRestricter;
 import com.mlc.mlc.mlcmain.enchantments.listener.EnchantUpgradelistener;
 import com.mlc.mlc.mlcmain.enchantments.moreenchants.VeinMine;
 import com.mlc.mlc.mlcmain.ess.listener.Tplistener;
@@ -79,6 +81,9 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new menuopenlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Tpalistener(), instance);
         Bukkit.getPluginManager().registerEvents(new VeinMine(), instance);
+        Bukkit.getPluginManager().registerEvents(new Chatlistener(), instance);
+        Bukkit.getPluginManager().registerEvents(new EnchantRestricter(), instance);
+
 
         ExecutorCommand.register(instance, Map.ofEntries(
                 Map.entry("mlcreload", new reload()),

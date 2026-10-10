@@ -30,8 +30,10 @@ public class Sleeplistener implements Listener {
         List<String> words = Mlc.readwords(path);
 
         if(wordsnum == 9601){
+            wordsnum = 0;
             instance.getConfig().set("words", 0);
             instance.saveConfig();
+
         };
 
         wordsnum++;

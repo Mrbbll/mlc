@@ -19,7 +19,7 @@ import static com.mlc.mlc.Mlc.fileConfiguration;
 import static com.mlc.mlc.Mlc.instance;
 
 public class packsender {
-    private static ResourcePackInfo resourcePackInfo;
+    private static volatile ResourcePackInfo resourcePackInfo;
 
 
     public static void init() throws NoSuchAlgorithmException, IOException {
@@ -27,20 +27,26 @@ public class packsender {
         String input = fileConfiguration.getString("resourcepack");
 
         if (input != null) {
-            // 计算远程资源包哈希
-            URI packuri = URI.create(input);
-            String hash = getremotehash(packuri);
-
-
-
-            resourcePackInfo = ResourcePackInfo.resourcePackInfo()
-                    .uri(packuri)
-                    .hash(hash)
-                    .build();
+            init(input);
         }else {
             instance.getLogger().warning("资源包链接错误，服务器将关闭");
             instance.getServer().shutdown();
         }
+    }
+
+    public static void init(String input) throws NoSuchAlgorithmException, IOException {
+        if (input == null || input.isBlank()) {
+            throw new IllegalArgumentException("资源包链接不能为空");
+        }
+        URI packuri = URI.create(input);
+        if (!"http".equalsIgnoreCase(packuri.getScheme()) && !"https".equalsIgnoreCase(packuri.getScheme())) {
+            throw new IllegalArgumentException("资源包链接必须使用 HTTP 或 HTTPS");
+        }
+        String hash = getremotehash(packuri);
+        resourcePackInfo = ResourcePackInfo.resourcePackInfo()
+                .uri(packuri)
+                .hash(hash)
+                .build();
     }
 
     private static String getremotehash(URI uri) throws IOException, NoSuchAlgorithmException {
@@ -90,7 +96,7 @@ public class packsender {
                 .packs(resourcePackInfo)
                 .prompt(Component.text("请下载服务器材质包"))
                 .required(true)
-//                .callback(cb)
+                .callback(cb)
                 .build();
         connection.getAudience().sendResourcePacks(resourcePackRequest);
 

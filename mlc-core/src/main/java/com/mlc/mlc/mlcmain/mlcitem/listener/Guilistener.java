@@ -53,7 +53,7 @@ public class Guilistener implements Listener {
                     case MLCITEMSGUI -> Mlcitems.itemsmap.size();
                 };
                 player.sendMessage(Component.text("maxnum:"+maxnum, TextColor.fromHexString("#f73636")));
-                if(num+45 < maxnum){
+                if(num+45 <= maxnum){
                     num+=45;
                     refresh(guitype,player,num,openedgui);
                     player.sendMessage(Component.text("num1:"+num, TextColor.fromHexString("#f73636")));
