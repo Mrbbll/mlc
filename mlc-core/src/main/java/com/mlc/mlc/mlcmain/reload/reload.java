@@ -28,7 +28,6 @@ public class reload implements CommandExecutor {
         Mlc.fileConfiguration = instance.getConfig();
         Mlc.wordsnum = Mlc.fileConfiguration.getInt("words");
 
-
         Cratesitems.init();
         Fesitems.init();
         Mlcitems.init();
