@@ -22,6 +22,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityResurrectEvent;
 import io.papermc.paper.event.entity.EntityKnockbackEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -105,7 +106,7 @@ public final class BotManager implements Listener, AutoCloseable {
                 continue;
             }
             try {
-                TotemInventory.refillOffhand(bot.getInventory());
+                session.totems.refill(bot.getInventory());
                 Player target = BotTargets.nearest(bot, Bukkit.getOnlinePlayers());
                 session.brain.selectTarget(target);
                 if (target != null) session.brain.tick(session, target, tick);
@@ -168,6 +169,20 @@ public final class BotManager implements Listener, AutoCloseable {
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (sessions.get(session.owner) == session) remove(session.owner);
         });
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void checkTotemSupply(EntityResurrectEvent event) {
+        BotSession session = entities.get(event.getEntity().getUniqueId());
+        if (session != null && (session.totems.remaining() == 0 || event.getHand() == null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void consumeTotemSupply(EntityResurrectEvent event) {
+        BotSession session = entities.get(event.getEntity().getUniqueId());
+        if (session != null) session.totems.consume();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

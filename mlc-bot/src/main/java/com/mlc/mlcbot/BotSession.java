@@ -14,6 +14,7 @@ public final class BotSession {
     public final BotNavigator navigator = new BotNavigator();
     public final CombatBrain brain = new CombatBrain();
     public UUID target;
+    public TotemSupply totems;
 
     public BotSession(UUID owner, BotType type, BotStrength strength, BotPlayer handle) {
         this.owner = owner;

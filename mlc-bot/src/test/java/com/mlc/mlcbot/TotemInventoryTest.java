@@ -11,6 +11,49 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class TotemInventoryTest {
+    @Test void resurrectionLimitStopsEvenIfServerDoesNotConsumeItems() {
+        Kit kit = new Kit(item(Material.TOTEM_OF_UNDYING, 1));
+        kit.storage[35] = item(Material.TOTEM_OF_UNDYING, 1);
+        TotemSupply supply = new TotemSupply(kit.inventory);
+        assertEquals(2, supply.remaining());
+        assertTrue(supply.consume()); // Successful resurrection, but the server kept the offhand item.
+        supply.refill(kit.inventory);
+        assertEquals(1, TotemInventory.count(kit.inventory));
+        assertNull(kit.storage[35]);
+        assertTrue(supply.consume());
+        supply.refill(kit.inventory);
+        assertEquals(0, TotemInventory.count(kit.inventory));
+        assertFalse(supply.consume());
+        assertEquals(0, supply.remaining());
+    }
+
+    @Test void nativeConsumptionIsNotCountedTwiceAndKitRefreshCannotResetTheLimit() {
+        Kit kit = new Kit(item(Material.TOTEM_OF_UNDYING, 1));
+        kit.storage[35] = item(Material.TOTEM_OF_UNDYING, 64);
+        TotemSupply supply = new TotemSupply(kit.inventory);
+        for (int remaining = 64; remaining >= 0; remaining--) {
+            assertTrue(supply.consume());
+            kit.offhand.set(null); // The native code consumes after the resurrection event.
+            supply.refill(kit.inventory);
+            assertEquals(remaining, TotemInventory.count(kit.inventory));
+            assertEquals(remaining, supply.remaining());
+        }
+        kit.offhand.set(item(Material.TOTEM_OF_UNDYING, 1));
+        kit.storage[35] = item(Material.TOTEM_OF_UNDYING, 64);
+        supply.refill(kit.inventory);
+        assertEquals(0, TotemInventory.count(kit.inventory));
+        assertFalse(supply.consume());
+    }
+
+    @Test void emptyKitCannotGainResurrectionsFromLaterInventoryChanges() {
+        Kit kit = new Kit(null);
+        TotemSupply supply = new TotemSupply(kit.inventory);
+        kit.storage[35] = item(Material.TOTEM_OF_UNDYING, 64);
+        supply.refill(kit.inventory);
+        assertEquals(0, TotemInventory.count(kit.inventory));
+        assertFalse(supply.consume());
+    }
+
     @Test void normalKitStopsAfterItsTwoActualTotemsAreConsumed() {
         Kit kit = new Kit(item(Material.TOTEM_OF_UNDYING, 1));
         kit.storage[35] = item(Material.TOTEM_OF_UNDYING, 1);
