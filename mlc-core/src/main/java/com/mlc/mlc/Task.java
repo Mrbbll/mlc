@@ -18,9 +18,7 @@ import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
 import com.mlc.mlc.mlcmain.items.recipes.*;
 import com.mlc.mlc.mlcmain.Joinlistener.*;
-import com.mlc.mlc.mlcmain.mail.command.mymail;
-import com.mlc.mlc.mlcmain.mail.command.sendmail;
-import com.mlc.mlc.mlcmain.mail.command.sendmailtoall;
+import com.mlc.mlc.mlcmain.mail.command.MailCommand;
 import com.mlc.mlc.mlcmain.mail.listener.Maillistener;
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
 import com.mlc.mlc.mlcmain.menu.commands.menu;
@@ -88,10 +86,8 @@ public class Task {
         ExecutorCommand.register(instance, Map.ofEntries(
                 Map.entry("mlcreload", new reload()),
                 Map.entry("back", new back()),
-                Map.entry("sendmail", new sendmail()),
-                Map.entry("mymail", new mymail()),
+                Map.entry("mail", new MailCommand()),
                 Map.entry("mlcitem", new mlcitemgui()),
-                Map.entry("sendmailtoall", new sendmailtoall()),
                 Map.entry("tpa", new tpa()),
                 Map.entry("tpaccept", new tpaccept()),
                 Map.entry("tpahere", new tpahere()),

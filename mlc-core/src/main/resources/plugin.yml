@@ -18,13 +18,9 @@ commands:
   mlcitem:
     description: "打开mlc物品菜单"
     permission: mlc.op
-  sendmail:
-    description: "发送邮件"
-  sendmailtoall:
-    descricption: "发送所有玩家邮件"
-    permission: mlc.op
-  mymail:
-    description: "打开自己的邮箱"
+  mail:
+    description: "打开邮箱、发送邮件或给所有人发送邮件"
+    usage: "/mail 或 /mail send <玩家名> 或 /mail sendtoall"
   tpa:
     description: "请求传送"
   tpahere:
