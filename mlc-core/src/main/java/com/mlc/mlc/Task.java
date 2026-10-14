@@ -37,11 +37,11 @@ import com.mlc.mlc.mlcmain.sit.command.Sit;
 import com.mlc.mlc.mlcmain.sit.listener.Unsitlistener;
 import com.mlc.mlc.mlcmain.sleep.Sleeplistener;
 import org.bukkit.Bukkit;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
 
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.mlcmain.dialog.Serverjoindialog.initserverjoindialog;
@@ -82,23 +82,26 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new EnchantRestricter(), instance);
 
 
-        Objects.requireNonNull(Bukkit.getPluginCommand("mlcreload")).setExecutor(new reload());
-        Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));
-        Objects.requireNonNull(Bukkit.getPluginCommand("mail")).setExecutor(new MailCommand());
-        Objects.requireNonNull(Bukkit.getPluginCommand("mail")).setTabCompleter(new MailCommand());
-        Objects.requireNonNull(Bukkit.getPluginCommand("mlcitem")).setExecutor(new mlcitemgui());
-//        Objects.requireNonNull(Bukkit.getPluginCommand("home")).setExecutor(new home());
-//        Objects.requireNonNull(Bukkit.getPluginCommand("sethome")).setExecutor(new sethome());
-//        Objects.requireNonNull(Bukkit.getPluginCommand("delhome")).setExecutor(new delhome());
-        Objects.requireNonNull(Bukkit.getPluginCommand("tpa")).setExecutor(new tpa());
-        Objects.requireNonNull(Bukkit.getPluginCommand("tpaccept")).setExecutor(new tpaccept());
-        Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());
-        Objects.requireNonNull(Bukkit.getPluginCommand("sit")).setExecutor((new Sit()));
-        Objects.requireNonNull(Bukkit.getPluginCommand("money")).setExecutor(new money());
-        Objects.requireNonNull(Bukkit.getPluginCommand("money")).setTabCompleter(new money());
-        Objects.requireNonNull(Bukkit.getPluginCommand("item")).setExecutor(new Item());
-        Objects.requireNonNull(Bukkit.getPluginCommand("rtp")).setExecutor(new rtp());
-        Objects.requireNonNull(Bukkit.getPluginCommand("menu")).setExecutor(new menu());
+        // Paper plugins do not register commands declared in YAML.
+        instance.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
+            var commands = event.registrar();
+            commands.register("mlcreload", "重载配置",
+                    new ExecutorCommand("mlcreload", "重载配置", "", "mlc.op", new reload()));
+            commands.register("back", "回到上个路径点", new ExecutorCommand("back", "回到上个路径点", new back()));
+            commands.register("mail", "打开邮箱、发送邮件或给所有人发送邮件",
+                    new ExecutorCommand("mail", "打开邮箱、发送邮件或给所有人发送邮件",
+                            "/mail 或 /mail send <玩家名> 或 /mail sendtoall", null, new MailCommand()));
+            commands.register("mlcitem", "打开mlc物品菜单",
+                    new ExecutorCommand("mlcitem", "打开mlc物品菜单", "", "mlc.op", new mlcitemgui()));
+            commands.register("tpa", "请求传送", new ExecutorCommand("tpa", "请求传送", new tpa()));
+            commands.register("tpaccept", "同意请求", new ExecutorCommand("tpaccept", "同意请求", new tpaccept()));
+            commands.register("tpahere", "请求传送到自己位置", new ExecutorCommand("tpahere", "请求传送到自己位置", new tpahere()));
+            commands.register("sit", "坐下", new ExecutorCommand("sit", "坐下", new Sit()));
+            commands.register("money", "操作货币", new ExecutorCommand("money", "操作货币", new money()));
+            commands.register("item", "展示物品", new ExecutorCommand("item", "展示物品", new Item()));
+            commands.register("rtp", "随机传送", new ExecutorCommand("rtp", "随机传送", new rtp()));
+            commands.register("menu", "打开MLC功能菜单", new ExecutorCommand("menu", "打开MLC功能菜单", new menu()));
+        });
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new Mlceco().register();
