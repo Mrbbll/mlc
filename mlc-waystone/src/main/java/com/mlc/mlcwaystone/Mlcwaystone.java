@@ -44,8 +44,8 @@ public final class Mlcwaystone {
         // Load existing data
         loadData();
 
-        // Initialize BlueMap integration
-        Bluemapapi.init();
+        // Initialize BlueMap integration when the optional plugin is installed.
+        initializeBlueMapIntegration();
 
         // Register listener and command
         Bukkit.getPluginManager().registerEvents(new WaystoneListener(), instance);
@@ -64,18 +64,68 @@ public final class Mlcwaystone {
         ConfigurationSection section = config.getConfigurationSection("waystones");
         if (section != null) {
             for (String key : section.getKeys(false)) {
+                UUID id;
                 try {
-                    UUID id = UUID.fromString(key);
-                    ConfigurationSection wsSection = section.getConfigurationSection(key);
-                    if (wsSection != null) {
-                        WaystoneData data = WaystoneData.fromConfig(id, wsSection);
-                        waystoneDataMap.put(id, data);
-                    }
+                    id = UUID.fromString(key);
                 } catch (IllegalArgumentException e) {
                     instance.getLogger().warning("跳过无效的传送点ID: " + key);
+                    continue;
+                }
+
+                ConfigurationSection wsSection = section.getConfigurationSection(key);
+                if (wsSection == null) {
+                    instance.getLogger().warning("跳过无效的传送点数据（缺少配置节）: " + key);
+                    continue;
+                }
+
+                try {
+                    WaystoneData data = WaystoneData.fromConfig(id, wsSection);
+                    waystoneDataMap.put(id, data);
+                } catch (IllegalArgumentException | NullPointerException e) {
+                    instance.getLogger().warning("跳过无效的传送点数据: " + key + " (" + e.getMessage() + ")");
                 }
             }
         }
+    }
+
+    /**
+     * Initialize BlueMap integration only when its optional plugin is enabled.
+     */
+    public static void initializeBlueMapIntegration() {
+        if (isBlueMapEnabled()) {
+            Bluemapapi.init();
+        }
+    }
+
+    /**
+     * Rebuild the waystone marker set from the current data.
+     */
+    public static void syncBlueMapMarkers() {
+        if (isBlueMapEnabled()) {
+            Bluemapapi.syncWaystoneMarkers();
+        }
+    }
+
+    public static void createBlueMapMarker(WaystoneData data) {
+        if (isBlueMapEnabled()) {
+            Bluemapapi.createWaystoneMarker(data);
+        }
+    }
+
+    public static void removeBlueMapMarker(WaystoneData data) {
+        if (isBlueMapEnabled()) {
+            Bluemapapi.removeWaystoneMarker(data);
+        }
+    }
+
+    public static void updateBlueMapMarker(WaystoneData data) {
+        if (isBlueMapEnabled()) {
+            Bluemapapi.updateWaystoneMarker(data);
+        }
+    }
+
+    private static boolean isBlueMapEnabled() {
+        return Bukkit.getPluginManager().isPluginEnabled("BlueMap");
     }
 
     /**
@@ -102,7 +152,7 @@ public final class Mlcwaystone {
         waystoneDataMap.put(data.getId(), data);
         saveData();
         if (data.isPublic()) {
-            Bluemapapi.createWaystoneMarker(data);
+            createBlueMapMarker(data);
         }
     }
 
@@ -113,7 +163,7 @@ public final class Mlcwaystone {
     public static void removeWaystone(UUID id) {
         WaystoneData data = waystoneDataMap.remove(id);
         if (data != null && data.isPublic()) {
-            Bluemapapi.removeWaystoneMarker(data);
+            removeBlueMapMarker(data);
         }
         saveData();
     }

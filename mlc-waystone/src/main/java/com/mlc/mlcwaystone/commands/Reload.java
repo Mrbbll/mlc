@@ -8,6 +8,10 @@ import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Reload implements BasicCommand {
     @Override
@@ -19,8 +23,19 @@ public class Reload implements BasicCommand {
             return;
         }
 
+        // Close tracked GUIs while their click handlers are still active.
+        Map<Player, Inventory> openInventories = new HashMap<>(WaystoneGUI.playerCurrentInv);
+        for (Map.Entry<Player, Inventory> entry : openInventories.entrySet()) {
+            Player player = entry.getKey();
+            if (player.isOnline()
+                    && entry.getValue().equals(player.getOpenInventory().getTopInventory())) {
+                player.closeInventory();
+            }
+        }
+
         // Reload data from file
         Mlcwaystone.loadData();
+        Mlcwaystone.syncBlueMapMarkers();
 
         // Clear all open GUI tracking so players get fresh data on next open
         WaystoneGUI.openInvs.clear();

@@ -4,7 +4,6 @@ import de.bluecolored.bluemap.api.BlueMapAPI;
 import de.bluecolored.bluemap.api.BlueMapWorld;
 import de.bluecolored.bluemap.api.markers.MarkerSet;
 import de.bluecolored.bluemap.api.markers.POIMarker;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -24,19 +23,26 @@ public class Bluemapapi {
     public static void init() {
         BlueMapAPI.onEnable(api -> {
             instance.getLogger().info("Waystone BlueMap 集成已启用");
-
-            // Create marker sets for all worlds
-            createMarkerSets(api);
-
-            // Sync all existing public waystones to BlueMap
-            Mlcwaystone.waystoneDataMap.values().stream()
-                    .filter(WaystoneData::isPublic)
-                    .forEach(data -> createMarker(api, data));
+            syncWaystoneMarkers(api);
         });
 
         BlueMapAPI.onDisable(api -> {
             instance.getLogger().info("Waystone BlueMap 集成已禁用");
         });
+    }
+
+    /**
+     * Rebuild all waystone markers from the current in-memory data.
+     */
+    public static void syncWaystoneMarkers() {
+        BlueMapAPI.getInstance().ifPresent(Bluemapapi::syncWaystoneMarkers);
+    }
+
+    private static void syncWaystoneMarkers(BlueMapAPI api) {
+        createMarkerSets(api);
+        Mlcwaystone.waystoneDataMap.values().stream()
+                .filter(WaystoneData::isPublic)
+                .forEach(data -> createMarker(api, data));
     }
 
     /**
@@ -67,7 +73,6 @@ public class Bluemapapi {
      * Remove a POI marker from BlueMap.
      */
     public static void removeWaystoneMarker(WaystoneData data) {
-        if (!data.isPublic()) return;
         BlueMapAPI.getInstance().ifPresent(api -> removeMarker(api, data));
     }
 
@@ -97,8 +102,8 @@ public class Bluemapapi {
 
             // Build HTML detail string with min-width + nowrap to prevent narrow wrapping
             String detail = "<div style='text-align:center; min-width:160px; white-space:nowrap;'>"
-                    + "<b>" + data.getIconName() + "</b><br/>"
-                    + "所有者: " + data.getOwnerName() + "<br/>"
+                    + "<b>" + escapeHtml(data.getIconName()) + "</b><br/>"
+                    + "所有者: " + escapeHtml(data.getOwnerName()) + "<br/>"
                     + "坐标: " + (int) loc.getX() + ", " + (int) loc.getY() + ", " + (int) loc.getZ()
                     + "</div>";
 
@@ -140,5 +145,14 @@ public class Bluemapapi {
         } catch (Exception e) {
             instance.getLogger().warning("移除传送点 BlueMap 标记失败: " + e.getMessage());
         }
+    }
+
+    private static String escapeHtml(String value) {
+        if (value == null) return "";
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }

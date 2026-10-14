@@ -1,6 +1,5 @@
 package com.mlc.mlcwaystone.listener;
 
-import com.mlc.mlcwaystone.Bluemapapi;
 import com.mlc.mlcwaystone.Mlcwaystone;
 import com.mlc.mlcwaystone.WaystoneData;
 import com.mlc.mlcwaystone.WaystoneGUI;
@@ -78,11 +77,11 @@ public class WaystoneListener implements Listener {
 
             // Sync BlueMap if visibility changed
             if (!wasPublic && existing.isPublic()) {
-                Bluemapapi.createWaystoneMarker(existing);
+                Mlcwaystone.createBlueMapMarker(existing);
             } else if (wasPublic && existing.isPrivate()) {
-                Bluemapapi.removeWaystoneMarker(existing);
+                Mlcwaystone.removeBlueMapMarker(existing);
             } else if (wasPublic && existing.isPublic()) {
-                Bluemapapi.updateWaystoneMarker(existing);
+                Mlcwaystone.updateBlueMapMarker(existing);
             }
 
             String typeName = waystoneType.equals("PRIVATE") ? "私人" : "公共";
@@ -263,7 +262,7 @@ public class WaystoneListener implements Listener {
             waystone.setIconName(iconName);
             saveData();
             if (waystone.isPublic()) {
-                Bluemapapi.updateWaystoneMarker(waystone);
+                Mlcwaystone.updateBlueMapMarker(waystone);
             }
 
             player.sendMessage(Component.text("传送石碑图标已更新为: " + iconName)
@@ -328,14 +327,32 @@ public class WaystoneListener implements Listener {
 
             // Teleport the player
             Location loc = data.getLocation();
-            Location teleportDest = loc.clone().add(0.5, 1, 0.5);
-            teleportDest.setYaw(0);
-            teleportDest.setPitch(0);
+            if (loc.getWorld() == null) {
+                player.sendMessage(Component.text("传送点所在世界不可用，无法传送")
+                        .color(TextColor.fromHexString("#FF5555")));
+                return;
+            }
+
+            int feetY = loc.getBlockY() + 2;
+            if (feetY + 1 >= loc.getWorld().getMaxHeight()
+                    || !loc.getWorld().getBlockAt(loc.getBlockX(), feetY, loc.getBlockZ()).isPassable()
+                    || !loc.getWorld().getBlockAt(loc.getBlockX(), feetY + 1, loc.getBlockZ()).isPassable()) {
+                player.sendMessage(Component.text("传送点上方空间不足，无法安全传送")
+                        .color(TextColor.fromHexString("#FF5555")));
+                return;
+            }
+
+            Location teleportDest = new Location(loc.getWorld(), loc.getBlockX() + 0.5, feetY,
+                    loc.getBlockZ() + 0.5, 0, 0);
 
             player.closeInventory();
-            player.teleport(teleportDest);
-            player.sendMessage(Component.text("已传送到: " + data.getIconName())
-                    .color(TextColor.fromHexString("#00ff33")));
+            if (player.teleport(teleportDest)) {
+                player.sendMessage(Component.text("已传送到: " + data.getIconName())
+                        .color(TextColor.fromHexString("#00ff33")));
+            } else {
+                player.sendMessage(Component.text("传送失败，请检查目标位置或权限设置")
+                        .color(TextColor.fromHexString("#FF5555")));
+            }
         }
     }
 

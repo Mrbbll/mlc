@@ -61,8 +61,14 @@ public class WaystoneData {
         UUID owner = UUID.fromString(section.getString("owner", "00000000-0000-0000-0000-000000000000"));
         String ownerName = section.getString("ownerName", "未知");
         String type = section.getString("type", "PUBLIC");
-        Location location = Location.deserialize(
-                section.getConfigurationSection("location").getValues(false));
+        ConfigurationSection locationSection = section.getConfigurationSection("location");
+        if (locationSection == null) {
+            throw new IllegalArgumentException("缺少 location 配置");
+        }
+        Location location = Location.deserialize(locationSection.getValues(false));
+        if (location == null) {
+            throw new IllegalArgumentException("location 无效");
+        }
         String iconType = section.getString("iconType", "CAMPFIRE");
         String iconName = section.getString("iconName", "未命名传送点");
         long createdAt = section.getLong("createdAt", System.currentTimeMillis());

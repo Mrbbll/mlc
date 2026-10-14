@@ -18,9 +18,7 @@ import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
 import com.mlc.mlc.mlcmain.items.recipes.*;
 import com.mlc.mlc.mlcmain.Joinlistener.*;
-import com.mlc.mlc.mlcmain.mail.command.mymail;
-import com.mlc.mlc.mlcmain.mail.command.sendmail;
-import com.mlc.mlc.mlcmain.mail.command.sendmailtoall;
+import com.mlc.mlc.mlcmain.mail.command.MailCommand;
 import com.mlc.mlc.mlcmain.mail.listener.Maillistener;
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
 import com.mlc.mlc.mlcmain.menu.commands.menu;
@@ -39,12 +37,11 @@ import com.mlc.mlc.mlcmain.sit.command.Sit;
 import com.mlc.mlc.mlcmain.sit.listener.Unsitlistener;
 import com.mlc.mlc.mlcmain.sleep.Sleeplistener;
 import org.bukkit.Bukkit;
-import com.mlc.mlc.commands.ExecutorCommand;
-import java.util.Map;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.mlcmain.dialog.Serverjoindialog.initserverjoindialog;
@@ -85,22 +82,23 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new EnchantRestricter(), instance);
 
 
-        ExecutorCommand.register(instance, Map.ofEntries(
-                Map.entry("mlcreload", new reload()),
-                Map.entry("back", new back()),
-                Map.entry("sendmail", new sendmail()),
-                Map.entry("mymail", new mymail()),
-                Map.entry("mlcitem", new mlcitemgui()),
-                Map.entry("sendmailtoall", new sendmailtoall()),
-                Map.entry("tpa", new tpa()),
-                Map.entry("tpaccept", new tpaccept()),
-                Map.entry("tpahere", new tpahere()),
-                Map.entry("sit", new Sit()),
-                Map.entry("money", new money()),
-                Map.entry("item", new Item()),
-                Map.entry("rtp", new rtp()),
-                Map.entry("menu", new menu())
-        ));
+        Objects.requireNonNull(Bukkit.getPluginCommand("mlcreload")).setExecutor(new reload());
+        Objects.requireNonNull(Bukkit.getPluginCommand("back")).setExecutor((new back()));
+        Objects.requireNonNull(Bukkit.getPluginCommand("mail")).setExecutor(new MailCommand());
+        Objects.requireNonNull(Bukkit.getPluginCommand("mail")).setTabCompleter(new MailCommand());
+        Objects.requireNonNull(Bukkit.getPluginCommand("mlcitem")).setExecutor(new mlcitemgui());
+//        Objects.requireNonNull(Bukkit.getPluginCommand("home")).setExecutor(new home());
+//        Objects.requireNonNull(Bukkit.getPluginCommand("sethome")).setExecutor(new sethome());
+//        Objects.requireNonNull(Bukkit.getPluginCommand("delhome")).setExecutor(new delhome());
+        Objects.requireNonNull(Bukkit.getPluginCommand("tpa")).setExecutor(new tpa());
+        Objects.requireNonNull(Bukkit.getPluginCommand("tpaccept")).setExecutor(new tpaccept());
+        Objects.requireNonNull(Bukkit.getPluginCommand("tpahere")).setExecutor(new tpahere());
+        Objects.requireNonNull(Bukkit.getPluginCommand("sit")).setExecutor((new Sit()));
+        Objects.requireNonNull(Bukkit.getPluginCommand("money")).setExecutor(new money());
+        Objects.requireNonNull(Bukkit.getPluginCommand("money")).setTabCompleter(new money());
+        Objects.requireNonNull(Bukkit.getPluginCommand("item")).setExecutor(new Item());
+        Objects.requireNonNull(Bukkit.getPluginCommand("rtp")).setExecutor(new rtp());
+        Objects.requireNonNull(Bukkit.getPluginCommand("menu")).setExecutor(new menu());
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new Mlceco().register();
