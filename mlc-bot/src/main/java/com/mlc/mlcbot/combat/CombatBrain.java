@@ -5,6 +5,7 @@ import com.mlc.mlcbot.BotType;
 import com.mlc.mlcbot.BotTargets;
 import com.mlc.mlcbot.DefaultKits;
 import com.mlc.mlcbot.TotemInventory;
+import com.mlc.mlcbot.TotemSupply;
 import com.mlc.mlcbot.practice.BotTrait;
 import com.mlc.mlcbot.practice.PracticeBotPlugin;
 import com.mlc.mlcbot.practice.bridge.NPC;
@@ -62,6 +63,7 @@ public final class CombatBrain {
             trait.setPvpAggression(level == 0 ? 0 : level >= 2 ? 2 : 1);
             trait.setPvpReachMode(1);
         }
+        session.totems = new TotemSupply(session.handle.getBukkitEntity().getInventory());
     }
 
     public void tick(BotSession session, Player target, long tick) {

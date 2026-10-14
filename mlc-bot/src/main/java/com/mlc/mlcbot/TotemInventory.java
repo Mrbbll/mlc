@@ -34,6 +34,32 @@ public final class TotemInventory {
         }
     }
 
+    public static void limit(PlayerInventory inventory, int maximum) {
+        int surplus = count(inventory) - Math.max(0, maximum);
+        if (surplus <= 0) return;
+        ItemStack offhand = inventory.getItemInOffHand();
+        int removed = Math.min(surplus, amount(offhand));
+        if (removed > 0) {
+            inventory.setItemInOffHand(reduce(offhand, removed));
+            surplus -= removed;
+        }
+        ItemStack[] storage = inventory.getStorageContents();
+        for (int slot = 0; slot < storage.length && surplus > 0; slot++) {
+            removed = Math.min(surplus, amount(storage[slot]));
+            if (removed > 0) {
+                inventory.setItem(slot, reduce(storage[slot], removed));
+                surplus -= removed;
+            }
+        }
+    }
+
+    private static ItemStack reduce(ItemStack item, int amount) {
+        if (item.getAmount() <= amount) return null;
+        ItemStack remaining = item.clone();
+        remaining.setAmount(item.getAmount() - amount);
+        return remaining;
+    }
+
     private static int amount(ItemStack item) {
         return item != null && item.getType() == Material.TOTEM_OF_UNDYING ? Math.max(0, item.getAmount()) : 0;
     }

@@ -92,7 +92,7 @@ public class Mlcmenu {
                 "&6邮箱 &7(Mail)",
                 null,
                 "&7打开你的邮箱",
-                "&e» 点击执行 &f/mymail"));
+                "&e» 点击执行 &f/mail"));
 
         menuinv.setItem(SLOT_MAP, createMenuItem(
                 Material.CHEST,

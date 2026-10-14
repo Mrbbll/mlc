@@ -72,7 +72,7 @@ public class menuopenlistener implements Listener {
 
             case Mlcmenu.SLOT_MAIL:
                 player.closeInventory();
-                player.performCommand("mymail");
+                player.performCommand("mail");
                 break;
 
             case Mlcmenu.SLOT_MAP:
