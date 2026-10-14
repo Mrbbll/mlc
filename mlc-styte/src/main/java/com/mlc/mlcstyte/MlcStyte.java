@@ -10,14 +10,15 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * <p>Provides Vault-based chat formatting with placeholders:
  * {prefix}, {suffix}, {name}, {displayname}, {message}.
- * Supports &#rrggbb hex colors.</p>
+ * Prefixes and suffixes use MiniMessage syntax, including hex colors such as
+ * {@code <#rrggbb>}.</p>
  *
  * <p>This is a library module bundled into mlc-core — it is NOT a standalone plugin.
  * Initialized via {@link #init(JavaPlugin)} from {@code Mlc.onEnable()}.</p>
  */
 public final class MlcStyte {
     public static JavaPlugin instance;
-    public static Chat vaultChat = null;
+    public static volatile Chat vaultChat = null;
 
     public static final String FORMAT = "<{prefix}{name}{suffix}> {message}";
 

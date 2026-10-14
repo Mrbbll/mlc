@@ -111,7 +111,7 @@ public class EnchantUpgradelistener implements Listener {
         for (Map.Entry<Enchantment, Integer> entry : mergedEnchants.entrySet()) {
             Enchantment enchantment = entry.getKey();
             int level = entry.getValue();
-            if (enchantment.getMaxLevel() < level) {
+            if (level > EnchantmentMaxLevel.getMaxLevel(enchantment)) {
                 player.sendMessage(Component.text("附魔等级超过最大等级", TextColor.fromHexString("#f73636")));
                 return true;
             }
