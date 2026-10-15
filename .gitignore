@@ -18,3 +18,4 @@ target/
 Thumbs.db
 
 test/
+!mlc-bot/src/test/

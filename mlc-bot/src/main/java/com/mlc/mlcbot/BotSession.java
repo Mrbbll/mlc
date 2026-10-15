@@ -7,6 +7,7 @@ import java.util.UUID;
 
 /** Runtime-only state, deliberately never saved to a config or NPC store. */
 public final class BotSession {
+    /** Null for naturally generated wilderness bots. */
     public final UUID owner;
     public final BotType type;
     public final BotStrength strength;
@@ -22,4 +23,6 @@ public final class BotSession {
         this.strength = strength;
         this.handle = handle;
     }
+
+    UUID key() { return owner == null ? handle.getUUID() : owner; }
 }

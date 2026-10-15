@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
@@ -30,6 +31,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
@@ -55,13 +57,26 @@ public final class BotManager implements Listener, AutoCloseable {
         if (owner.isDead() || owner.getGameMode() == GameMode.SPECTATOR || owner.getGameMode() == GameMode.CREATIVE) {
             throw new IllegalArgumentException("请在生存或冒险模式下生成机器人。");
         }
-        if (!sessions.containsKey(owner.getUniqueId()) && sessions.size() >= MAX_BOTS) {
-            throw new IllegalArgumentException("服务器机器人数量已达到上限 (32)。");
+        if (!sessions.containsKey(owner.getUniqueId())
+                && sessions.values().stream().filter(session -> session.owner != null).count() >= MAX_BOTS) {
+            throw new IllegalArgumentException("服务器指令机器人数量已达到上限 (32)。");
         }
         Location at = findSpawn(owner);
         if (at == null) throw new IllegalArgumentException("附近没有安全的生成位置，请移动到空旷地面。");
+        spawnAt(owner.getUniqueId(), at, type, strength);
+    }
+
+    /** Wilderness bots have their own session and never replace a player's practice bot. */
+    public void spawnWild(Location at) {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        BotType[] types = BotType.values();
+        BotStrength[] strengths = BotStrength.values();
+        spawnAt(null, at, types[random.nextInt(types.length)], strengths[random.nextInt(strengths.length)]);
+    }
+
+    private void spawnAt(UUID owner, Location at, BotType type, BotStrength strength) {
         BotPlayer handle = new BotPlayer(plugin, at, "Bot_" + UUID.randomUUID().toString().substring(0, 8));
-        BotSession session = new BotSession(owner.getUniqueId(), type, strength, handle);
+        BotSession session = new BotSession(owner, type, strength, handle);
         try {
             BotIdentity.mark(handle.getBukkitEntity());
             handle.getBukkitEntity().setGameMode(GameMode.SURVIVAL);
@@ -77,8 +92,8 @@ public final class BotManager implements Listener, AutoCloseable {
             removeProfile(handle);
             throw failure;
         }
-        remove(owner.getUniqueId());
-        sessions.put(owner.getUniqueId(), session);
+        if (owner != null) remove(owner);
+        sessions.put(session.key(), session);
         entities.put(handle.getUUID(), session);
     }
 
@@ -98,11 +113,12 @@ public final class BotManager implements Listener, AutoCloseable {
     private void tick() {
         ++tick;
         for (BotSession session : new ArrayList<>(sessions.values())) {
-            Player owner = Bukkit.getPlayer(session.owner);
+            Player owner = session.owner == null ? null : Bukkit.getPlayer(session.owner);
             Player bot = session.handle.getBukkitEntity();
-            if (session.brain.isStopped() || owner == null || !owner.isOnline() || bot.isDead() || !bot.isValid()
+            if (session.brain.isStopped() || (session.owner != null && (owner == null || !owner.isOnline()))
+                    || bot.isDead() || !bot.isValid()
                     || !bot.getWorld().isChunkLoaded(bot.getLocation().getBlockX() >> 4, bot.getLocation().getBlockZ() >> 4)) {
-                remove(session.owner);
+                remove(session.key());
                 continue;
             }
             try {
@@ -112,7 +128,7 @@ public final class BotManager implements Listener, AutoCloseable {
                 if (target != null) session.brain.tick(session, target, tick);
             } catch (RuntimeException | LinkageError error) {
                 plugin.getLogger().log(Level.SEVERE, "mlc-bot 战斗更新失败，已清理机器人", error);
-                remove(session.owner);
+                remove(session.key());
             }
         }
     }
@@ -129,14 +145,18 @@ public final class BotManager implements Listener, AutoCloseable {
                     at.setX(at.getBlockX() + 0.5);
                     at.setY(at.getBlockY());
                     at.setZ(at.getBlockZ() + 0.5);
-                    if (!BotNavigator.canStand(at) || !at.getWorld().getWorldBorder().isInside(at)) continue;
-                    BoundingBox box = new BoundingBox(at.getX() - 0.3, at.getY(), at.getZ() - 0.3,
-                            at.getX() + 0.3, at.getY() + 1.8, at.getZ() + 0.3);
-                    if (at.getWorld().getNearbyEntities(box).isEmpty()) return at;
+                    if (isSafeSpawn(at)) return at;
                 }
             }
         }
         return null;
+    }
+
+    static boolean isSafeSpawn(Location at) {
+        if (!BotNavigator.canStand(at) || !at.getWorld().getWorldBorder().isInside(at)) return false;
+        BoundingBox box = new BoundingBox(at.getX() - 0.3, at.getY(), at.getZ() - 0.3,
+                at.getX() + 0.3, at.getY() + 1.8, at.getZ() + 0.3);
+        return at.getWorld().getNearbyEntities(box).isEmpty();
     }
 
     private static void sendProfile(Player viewer, BotPlayer bot) {
@@ -167,7 +187,7 @@ public final class BotManager implements Listener, AutoCloseable {
         event.deathMessage(null);
         // Defer native entity removal until its death handling has returned.
         Bukkit.getScheduler().runTask(plugin, () -> {
-            if (sessions.get(session.owner) == session) remove(session.owner);
+            if (sessions.get(session.key()) == session) remove(session.key());
         });
     }
 
@@ -213,9 +233,18 @@ public final class BotManager implements Listener, AutoCloseable {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onChunkUnload(ChunkUnloadEvent event) {
+        for (BotSession session : new ArrayList<>(sessions.values())) {
+            Location at = session.handle.getBukkitEntity().getLocation();
+            if (at.getWorld().equals(event.getWorld()) && (at.getBlockX() >> 4) == event.getChunk().getX()
+                    && (at.getBlockZ() >> 4) == event.getChunk().getZ()) remove(session.key());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onWorldUnload(WorldUnloadEvent event) {
         for (BotSession session : new ArrayList<>(sessions.values())) {
-            if (session.handle.getBukkitEntity().getWorld().equals(event.getWorld())) remove(session.owner);
+            if (session.handle.getBukkitEntity().getWorld().equals(event.getWorld())) remove(session.key());
         }
     }
 

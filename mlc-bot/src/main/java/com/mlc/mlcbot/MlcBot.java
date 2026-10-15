@@ -14,6 +14,7 @@ public final class MlcBot {
             return;
         }
         manager = new BotManager(plugin);
+        plugin.getServer().getPluginManager().registerEvents(new WildCampSpawner(plugin, manager), plugin);
         BotCommand command = new BotCommand(plugin, manager);
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
                 event -> event.registrar().register("mlcbot", "生成 PvP 练习机器人", command));
