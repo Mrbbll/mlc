@@ -71,7 +71,12 @@ public final class BotManager implements Listener, AutoCloseable {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         BotType[] types = BotType.values();
         BotStrength[] strengths = BotStrength.values();
-        spawnAt(null, at, types[random.nextInt(types.length)], strengths[random.nextInt(strengths.length)]);
+        BotType type = types[random.nextInt(types.length)];
+        BotStrength strength = strengths[random.nextInt(strengths.length)];
+        spawnAt(null, at, type, strength);
+        plugin.getLogger().info("废弃营地生成机器人: " + at.getWorld().getName() + " "
+                + at.getBlockX() + " " + at.getBlockY() + " " + at.getBlockZ()
+                + " 模式=" + type + " 难度=" + strength);
     }
 
     private void spawnAt(UUID owner, Location at, BotType type, BotStrength strength) {

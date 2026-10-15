@@ -6,15 +6,20 @@ import java.util.logging.Logger;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.generator.structure.GeneratedStructure;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.BoundingBox;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -27,12 +32,17 @@ class WildCampSpawnerTest {
     private World world;
     private GeneratedStructure camp;
     private Location at;
+    private BukkitScheduler scheduler;
 
     @BeforeEach void setup() {
         plugin = mock(JavaPlugin.class);
         when(plugin.getName()).thenReturn("mlc");
         when(plugin.namespace()).thenReturn("mlc");
         when(plugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
+        Server server = mock(Server.class);
+        scheduler = mock(BukkitScheduler.class);
+        when(plugin.getServer()).thenReturn(server);
+        when(server.getScheduler()).thenReturn(scheduler);
         manager = mock(BotManager.class);
         spawner = spy(new WildCampSpawner(plugin, manager));
         world = mock(World.class);
@@ -77,14 +87,57 @@ class WildCampSpawnerTest {
         verify(manager, times(2)).spawnWild(at);
     }
 
-    @Test void existingUnmarkedChunksAreNotBackfilled() {
+    @Test void previouslyGeneratedChunksAreCheckedAfterLoadingAndRetried() {
         Chunk chunk = mock(Chunk.class);
-        PersistentDataContainer data = container();
-        when(chunk.getPersistentDataContainer()).thenReturn(data);
+        when(chunk.isLoaded()).thenReturn(true);
+        doNothing().when(spawner).populate(chunk);
         spawner.onChunkLoad(new ChunkLoadEvent(chunk, false));
-        verify(plugin, never()).getServer();
-        verify(chunk, never()).getStructures();
+        ArgumentCaptor<Runnable> first = ArgumentCaptor.forClass(Runnable.class);
+        ArgumentCaptor<Runnable> retry = ArgumentCaptor.forClass(Runnable.class);
+        verify(scheduler).runTask(eq(plugin), first.capture());
+        verify(scheduler).runTaskLater(eq(plugin), retry.capture(), eq(20L));
+        verify(spawner, never()).populate(any());
+        first.getValue().run();
+        retry.getValue().run();
+        verify(spawner, times(2)).populate(chunk);
         verifyNoInteractions(manager);
+    }
+
+    @Test void teleportChecksItsDestinationEvenWhenNoChunkLoadEventOccurs() {
+        Player player = mock(Player.class);
+        Location origin = new Location(world, 1000, 80, 1000);
+        doNothing().when(spawner).scanNearby(any());
+        spawner.onTeleport(new PlayerTeleportEvent(player, origin, at, PlayerTeleportEvent.TeleportCause.COMMAND));
+        ArgumentCaptor<Runnable> first = ArgumentCaptor.forClass(Runnable.class);
+        ArgumentCaptor<Runnable> retry = ArgumentCaptor.forClass(Runnable.class);
+        verify(scheduler).runTask(eq(plugin), first.capture());
+        verify(scheduler).runTaskLater(eq(plugin), retry.capture(), eq(20L));
+        verify(spawner, never()).scanNearby(any());
+        first.getValue().run();
+        retry.getValue().run();
+        verify(spawner, times(2)).scanNearby(at);
+    }
+
+    @Test void nearbyScanOnlyUsesLoadedChunksAndHandlesNegativeCoordinates() {
+        Chunk chunk = mock(Chunk.class);
+        when(world.isChunkLoaded(-2, -1)).thenReturn(true);
+        when(world.getChunkAt(-2, -1)).thenReturn(chunk);
+        doNothing().when(spawner).populate(chunk);
+        spawner.scanNearby(new Location(world, -1, 64, -1));
+        verify(world, times(1)).getChunkAt(anyInt(), anyInt());
+        verify(spawner).populate(chunk);
+    }
+
+    @Test void unloadingBeforeTheScheduledScanDoesNotForceTheChunkBackIn() {
+        Chunk chunk = mock(Chunk.class);
+        spawner.onChunkLoad(new ChunkLoadEvent(chunk, true));
+        ArgumentCaptor<Runnable> first = ArgumentCaptor.forClass(Runnable.class);
+        ArgumentCaptor<Runnable> retry = ArgumentCaptor.forClass(Runnable.class);
+        verify(scheduler).runTask(eq(plugin), first.capture());
+        verify(scheduler).runTaskLater(eq(plugin), retry.capture(), eq(20L));
+        first.getValue().run();
+        retry.getValue().run();
+        verify(spawner, never()).populate(any());
     }
 
     @Test void searchNeverLoadsChunksToFindTerrain() {

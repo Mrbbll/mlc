@@ -19,3 +19,7 @@ Thumbs.db
 
 test/
 !mlc-bot/src/test/
+!mlc-core/src/test/
+mlc-core/src/test/**
+!mlc-core/src/test/**/
+!mlc-core/src/test/**/WaystoneBeamManagerTest.java

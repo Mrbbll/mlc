@@ -11,37 +11,63 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.generator.structure.GeneratedStructure;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 
-/** One runtime bot per newly generated vanilla abandoned camp, across all biome variants. */
+/** One runtime bot per vanilla abandoned camp, including camps reached by teleport. */
 public final class WildCampSpawner implements Listener {
     private final JavaPlugin plugin;
     private final BotManager manager;
-    private final NamespacedKey eligibleChunk;
     private final NamespacedKey spawned;
 
     public WildCampSpawner(JavaPlugin plugin, BotManager manager) {
         this.plugin = plugin;
         this.manager = manager;
-        eligibleChunk = new NamespacedKey(plugin, "wild_camp_chunk");
         spawned = new NamespacedKey(plugin, "wild_camp_bot_spawned");
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onChunkLoad(ChunkLoadEvent event) {
         Chunk chunk = event.getChunk();
-        if (event.isNewChunk()) {
-            chunk.getPersistentDataContainer().set(eligibleChunk, PersistentDataType.BYTE, (byte) 1);
-        } else if (!chunk.getPersistentDataContainer().has(eligibleChunk, PersistentDataType.BYTE)) {
-            return;
-        }
         // Wait until the chunk has finished loading before accessing terrain or spawning NMS players.
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             if (chunk.isLoaded()) populate(chunk);
         });
+        // Neighbouring terrain/structure references may still be arriving during a teleport.
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (chunk.isLoaded()) populate(chunk);
+        }, 20L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTeleport(PlayerTeleportEvent event) {
+        Location destination = event.getTo();
+        if (destination != null) scheduleNearby(destination);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoin(PlayerJoinEvent event) {
+        scheduleNearby(event.getPlayer().getLocation());
+    }
+
+    private void scheduleNearby(Location destination) {
+        Location at = destination.clone();
+        plugin.getServer().getScheduler().runTask(plugin, () -> scanNearby(at));
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> scanNearby(at), 20L);
+    }
+
+    void scanNearby(Location at) {
+        World world = at.getWorld();
+        int centerX = at.getBlockX() >> 4, centerZ = at.getBlockZ() >> 4;
+        for (int x = centerX - 2; x <= centerX + 2; x++) {
+            for (int z = centerZ - 2; z <= centerZ + 2; z++) {
+                if (world.isChunkLoaded(x, z)) populate(world.getChunkAt(x, z));
+            }
+        }
     }
 
     void populate(Chunk chunk) {
@@ -56,7 +82,11 @@ public final class WildCampSpawner implements Listener {
         if (structure.getPersistentDataContainer().has(spawned, PersistentDataType.BYTE)) return;
         Location at = findSpawn(world, structure.getBoundingBox());
         // Other intersecting chunks, or a subsequent load, can retry when there is safe terrain.
-        if (at == null) return;
+        if (at == null) {
+            plugin.getLogger().warning("废弃营地暂未找到安全的机器人生成位置，将在后续加载时重试: "
+                    + world.getName() + " " + structure.getBoundingBox());
+            return;
+        }
         try {
             manager.spawnWild(at);
             structure.getPersistentDataContainer().set(spawned, PersistentDataType.BYTE, (byte) 1);

@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class Mlcwaystone {
     public static JavaPlugin instance;
     public static File dataFile;
+    private static WaystoneBeamManager beamManager;
     public static ConcurrentHashMap<UUID, WaystoneData> waystoneDataMap = new ConcurrentHashMap<>();
 
     /**
@@ -44,6 +45,9 @@ public final class Mlcwaystone {
         // Load existing data
         loadData();
 
+        beamManager = new WaystoneBeamManager(() -> waystoneDataMap.values());
+        beamManager.start(plugin);
+
         // Initialize BlueMap integration when the optional plugin is installed.
         initializeBlueMapIntegration();
 
@@ -56,8 +60,16 @@ public final class Mlcwaystone {
     }
 
     /**
-     * Load all waystones from data.yml into the in-memory map.
+     * Remove transient visuals when the plugin shuts down.
      */
+    public static void shutdown() {
+        if (beamManager != null) {
+            beamManager.shutdown();
+            beamManager = null;
+        }
+    }
+
+    /** Load all waystones from data.yml into the in-memory map. */
     public static void loadData() {
         waystoneDataMap.clear();
         FileConfiguration config = YamlConfiguration.loadConfiguration(dataFile);

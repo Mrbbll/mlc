@@ -116,6 +116,7 @@ public final class Mlc extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        com.mlc.mlcwaystone.Mlcwaystone.shutdown();
         com.mlc.mlcbot.MlcBot.shutdown();
         // Plugin shutdown logic
         Bukkit.resetRecipes();
