@@ -1,7 +1,6 @@
 package com.mlc.mlc.mlcmain.menu;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -27,8 +26,7 @@ public class Mlcmenu {
     // 菜单物品槽位
     public static final int SLOT_RTP = 10;
     public static final int SLOT_TPA = 12;
-    public static final int SLOT_SIT = 14;
-    public static final int SLOT_MONEY = 15;
+    public static final int SLOT_MONEY = 14;
     public static final int SLOT_MAIL = 16;
     public static final int SLOT_MAP = 21;
     public static final int SLOT_ITEMSHOW = 22;
@@ -40,7 +38,7 @@ public class Mlcmenu {
 
     public static void initmenuinv() {
         menuinv = Bukkit.createInventory(null, 9 * 6,
-                Component.text("mlc 菜单", TextColor.fromHexString("#f73636")));
+                miniMessage.deserialize("<#b8ffde>快捷菜单</#b8ffde>"));
 
         // 清空所有槽位
         for (int i = 0; i < 9 * 6; i++) {
@@ -61,58 +59,52 @@ public class Mlcmenu {
         // 功能物品
         menuinv.setItem(SLOT_RTP, createMenuItem(
                 Material.COMPASS,
-                "&6随机传送 &7(RTP)",
+                "<!i><#ffaa00>随机传送 <#aaaaaa>(RTP)",
                 null,
-                "&7随机传送到世界某处",
-                "&e» 点击执行 &f/rtp"));
+                "<!i><#aaaaaa>随机传送到世界某处",
+                "<!i><#ffff55>» 点击执行 <#ffffff>/rtp"));
 
         menuinv.setItem(SLOT_TPA, createMenuItem(
                 Material.ENDER_PEARL,
-                "&6传送请求 &7(TPA)",
+                "<!i><#ffaa00>传送请求 <#aaaaaa>(TPA)",
                 null,
-                "&7向其他玩家发送传送请求",
-                "&e» 点击执行 &f/tpa"));
+                "<!i><#aaaaaa>向其他玩家发送传送请求",
+                "<!i><#ffff55>» 点击执行 <#ffffff>/tpa"));
 
-        menuinv.setItem(SLOT_SIT, createMenuItem(
-                Material.OAK_STAIRS,
-                "&6坐下 &7(Sit)",
-                null,
-                "&7坐在楼梯方块上",
-                "&e» 点击执行 &f/sit"));
 
         menuinv.setItem(SLOT_MONEY, createMenuItem(
                 Material.GOLD_INGOT,
-                "&6经济 &7(Money)",
+                "<!i><#ffaa00>经济 <#aaaaaa>(Money)",
                 null,
-                "&7查看你的余额",
-                "&e» 点击执行 &f/money"));
+                "<!i><#aaaaaa>查看你的余额",
+                "<!i><#ffff55>» 点击执行 <#ffffff>/money"));
 
         menuinv.setItem(SLOT_MAIL, createMenuItem(
                 Material.BOOK,
-                "&6邮箱 &7(Mail)",
+                "<!i><#ffaa00>邮箱 <#aaaaaa>(Mail)",
                 null,
-                "&7打开你的邮箱",
-                "&e» 点击执行 &f/mail"));
+                "<!i><#aaaaaa>打开你的邮箱",
+                "<!i><#ffff55>» 点击执行 <#ffffff>/mail"));
 
         menuinv.setItem(SLOT_MAP, createMenuItem(
                 Material.CHEST,
-                "&6网页地图 &7(MLC Items)",
+                "<!i><#ffaa00>网页地图 <#aaaaaa>(MLC Items)",
                 null,
-                "&e» 点击在聊天栏打开超链接"));
+                "<!i><#ffff55>» 点击在聊天栏打开超链接"));
 
         menuinv.setItem(SLOT_QUESTION, createMenuItem(
                 Material.CHEST,
-                "在线文档",
+                "<!i><#ffaa00>在线文档",
                 null,
-                "&7打开在线文档",
-                "&e» 点击在聊天栏打开超链接"));
+                "<!i><#aaaaaa>打开在线文档",
+                "<!i><#ffff55>» 点击在聊天栏打开超链接"));
 
         menuinv.setItem(SLOT_ITEMSHOW, createMenuItem(
                 Material.NAME_TAG,
-                "&6展示物品 &7(Item Show)",
+                "<!i><#ffaa00>展示物品 <#aaaaaa>(Item Show)",
                 null,
-                "&7在聊天中展示手中的物品",
-                "&e» 点击执行 &f/item"));
+                "<!i><#aaaaaa>在聊天中展示手中的物品",
+                "<!i><#ffff55>» 点击执行 <#ffffff>/item"));
     }
 
     /**
@@ -128,14 +120,14 @@ public class Mlcmenu {
         if(model_space!=null){
             meta.setItemModel(NamespacedKey.fromString(model_space));
         }
-        // 使用 & 颜色代码转换为 Adventure Component
-        meta.displayName(formatLegacy(name));
+        // 使用 MiniMessage RGB 颜色标签转换为 Adventure Component
+        meta.displayName(formatMiniMessage(name));
 
         if (lore != null && lore.length > 0) {
             List<Component> loreList = new ArrayList<>();
             for (String line : lore) {
                 if (!line.isEmpty()) {
-                    loreList.add(formatLegacy(line));
+                    loreList.add(formatMiniMessage(line));
                 }
             }
             meta.lore(loreList);
@@ -146,16 +138,15 @@ public class Mlcmenu {
     }
 
     /**
-     * 将 & 颜色代码格式的字符串转换为 Adventure Component
-     * 支持: &0-&9, &a-&f, &l, &m, &n, &o, &k, &r
+     * 将 MiniMessage 格式的字符串转换为 Adventure Component，支持 <#RRGGBB> 颜色标签
      */
-    private static Component formatLegacy(String text) {
+    private static Component formatMiniMessage(String text) {
         return miniMessage.deserialize(text);
     }
 
     /**
      * 创建自定义玩家头颅物品
-     * @param name 显示名称 (&颜色代码)
+     * @param name 显示名称 (MiniMessage 格式，支持 <#RRGGBB> 颜色标签)
      * @param uuid 材质哈希 (http://textures.minecraft.net/texture/ 后面的部分)
      * @param modelSpace 自定义物品模型命名空间 (可为null)
      * @param lore 物品描述
@@ -175,13 +166,13 @@ public class Mlcmenu {
             meta.setItemModel(NamespacedKey.fromString(modelSpace));
         }
 
-        meta.displayName(formatLegacy(name));
+        meta.displayName(formatMiniMessage(name));
 
         if (lore != null && lore.length > 0) {
             List<Component> loreList = new ArrayList<>();
             for (String line : lore) {
                 if (!line.isEmpty()) {
-                    loreList.add(formatLegacy(line));
+                    loreList.add(formatMiniMessage(line));
                 }
             }
             meta.lore(loreList);

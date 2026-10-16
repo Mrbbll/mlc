@@ -59,11 +59,7 @@ public class menuopenlistener implements Listener {
                 player.closeInventory();
                 Tpagui.open(player);
                 break;
-
-            case Mlcmenu.SLOT_SIT:
-                player.closeInventory();
-                player.performCommand("sit");
-                break;
+                
 
             case Mlcmenu.SLOT_MONEY:
                 player.closeInventory();

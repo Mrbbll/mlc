@@ -96,7 +96,8 @@ public class Task {
             commands.register("tpa", "请求传送", new ExecutorCommand("tpa", "请求传送", new tpa()));
             commands.register("tpaccept", "同意请求", new ExecutorCommand("tpaccept", "同意请求", new tpaccept()));
             commands.register("tpahere", "请求传送到自己位置", new ExecutorCommand("tpahere", "请求传送到自己位置", new tpahere()));
-            commands.register("sit", "坐下", new ExecutorCommand("sit", "坐下", new Sit()));
+            //新版本更新了，这个指令没什么用了，但保留写法吧
+//            commands.register("sit", "坐下", new ExecutorCommand("sit", "坐下", new Sit()));
             commands.register("money", "操作货币", new ExecutorCommand("money", "操作货币", new money()));
             commands.register("item", "展示物品", new ExecutorCommand("item", "展示物品", new Item()));
             commands.register("rtp", "随机传送", new ExecutorCommand("rtp", "随机传送", new rtp()));
