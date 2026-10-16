@@ -28,10 +28,10 @@ public class sethome implements CommandExecutor {
         UUID uuid = player.getUniqueId();
 
         //多参
-        if(strings.length>=2){
-            player.sendMessage(Component.text("格式：/sethome <家的名字>", TextColor.color(0xFF4213)));
-            return false;
-        }
+//        if(strings.length>=2){
+//            player.sendMessage(Component.text("格式：/sethome <家的名字>", TextColor.color(0xFF4213)));
+//            return false;
+//        }
 
         //无参
         if(strings.length==0){
@@ -48,7 +48,7 @@ public class sethome implements CommandExecutor {
                 if (home != null) {
                     homes = home.getKeys(false);
                 }
-                if( homes !=null && homes.size()>=10){
+                if( homes !=null && homes.size()>=1){
                     player.sendMessage(Component.text("超过最大家数量",TextColor.color(0xFF4213)));
                     return false;
                 }
@@ -62,34 +62,37 @@ public class sethome implements CommandExecutor {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        };
+        }
+        else {
+            player.sendMessage(Component.text("格式：/sethome <家的名字>", TextColor.color(0xFF4213)));
+        }
         //有参
-        try {
-            File playerfile = new File(playerfiledir,uuid+".yml");
-            if(!playerfile.exists()){
-                playerfile.createNewFile();
-            };
-
-            FileConfiguration playerfileconfig = YamlConfiguration.loadConfiguration(playerfile);
-
-            ConfigurationSection home = playerfileconfig.getConfigurationSection("homes");
-            Set<String> homes = null;
-            if (home != null) {
-                homes = home.getKeys(false);
-            }
-            if( homes !=null && homes.size()>=10){
-                player.sendMessage(Component.text("超过最大家数量",TextColor.color(0xFF4213)));
-                return false;
-            }
-
-            Location location = player.getLocation();
-            Map<String,Object> serialized = location.serialize();
-            playerfileconfig.set("homes." + strings[0] ,serialized);
-            player.sendMessage(Component.text("成功设置 "+strings[0] +" 路径点",TextColor.color(0x66EE1D)));
-            playerfileconfig.save(playerfile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        };
+//        try {
+//            File playerfile = new File(playerfiledir,uuid+".yml");
+//            if(!playerfile.exists()){
+//                playerfile.createNewFile();
+//            };
+//
+//            FileConfiguration playerfileconfig = YamlConfiguration.loadConfiguration(playerfile);
+//
+//            ConfigurationSection home = playerfileconfig.getConfigurationSection("homes");
+//            Set<String> homes = null;
+//            if (home != null) {
+//                homes = home.getKeys(false);
+//            }
+//            if( homes !=null && homes.size()>=10){
+//                player.sendMessage(Component.text("超过最大家数量",TextColor.color(0xFF4213)));
+//                return false;
+//            }
+//
+//            Location location = player.getLocation();
+//            Map<String,Object> serialized = location.serialize();
+//            playerfileconfig.set("homes." + strings[0] ,serialized);
+//            player.sendMessage(Component.text("成功设置 "+strings[0] +" 路径点",TextColor.color(0x66EE1D)));
+//            playerfileconfig.save(playerfile);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        };
 
         return false;
     }

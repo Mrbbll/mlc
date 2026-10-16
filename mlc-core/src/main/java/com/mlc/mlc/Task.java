@@ -101,6 +101,8 @@ public class Task {
             commands.register("item", "展示物品", new ExecutorCommand("item", "展示物品", new Item()));
             commands.register("rtp", "随机传送", new ExecutorCommand("rtp", "随机传送", new rtp()));
             commands.register("menu", "打开MLC功能菜单", new ExecutorCommand("menu", "打开MLC功能菜单", new menu()));
+            commands.register("home","回到家",new ExecutorCommand("home","回到家",new home()));
+            commands.register("sethome","设置家",new ExecutorCommand("sethome","设置家",new sethome()));
         });
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
