@@ -177,7 +177,6 @@ public class Mlcmenu {
             }
             meta.lore(loreList);
         }
-
         head.setItemMeta(meta);
         return head;
     }
