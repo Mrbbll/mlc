@@ -1,5 +1,6 @@
 package com.mlc.mlc.mlcmain.lobby;
 
+import io.papermc.paper.math.Position;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
@@ -7,7 +8,11 @@ import java.util.Objects;
 
 public class LobbyWorld {
 
-    public static WorldCreator wc = new WorldCreator( Objects.requireNonNull(NamespacedKey.fromString("mlc:lobbyworld")));
+    public static WorldCreator wc =
+            new WorldCreator( Objects.requireNonNull(NamespacedKey.fromString("mlc:lobbyworld")))
+                    .type(WorldType.FLAT)
+                    .bonusChest(false)
+                    .forcedSpawnPosition(Position.block(0,0,0),0.0f,0.0f);
     public static World lobbyworld;
 
     public static void init(){
@@ -29,6 +34,7 @@ public class LobbyWorld {
             lobbyworld.setGameRule(GameRules.RESPAWN_RADIUS,0);
             lobbyworld.setGameRule(GameRules.SPAWN_MONSTERS,false);
             lobbyworld.setGameRule(GameRules.RANDOM_TICK_SPEED,0);
+            lobbyworld.setHardcore(false);
         }
 
     }
