@@ -15,6 +15,10 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+
+
+//旧实现的兼容
+
 public final class MailCommand implements CommandExecutor, TabCompleter {
     private final sendmail send = new sendmail();
     private final sendmailtoall sendToAll = new sendmailtoall();

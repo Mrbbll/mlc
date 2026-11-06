@@ -2,6 +2,9 @@ package com.mlc.mlcstyte;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,36 +67,51 @@ public final class StyteFormatter {
                                         Component suffix,
                                         Component message,
                                         Component displayName) {
+        Component connector = Component.text(" >> ", TextColor.color(255,170,50)).decoration(TextDecoration.ITALIC,false);
+
+
         TextComponent.Builder builder = Component.text();
-        Matcher matcher = PLACEHOLDER_PATTERN.matcher(format);
-        int lastEnd = 0;
-
-        while (matcher.find()) {
-            // Append literal text before this placeholder — plain text, no parsing
-            String before = format.substring(lastEnd, matcher.start());
-            if (!before.isEmpty()) {
-                builder.append(Component.text(before));
-            }
-
-            // Append the replacement Component for the placeholder
-            String placeholder = matcher.group();
-            switch (placeholder) {
-                case PREFIX_PLACEHOLDER  -> builder.append(prefix);
-                case SUFFIX_PLACEHOLDER  -> builder.append(suffix);
-                case NAME_PLACEHOLDER    -> builder.append(name);
-                case DISPLAYNAME_PLACEHOLDER -> builder.append(displayName);
-                case MESSAGE_PLACEHOLDER -> builder.append(message);
-                default                  -> builder.append(Component.text(placeholder));
-            }
-            lastEnd = matcher.end();
+        builder.append(prefix);
+        if(displayName!=null){
+            builder.append(displayName);
+        }else{
+            builder.append(name);
         }
+        builder.append(name);
+        builder.append(suffix);
+        builder.append(connector);
+        builder.append(message);
 
 
-        // Append remaining literal text after the last placeholder — plain text
-        String after = format.substring(lastEnd);
-        if (!after.isEmpty()) {
-            builder.append(Component.text(after));
-        }
+//        Matcher matcher = PLACEHOLDER_PATTERN.matcher(format);
+//        int lastEnd = 0;
+//
+//        while (matcher.find()) {
+//            // Append literal text before this placeholder — plain text, no parsing
+//            String before = format.substring(lastEnd, matcher.start());
+//            if (!before.isEmpty()) {
+//                builder.append(Component.text(before));
+//            }
+//
+//            // Append the replacement Component for the placeholder
+//            String placeholder = matcher.group();
+//            switch (placeholder) {
+//                case PREFIX_PLACEHOLDER  -> builder.append(prefix);
+//                case SUFFIX_PLACEHOLDER  -> builder.append(suffix);
+//                case NAME_PLACEHOLDER    -> builder.append(name);
+//                case DISPLAYNAME_PLACEHOLDER -> builder.append(displayName);
+//                case MESSAGE_PLACEHOLDER -> builder.append(message);
+//                default                  -> builder.append(Component.text(placeholder));
+//            }
+//            lastEnd = matcher.end();
+//        }
+//
+//
+//        // Append remaining literal text after the last placeholder — plain text
+//        String after = format.substring(lastEnd);
+//        if (!after.isEmpty()) {
+//            builder.append(Component.text(after));
+//        }
 
         return builder.build();
     }

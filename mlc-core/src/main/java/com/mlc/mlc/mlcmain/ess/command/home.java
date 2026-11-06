@@ -47,11 +47,19 @@ public class home implements CommandExecutor {
                 if (playerhome != null) {
                     loc = playerhome.getValues(false);
                     player.teleport(Location.deserialize(loc));
-                }else {
+                    return true;
+                }  else {
+                    //检查是否存在床和锚
+                    Location bedlocation = player.getRespawnLocation(false);
+                    if(bedlocation!=null){
+                        player.teleport(bedlocation);
+                        return true;
+                    }
+
                     player.sendMessage(Component.text("还没有设置默认的家路径点",TextColor.color(0xFF4213)));
                     return false;
                 }
-                return true;
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

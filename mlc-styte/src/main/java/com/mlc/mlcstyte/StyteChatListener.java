@@ -26,7 +26,7 @@ public class StyteChatListener implements Listener {
     public void onAsyncChat(AsyncChatEvent event) {
 
         event.renderer(ChatRenderer.viewerUnaware((
-                source, sourceDisplayName,message)->{
+                source ,sourceDisplayName,message)->{
                     Component prefix = Component.empty();
                     Component suffix = Component.empty();
 
