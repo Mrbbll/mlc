@@ -1,5 +1,6 @@
 package com.mlc.mlc.mlcmain.signin.Listener;
 
+import com.mlc.mlc.mlcmain.lobby.LobbyWorld;
 import com.mlc.mlc.mlcmain.signin.SigninManager;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -10,6 +11,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitScheduler;
+
 
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.miniMessage;
@@ -32,6 +34,7 @@ public class JoinMoneyListener implements Listener{
             //如果玩家上次登录时间为0L,则说明是第一次登录
             if(lastlogintime==0L){
                 player.sendMessage(miniMessage.deserialize("<green>欢迎来到MLC服务器"));
+                LobbyWorld.teleporttolobbyworld(player);
                 pdc.set(LASTLOGINTIME,PersistentDataType.LONG,System.currentTimeMillis());
                 pdc.set(LOGINCOUNT,PersistentDataType.INTEGER,1);
                 SigninManager.reward(player,1);

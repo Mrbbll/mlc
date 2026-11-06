@@ -18,6 +18,8 @@ import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
 import com.mlc.mlc.mlcmain.items.recipes.*;
 import com.mlc.mlc.mlcmain.Joinlistener.*;
+
+import com.mlc.mlc.mlcmain.lobby.LobbyWorld;
 import com.mlc.mlc.mlcmain.mail.command.MailCommand;
 import com.mlc.mlc.mlcmain.mail.listener.Maillistener;
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
@@ -33,7 +35,6 @@ import com.mlc.mlc.mlcmain.reload.reload;
 import com.mlc.mlc.mlcmain.respacksender.packsender;
 import com.mlc.mlc.mlcmain.rightclickheavest.Heavestlistener;
 import com.mlc.mlc.mlcmain.signin.Listener.JoinMoneyListener;
-import com.mlc.mlc.mlcmain.sit.command.Sit;
 import com.mlc.mlc.mlcmain.sit.listener.Unsitlistener;
 import com.mlc.mlc.mlcmain.sleep.Sleeplistener;
 import org.bukkit.Bukkit;
@@ -140,6 +141,9 @@ public class Task {
         Moneyitemrecipe.money_stack_x4_to_money_stack_x3recipe();
         Moneyitemrecipe.money_stack_x5_to_money_stack_x4recipe();
         Crate.crateRecipe();
+
+        //加载世界
+        LobbyWorld.init();
 
     }
 
