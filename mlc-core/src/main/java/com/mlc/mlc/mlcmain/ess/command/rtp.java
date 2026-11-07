@@ -1,5 +1,6 @@
 package com.mlc.mlc.mlcmain.ess.command;
 
+import com.mlc.mlc.mlcmain.lobby.LobbyWorld;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -40,6 +41,10 @@ public class rtp implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         if (commandSender instanceof Player player) {
+            if(player.getWorld().getName().equals(LobbyWorld.lobbyworld.getName())){
+                player.sendMessage(miniMessage.deserialize("<red><b>你不能在这个世界里使用随机传送"));
+                return false;
+            }
             long lastUse = COOL_DOWN_MAP.getOrDefault(player, 0L);
             long remaining = lastUse + COOL_DOWN * 1000L - System.currentTimeMillis();
             if(remaining > 0){
