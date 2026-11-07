@@ -31,6 +31,7 @@ public class Mlcmenu {
     public static final int SLOT_MAP = 21;
     public static final int SLOT_ITEMSHOW = 22;
     public static final int SLOT_QUESTION = 23;
+    public static final int SLOT_LOBBY = 25;
 
     // 超链接URL
     public static final String MAP_URL = "http://43.248.188.28:19423/";
@@ -105,6 +106,13 @@ public class Mlcmenu {
                 null,
                 "<!i><#aaaaaa>在聊天中展示手中的物品",
                 "<!i><#ffff55>» 点击执行 <#ffffff>/item"));
+
+        menuinv.setItem(SLOT_LOBBY,createMenuItem(
+                Material.BEACON,
+                "<!i>返回大厅",
+                null,
+                "<!i>返回大厅"
+        ));
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.mlc.mlc.mlcmain.menu.listener;
 
+import com.mlc.mlc.mlcmain.lobby.LobbyWorld;
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
 import com.mlc.mlc.mlcmain.menu.Tpagui;
 import net.kyori.adventure.text.Component;
@@ -91,6 +92,9 @@ public class menuopenlistener implements Listener {
                 player.closeInventory();
                 player.performCommand("item");
                 break;
+            case Mlcmenu.SLOT_LOBBY:
+                player.teleport(LobbyWorld.lobbyworld.getSpawnLocation());
+
 
             default:
                 // 点击边框或其他区域，不做处理
