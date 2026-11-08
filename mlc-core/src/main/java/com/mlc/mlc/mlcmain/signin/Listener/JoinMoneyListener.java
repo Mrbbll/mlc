@@ -10,7 +10,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 
 
 import static com.mlc.mlc.Mlc.instance;
@@ -34,7 +36,14 @@ public class JoinMoneyListener implements Listener{
             //如果玩家上次登录时间为0L,则说明是第一次登录
             if(lastlogintime==0L){
                 player.sendMessage(miniMessage.deserialize("<green>欢迎来到MLC服务器"));
-                LobbyWorld.teleporttolobbyworld(player);
+
+                org.bukkit.scheduler.BukkitTask task = new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        LobbyWorld.teleporttolobbyworld(player);
+                    }
+                }.runTaskLater(instance,1L);
+
                 pdc.set(LASTLOGINTIME,PersistentDataType.LONG,System.currentTimeMillis());
                 pdc.set(LOGINCOUNT,PersistentDataType.INTEGER,1);
                 SigninManager.reward(player,1);

@@ -77,7 +77,6 @@ public final class StyteFormatter {
         }else{
             builder.append(name);
         }
-        builder.append(name);
         builder.append(suffix);
         builder.append(connector);
         builder.append(message);
