@@ -11,8 +11,7 @@ public class LobbyWorld {
     public static WorldCreator wc =
             new WorldCreator( Objects.requireNonNull(NamespacedKey.fromString("mlc:lobbyworld")))
                     .type(WorldType.FLAT)
-                    .bonusChest(false)
-                    .forcedSpawnPosition(Position.block(0,0,0),0.0f,0.0f);
+                    .bonusChest(false);
     public static World lobbyworld;
 
     public static void init(){
