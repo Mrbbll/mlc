@@ -141,7 +141,7 @@ public class Task {
         Moneyitemrecipe.money_stack_x4_to_money_stack_x3recipe();
         Moneyitemrecipe.money_stack_x5_to_money_stack_x4recipe();
         Crate.crateRecipe();
-
+        Bukkit.updateRecipes();
         //加载世界
         LobbyWorld.init();
 
