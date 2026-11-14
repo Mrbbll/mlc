@@ -72,6 +72,7 @@ public final class StyteFormatter {
 
         TextComponent.Builder builder = Component.text();
         builder.append(prefix);
+        builder.append(miniMessage().deserialize("<head:"+name+">"));
         if(displayName!=null){
             builder.append(displayName);
         }else{
