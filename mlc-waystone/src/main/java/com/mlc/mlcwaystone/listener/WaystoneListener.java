@@ -400,7 +400,7 @@ public class WaystoneListener implements Listener {
         if (player.isOp()) {
             return true;
         }
-        if (waystone.isPrivate() && waystone.getOwner().equals(player.getUniqueId())) {
+        if (waystone.getOwner().equals(player.getUniqueId())) {
             return true;
         }
         return false;
