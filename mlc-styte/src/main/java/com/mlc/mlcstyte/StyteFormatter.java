@@ -5,6 +5,8 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.entity.Player;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,7 +55,7 @@ public final class StyteFormatter {
      * Literal text between placeholders is appended as plain text (no parsing).
      * Vault prefix/suffix should be pre-parsed via {@link #toComponent(String)}.
      *
-     * @param format      the format string with placeholders
+
      * @param prefix      Vault prefix Component
      * @param name        player name Component
      * @param suffix      Vault suffix Component
@@ -61,7 +63,7 @@ public final class StyteFormatter {
      * @param displayName the player display name Component
      * @return the assembled chat Component
      */
-    public static Component buildFormat(String format,
+    public static Component buildFormat(Player player,
                                         Component prefix,
                                         Component name,
                                         Component suffix,
@@ -72,7 +74,7 @@ public final class StyteFormatter {
 
         TextComponent.Builder builder = Component.text();
         builder.append(prefix);
-        builder.append(miniMessage().deserialize("<head:"+name+">"));
+        builder.append(MiniMessage.miniMessage().deserialize("<head:"+player.getUniqueId()+">"));
         if(displayName!=null){
             builder.append(displayName);
         }else{

@@ -37,7 +37,7 @@ public class StyteChatListener implements Listener {
                     }
 
                     return StyteFormatter.buildFormat(
-                            MlcStyte.FORMAT,
+                            event.getPlayer(),
                             prefix,
                             Component.text(source.getName()),
                             suffix,
