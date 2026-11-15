@@ -73,8 +73,8 @@ public final class StyteFormatter {
 
 
         TextComponent.Builder builder = Component.text();
-        builder.append(prefix);
         builder.append(MiniMessage.miniMessage().deserialize("<head:"+player.getUniqueId()+">"));
+        builder.append(prefix);
         if(displayName!=null){
             builder.append(displayName);
         }else{
