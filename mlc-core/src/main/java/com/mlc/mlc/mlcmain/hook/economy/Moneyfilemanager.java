@@ -129,7 +129,7 @@ public class Moneyfilemanager {
     }
 
     /** 仅在余额充足且数据库更新成功时扣款。 */
-    public static boolean withdrawForShop(UUID playerUUID, int amount) {
+    public static boolean withdrawBalance(UUID playerUUID, int amount) {
         if (amount <= 0 || !hasPlayer(playerUUID)) return false;
         String sql = "UPDATE money_data SET money = money - ? WHERE player_uuid = ? AND money >= ?";
         try (Connection connection = dataSource.getConnection();
@@ -141,7 +141,29 @@ public class Moneyfilemanager {
             playermoneyMap.put(playerUUID, playermoneyMap.get(playerUUID) - amount);
             return true;
         } catch (SQLException e) {
-            instance.getLogger().severe("商店扣款失败: " + e.getMessage());
+            instance.getLogger().severe("余额扣款失败: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** 存入实体货币，数据库成功更新后才更新内存余额。 */
+    public static boolean depositFromWallet(UUID playerUUID, int amount) {
+        if (amount <= 0 || !hasPlayer(playerUUID)) return false;
+        String sql = "UPDATE money_data SET money = money + ? WHERE player_uuid = ? AND money <= ? RETURNING money";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, amount);
+            statement.setString(2, playerUUID.toString());
+            statement.setInt(3, Integer.MAX_VALUE - amount);
+            try (ResultSet result = statement.executeQuery()) {
+                if (!result.next()) return false;
+                int balance = result.getInt(1);
+                result.close();
+                playermoneyMap.put(playerUUID, balance);
+                return true;
+            }
+        } catch (SQLException e) {
+            instance.getLogger().severe("钱包存款失败: " + e.getMessage());
             return false;
         }
     }

@@ -107,8 +107,8 @@ public final class buildershop implements Listener {
         ItemMeta meta = display.getItemMeta();
         meta.lore(List.of(
                 line(" "),
-                line("<#aab8b0>单价  <#ffd166>" + price + " 🪙"),
-                line("<#aab8b0>整组  <#ffd166>" + ((long) price * material.getMaxStackSize()) + " 🪙 <#77867e>(" + material.getMaxStackSize() + " 个)"),
+                line("<#aab8b0>单价  <#ffd166>" + price + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\">"),
+                line("<#aab8b0>整组  <#ffd166>" + ((long) price * material.getMaxStackSize()) + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\"> <#77867e>(" + material.getMaxStackSize() + " 个)"),
                 line(" "),
                 line("<#b8ffde>左键 <#d8e3dc>购买 1 个"),
                 line("<#b8ffde>Shift + 左键 <#d8e3dc>购买一组")
@@ -136,7 +136,7 @@ public final class buildershop implements Listener {
         ItemStack head = item(Material.PLAYER_HEAD, "<!i><#ffd166>我的钱包");
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
         headMeta.setOwningPlayer(player);
-        headMeta.lore(List.of(line("<#aab8b0>当前余额  <#ffd166>" + Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + " 🪙")));
+        headMeta.lore(List.of(line("<#aab8b0>当前余额  <#ffd166>" + Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\">")));
         head.setItemMeta(headMeta);
         inventory.setItem(PROFILE, head);
         player.openInventory(inventory);
@@ -190,15 +190,15 @@ public final class buildershop implements Listener {
         }
         int cost = product.price() * amount;
         if (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) < cost) {
-            player.sendMessage(line("<#ff8a80>余额不足，需要 <#ffd166>" + cost + " 🪙<#ff8a80>。"));
+            player.sendMessage(line("<#ff8a80>余额不足，需要 <#ffd166>" + cost + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\"><#ff8a80>。"));
             return;
         }
-        if (!Moneyfilemanager.withdrawForShop(player.getUniqueId(), cost)) {
+        if (!Moneyfilemanager.withdrawBalance(player.getUniqueId(), cost)) {
             player.sendMessage(line("<#ff8a80>购买失败，请稍后重试。"));
             return;
         }
         player.getInventory().addItem(purchase);
-        player.sendMessage(line("<#b8ffde>购买成功 <#aab8b0>· <#ffd166>" + cost + " 🪙 <#aab8b0>· " + amount + " 个"));
+        player.sendMessage(line("<#b8ffde>购买成功 <#aab8b0>· <#ffd166>" + cost + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\"> <#aab8b0>· " + amount + " 个"));
         refresh(player, holder, holder.page);
     }
 

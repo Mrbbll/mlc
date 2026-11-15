@@ -3,6 +3,7 @@ package com.mlc.mlc;
 import com.mlc.mlc.mlcmain.hook.economy.MlcEconomy;
 import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
 import com.mlc.mlc.mlcmain.menu.buildershop;
+import com.mlc.mlc.mlcmain.menu.WalletMenu;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -118,6 +119,7 @@ public final class Mlc extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        WalletMenu.closeAll();
         com.mlc.mlcwaystone.Mlcwaystone.shutdown();
         // Plugin shutdown logic
         Bukkit.resetRecipes();

@@ -4,6 +4,7 @@ import com.mlc.mlc.mlcmain.lobby.LobbyWorld;
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
 import com.mlc.mlc.mlcmain.menu.Tpagui;
 import com.mlc.mlc.mlcmain.menu.RecipeMenu;
+import com.mlc.mlc.mlcmain.menu.WalletMenu;
 import org.bukkit.Bukkit;
 
 import static com.mlc.mlc.Mlc.instance;
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.Inventory;
 
@@ -40,7 +42,7 @@ public class menuopenlistener implements Listener {
         Inventory inv = e.getInventory();
 
         // 检查是否是我们菜单的点击
-        if (!inv.equals(Mlcmenu.menuinv)) {
+        if (!Mlcmenu.isMenu(inv)) {
             return;
         }
 
@@ -67,8 +69,9 @@ public class menuopenlistener implements Listener {
                 
 
             case Mlcmenu.SLOT_MONEY:
-                player.closeInventory();
-                player.performCommand("money");
+                Bukkit.getScheduler().runTask(instance, () -> {
+                    if (player.isOnline() && player.getOpenInventory().getTopInventory().equals(inv)) WalletMenu.open(player);
+                });
                 break;
 
             case Mlcmenu.SLOT_MAIL:
@@ -100,6 +103,7 @@ public class menuopenlistener implements Listener {
                 player.teleport(LobbyWorld.lobbyworld.getSpawnLocation());
                 break;
             case Mlcmenu.SLOT_SHOP:
+                player.closeInventory();
                 player.performCommand("shop");
                 break;
             case Mlcmenu.SLOT_RECIPE:
@@ -111,6 +115,14 @@ public class menuopenlistener implements Listener {
             default:
                 // 点击边框或其他区域，不做处理
                 break;
+        }
+    }
+
+    @EventHandler
+    public void onDrag(InventoryDragEvent event) {
+        if (Mlcmenu.isMenu(event.getView().getTopInventory())
+                && event.getRawSlots().stream().anyMatch(slot -> slot < event.getView().getTopInventory().getSize())) {
+            event.setCancelled(true);
         }
     }
 

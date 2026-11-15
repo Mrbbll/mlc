@@ -1,5 +1,6 @@
 package com.mlc.mlc.mlcmain.menu;
 
+import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
 import net.kyori.adventure.text.Component;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.Bukkit;
@@ -8,6 +9,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.jetbrains.annotations.NotNull;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -17,13 +20,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.mlc.mlc.Mlc.instance;
-import static com.mlc.mlc.Mlc.miniMessage;
+import static com.mlc.mlc.Mlc.*;
 
 public class Mlcmenu {
-    public static Inventory menuinv;
+    private static Inventory menuinv;
+
+    private static final class MenuHolder implements InventoryHolder {
+        private Inventory inventory;
+
+        @Override
+        public @NotNull Inventory getInventory() {
+            return inventory;
+        }
+    }
+
+    public static boolean isMenu(Inventory inventory) {
+        return inventory.getHolder() instanceof MenuHolder;
+    }
 
     // 菜单物品槽位
+    public static final int SLOT_HEAD = 4;
     public static final int SLOT_RTP = 10;
     public static final int SLOT_TPA = 12;
     public static final int SLOT_MONEY = 14;
@@ -38,6 +54,26 @@ public class Mlcmenu {
     // 超链接URL
     public static final String MAP_URL = "http://43.248.188.28:19423/";
     public static final String DOCS_URL = "https://docs.qq.com/aio/DRnp3YU9sRmxWYnVB";
+
+    public static void open(Player player) {
+        MenuHolder holder = new MenuHolder();
+        Inventory inventory = Bukkit.createInventory(holder, menuinv.getSize(),
+                miniMessage.deserialize("<#b8ffde>快捷菜单</#b8ffde>"));
+        holder.inventory = inventory;
+        for (int slot = 0; slot < menuinv.getSize(); slot++) {
+            ItemStack item = menuinv.getItem(slot);
+            if (item != null) inventory.setItem(slot, item.clone());
+        }
+
+
+        inventory.setItem(SLOT_HEAD,createSkullItem(
+                "<!i><#b8ffde>" + player.getName(),
+                player.getUniqueId().toString(),
+                "mlc:icon/player_head",
+                "<!i><!shadow><white><sprite:items:\"mlc:item/crystal_coin\"> "+Moneyfilemanager.getPlayerMoney(player.getUniqueId())
+        ));
+        player.openInventory(inventory);
+    }
 
     public static void initmenuinv() {
         menuinv = Bukkit.createInventory(null, 9 * 6,
@@ -59,6 +95,7 @@ public class Mlcmenu {
             menuinv.setItem(i * 9 + 8, border);   // 右列
         }
 
+
         // 功能物品
         menuinv.setItem(SLOT_RTP, createMenuItem(
                 Material.COMPASS,
@@ -78,9 +115,9 @@ public class Mlcmenu {
         menuinv.setItem(SLOT_MONEY, createMenuItem(
                 Material.GOLD_INGOT,
                 "<!i><#ffaa00>钱包",
-                null,
-                "<!i><#aaaaaa>查看你的余额",
-                "<!i><#ffff55>» 点击执行 <#ffffff>/money"));
+                "mlc:crystal_gem",
+                "<!i><#aaaaaa>存入或取出水晶币",
+                "<!i><#ffff55>» 点击打开钱包"));
 
         menuinv.setItem(SLOT_MAIL, createMenuItem(
                 Material.BOOK,
@@ -205,8 +242,6 @@ public class Mlcmenu {
         return head;
     }
 
-    public static void open(Player player) {
-        player.openInventory(menuinv);
-    }
+
 }
 

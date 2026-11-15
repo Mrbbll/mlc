@@ -24,6 +24,7 @@ import com.mlc.mlc.mlcmain.mail.command.MailCommand;
 import com.mlc.mlc.mlcmain.mail.listener.Maillistener;
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
 import com.mlc.mlc.mlcmain.menu.RecipeMenu;
+import com.mlc.mlc.mlcmain.menu.WalletMenu;
 import com.mlc.mlc.mlcmain.menu.buildershop;
 import com.mlc.mlc.mlcmain.menu.commands.menu;
 import com.mlc.mlc.mlcmain.menu.commands.shop;
@@ -83,6 +84,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new menuopenlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new buildershop(), instance);
         Bukkit.getPluginManager().registerEvents(new RecipeMenu(), instance);
+        Bukkit.getPluginManager().registerEvents(new WalletMenu(), instance);
         Bukkit.getPluginManager().registerEvents(new Tpalistener(), instance);
         Bukkit.getPluginManager().registerEvents(new VeinMine(), instance);
         Bukkit.getPluginManager().registerEvents(new Chatlistener(), instance);
