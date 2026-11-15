@@ -260,6 +260,7 @@ public class WaystoneListener implements Listener {
 
             waystone.setIconType(iconType);
             waystone.setIconName(iconName);
+            waystone.setIconModel(heldMeta.getItemModel());
             saveData();
             if (waystone.isPublic()) {
                 Mlcwaystone.updateBlueMapMarker(waystone);

@@ -1,6 +1,7 @@
 package com.mlc.mlcwaystone;
 
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.LinkedHashMap;
@@ -18,6 +19,7 @@ public class WaystoneData {
     private Location location;  // LODESTONE block center
     private String iconType;    // Material enum name, e.g. "CAMPFIRE"
     private String iconName;    // Display name in GUI
+    private NamespacedKey iconModel; // Optional item model
     private long createdAt;     // System.currentTimeMillis() at creation
 
     public WaystoneData(UUID id, UUID owner, String ownerName, String type,
@@ -41,6 +43,7 @@ public class WaystoneData {
     public Location getLocation() { return location; }
     public String getIconType() { return iconType; }
     public String getIconName() { return iconName; }
+    public NamespacedKey getIconModel() { return iconModel; }
     public long getCreatedAt() { return createdAt; }
 
     // --- Setters ---
@@ -52,6 +55,7 @@ public class WaystoneData {
     public void setLocation(Location location) { this.location = location; }
     public void setIconType(String iconType) { this.iconType = iconType; }
     public void setIconName(String iconName) { this.iconName = iconName; }
+    public void setIconModel(NamespacedKey iconModel) { this.iconModel = iconModel; }
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
 
     /**
@@ -72,7 +76,14 @@ public class WaystoneData {
         String iconType = section.getString("iconType", "CAMPFIRE");
         String iconName = section.getString("iconName", "未命名传送点");
         long createdAt = section.getLong("createdAt", System.currentTimeMillis());
-        return new WaystoneData(id, owner, ownerName, type, location, iconType, iconName, createdAt);
+        WaystoneData data = new WaystoneData(id, owner, ownerName, type, location, iconType, iconName, createdAt);
+        String model = section.getString("iconModel");
+        if (model != null && !model.isBlank()) {
+            NamespacedKey key = NamespacedKey.fromString(model);
+            if (key == null) Mlcwaystone.instance.getLogger().warning("传送点 " + id + " 的物品模型无效: " + model);
+            else data.setIconModel(key);
+        }
+        return data;
     }
 
     /**
@@ -86,6 +97,7 @@ public class WaystoneData {
         map.put("location", data.getLocation().serialize());
         map.put("iconType", data.getIconType());
         map.put("iconName", data.getIconName());
+        if (data.getIconModel() != null) map.put("iconModel", data.getIconModel().toString());
         map.put("createdAt", data.getCreatedAt());
         return map;
     }

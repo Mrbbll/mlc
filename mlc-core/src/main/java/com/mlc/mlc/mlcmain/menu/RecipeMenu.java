@@ -13,6 +13,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.Damageable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -51,22 +52,50 @@ public final class RecipeMenu implements Listener {
         ItemStack query = item.clone();
         query.setAmount(1);
         List<Recipe> recipes = new ArrayList<>();
+        List<Recipe> baseRecipes = new ArrayList<>();
+        List<Recipe> unnamedRecipes = new ArrayList<>();
+        ItemStack baseItem = withoutEnchantmentsAndDamage(query);
+        ItemStack unnamedItem = baseItem.clone();
+        ItemMeta unnamedMeta = unnamedItem.getItemMeta();
+        unnamedMeta.customName(null);
+        unnamedItem.setItemMeta(unnamedMeta);
         Iterator<Recipe> iterator = Bukkit.recipeIterator();
         while (iterator.hasNext()) {
             Recipe recipe = iterator.next();
-            if (usages ? ingredients(recipe).stream().anyMatch(choice -> choice.test(query))
-                    : !recipe.getResult().getType().isAir()
-                      && recipe.getResult().isSimilar(query)) {
-                recipes.add(recipe);
+            ItemStack result = recipe.getResult();
+            if (usages) {
+                if (ingredients(recipe).stream().anyMatch(choice -> choice.test(query))) recipes.add(recipe);
+            } else if (!result.getType().isAir()) {
+                boolean dynamicMatch = recipe instanceof TransmuteRecipe transmute
+                        && result.getType() == query.getType() && transmute.getInput().test(query);
+                if (result.isSimilar(query) || dynamicMatch) recipes.add(recipe);
+                else if (result.isSimilar(baseItem)) baseRecipes.add(recipe);
+                else if (result.isSimilar(unnamedItem)) unnamedRecipes.add(recipe);
             }
         }
+        if (!usages && recipes.isEmpty()) {
+            recipes.addAll(baseRecipes.isEmpty() ? unnamedRecipes : baseRecipes);
+        }
         show(player, List.copyOf(recipes), 0, query, usages);
+    }
+
+    private static ItemStack withoutEnchantmentsAndDamage(ItemStack item) {
+        ItemStack base = item.clone();
+        ItemMeta meta = base.getItemMeta();
+        for (var enchantment : meta.getEnchants().keySet()) meta.removeEnchant(enchantment);
+        if (meta instanceof Damageable damageable && damageable.hasDamage()) damageable.resetDamage();
+        base.setItemMeta(meta);
+        return base;
     }
 
     private static List<RecipeChoice> ingredients(Recipe recipe) {
         List<RecipeChoice> choices = new ArrayList<>();
         if (recipe instanceof ShapedRecipe shaped) choices.addAll(shaped.getChoiceMap().values());
         else if (recipe instanceof ShapelessRecipe shapeless) choices.addAll(shapeless.getChoiceList());
+        else if (recipe instanceof TransmuteRecipe transmute) {
+            choices.add(transmute.getInput());
+            choices.add(transmute.getMaterial());
+        }
         else if (recipe instanceof CookingRecipe<?> cooking) choices.add(cooking.getInputChoice());
         else if (recipe instanceof StonecuttingRecipe stonecutting) choices.add(stonecutting.getInputChoice());
         else if (recipe instanceof SmithingRecipe smithing) {
@@ -135,6 +164,10 @@ public final class RecipeMenu implements Listener {
                 material = Material.SMITHING_TABLE;
                 name = "锻造台";
             }
+            case TransmuteRecipe transmuteRecipe -> {
+                material = Material.CRAFTING_TABLE;
+                name = "工作台 · 物品转换";
+            }
             case ShapedRecipe shapedRecipe -> {
                 material = Material.CRAFTING_TABLE;
                 name = "工作台 · 有序合成";
@@ -157,9 +190,10 @@ public final class RecipeMenu implements Listener {
         if (recipe instanceof CookingRecipe<?> cooking) {
             lore.add("<#aab8b0>加工时间 <#ffd166>" + cooking.getCookingTime() / 20.0 + " 秒");
         }
+        if (recipe instanceof TransmuteRecipe) lore.add("<#aab8b0>产物保留输入物品的数据");
         if (recipe instanceof SmithingTrimRecipe) lore.add("<#aab8b0>产物外观取决于材料");
         if (!(recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe || recipe instanceof CookingRecipe<?>
-                || recipe instanceof StonecuttingRecipe || recipe instanceof SmithingRecipe)) {
+                || recipe instanceof StonecuttingRecipe || recipe instanceof SmithingRecipe || recipe instanceof TransmuteRecipe)) {
             lore.add("<#ffb4a8>此类型的材料无法在此展示");
         }
         return lore;
@@ -177,6 +211,9 @@ public final class RecipeMenu implements Listener {
         } else if (recipe instanceof ShapelessRecipe shapeless) {
             List<RecipeChoice> choices = shapeless.getChoiceList();
             for (int i = 0; i < Math.min(GRID.length, choices.size()); i++) putChoice(inv, GRID[i], choices.get(i));
+        } else if (recipe instanceof TransmuteRecipe transmute) {
+            putChoice(inv, 19, transmute.getInput());
+            putChoice(inv, 20, transmute.getMaterial());
         } else if (recipe instanceof CookingRecipe<?> cooking) putChoice(inv, 20, cooking.getInputChoice());
         else if (recipe instanceof StonecuttingRecipe stone) putChoice(inv, 20, stone.getInputChoice());
         else if (recipe instanceof SmithingRecipe smithing) {

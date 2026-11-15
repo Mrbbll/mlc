@@ -149,6 +149,7 @@ public class WaystoneGUI {
 
         ItemStack item = ItemStack.of(material);
         ItemMeta meta = item.getItemMeta();
+        if (data.getIconModel() != null) meta.setItemModel(data.getIconModel());
 
         // Color: gold for private, light blue for public
         TextColor nameColor = data.isPrivate()
@@ -187,7 +188,7 @@ public class WaystoneGUI {
     }
 
     private static ItemStack createBorderItem() {
-        ItemStack item = ItemStack.of(Material.BLACK_STAINED_GLASS_PANE);
+        ItemStack item = ItemStack.of(Material.GREEN_STAINED_GLASS_PANE);
         ItemMeta meta = item.getItemMeta();
         meta.itemName(Component.text(" "));
         item.setItemMeta(meta);
@@ -240,7 +241,7 @@ public class WaystoneGUI {
     }
 
     private static ItemStack createTipItem(String title, String desc) {
-        ItemStack item = ItemStack.of(Material.GRAY_STAINED_GLASS_PANE);
+        ItemStack item = ItemStack.of(Material.GREEN_STAINED_GLASS_PANE);
         ItemMeta meta = item.getItemMeta();
         meta.itemName(Component.text(title)
                 .color(TextColor.fromHexString("#CCCCCC")));
