@@ -112,7 +112,7 @@ public class menuopenlistener implements Listener {
     private void sendUrlToChat(Player player, String mainText, String hoverText, String url) {
         player.sendMessage(
                 Component.text()
-                        .append(Component.text("[MLC] ", TextColor.fromHexString("#f73636")))
+                        .append(Component.text("[MLC] ", TextColor.fromHexString("#ffa621")))
                         .append(Component.text(mainText, TextColor.fromHexString("#e5fe67")))
                         .hoverEvent(Component.text(hoverText))
                         .clickEvent(ClickEvent.openUrl(url))

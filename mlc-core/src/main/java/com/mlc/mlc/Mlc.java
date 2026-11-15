@@ -2,6 +2,7 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.mlcmain.hook.economy.MlcEconomy;
 import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
+import com.mlc.mlc.mlcmain.menu.buildershop;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -63,6 +64,7 @@ public final class Mlc extends JavaPlugin {
 
         //初始化静态变量
         instance = this;
+        buildershop.initConfig();
         fileConfiguration = instance.getConfig();
         wordsnum = this.getConfig().getInt("words");
         damagetype = new NamespacedKey(this,"damagetype");
@@ -90,6 +92,8 @@ public final class Mlc extends JavaPlugin {
             throw new RuntimeException(e);
         }
 
+
+        buildershop.reload();
 
         //指令配方注入等
         try {

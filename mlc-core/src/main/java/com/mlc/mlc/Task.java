@@ -23,7 +23,9 @@ import com.mlc.mlc.mlcmain.lobby.LobbyWorld;
 import com.mlc.mlc.mlcmain.mail.command.MailCommand;
 import com.mlc.mlc.mlcmain.mail.listener.Maillistener;
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
+import com.mlc.mlc.mlcmain.menu.buildershop;
 import com.mlc.mlc.mlcmain.menu.commands.menu;
+import com.mlc.mlc.mlcmain.menu.commands.shop;
 import com.mlc.mlc.mlcmain.menu.listener.menuopenlistener;
 import com.mlc.mlc.mlcmain.menu.listener.Tpalistener;
 import com.mlc.mlc.mlcmain.maxhealth.Deadlistener;
@@ -77,6 +79,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new JoinMoneyListener(), instance);
         Bukkit.getPluginManager().registerEvents(new Opencreates(), instance);
         Bukkit.getPluginManager().registerEvents(new menuopenlistener(), instance);
+        Bukkit.getPluginManager().registerEvents(new buildershop(), instance);
         Bukkit.getPluginManager().registerEvents(new Tpalistener(), instance);
         Bukkit.getPluginManager().registerEvents(new VeinMine(), instance);
         Bukkit.getPluginManager().registerEvents(new Chatlistener(), instance);
@@ -102,6 +105,7 @@ public class Task {
             commands.register("money", "操作货币", new ExecutorCommand("money", "操作货币", new money()));
             commands.register("item", "展示物品", new ExecutorCommand("item", "展示物品", new Item()));
             commands.register("rtp", "随机传送", new ExecutorCommand("rtp", "随机传送", new rtp()));
+            commands.register("shop", "打开建筑商店", new ExecutorCommand("shop", "打开建筑商店", new shop()));
             commands.register("menu", "打开MLC功能菜单", new ExecutorCommand("menu", "打开MLC功能菜单", new menu()));
             commands.register("home","回到家",new ExecutorCommand("home","回到家",new home()));
             commands.register("sethome","设置家",new ExecutorCommand("sethome","设置家",new sethome()));

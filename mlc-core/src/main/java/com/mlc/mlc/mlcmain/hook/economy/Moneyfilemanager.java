@@ -128,6 +128,24 @@ public class Moneyfilemanager {
         }
     }
 
+    /** 仅在余额充足且数据库更新成功时扣款。 */
+    public static boolean withdrawForShop(UUID playerUUID, int amount) {
+        if (amount <= 0 || !hasPlayer(playerUUID)) return false;
+        String sql = "UPDATE money_data SET money = money - ? WHERE player_uuid = ? AND money >= ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, amount);
+            statement.setString(2, playerUUID.toString());
+            statement.setInt(3, amount);
+            if (statement.executeUpdate() != 1) return false;
+            playermoneyMap.put(playerUUID, playermoneyMap.get(playerUUID) - amount);
+            return true;
+        } catch (SQLException e) {
+            instance.getLogger().severe("商店扣款失败: " + e.getMessage());
+            return false;
+        }
+    }
+
     public static boolean hasPlayer(UUID playerUUID) {
         return playermoneyMap.containsKey(playerUUID);
     }

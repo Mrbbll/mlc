@@ -5,6 +5,7 @@ import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
 import com.mlc.mlc.mlcmain.mlcitem.itemgui.Gui;
+import com.mlc.mlc.mlcmain.menu.buildershop;
 import com.mlc.mlc.mlcmain.respacksender.packsender;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -29,6 +30,9 @@ public class reload implements CommandExecutor {
         Mlc.wordsnum = Mlc.fileConfiguration.getInt("words");
 
 
+        if (!buildershop.reload()) {
+            commandSender.sendMessage(Component.text("商店配置重载失败，保留原有商品，请查看控制台", NamedTextColor.RED));
+        }
         Cratesitems.init();
         Fesitems.init();
         Mlcitems.init();
