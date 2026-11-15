@@ -45,3 +45,6 @@ commands:
     permission: mlcwaystone.reload
   shop:
     description: "打开建筑商店"
+
+  recipe:
+    description: "打开配方查询器"

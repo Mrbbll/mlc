@@ -3,6 +3,10 @@ package com.mlc.mlc.mlcmain.menu.listener;
 import com.mlc.mlc.mlcmain.lobby.LobbyWorld;
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
 import com.mlc.mlc.mlcmain.menu.Tpagui;
+import com.mlc.mlc.mlcmain.menu.RecipeMenu;
+import org.bukkit.Bukkit;
+
+import static com.mlc.mlc.Mlc.instance;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.TextColor;
@@ -94,7 +98,15 @@ public class menuopenlistener implements Listener {
                 break;
             case Mlcmenu.SLOT_LOBBY:
                 player.teleport(LobbyWorld.lobbyworld.getSpawnLocation());
-
+                break;
+            case Mlcmenu.SLOT_SHOP:
+                player.performCommand("shop");
+                break;
+            case Mlcmenu.SLOT_RECIPE:
+                Bukkit.getScheduler().runTask(instance, () -> {
+                    if (player.isOnline() && player.getOpenInventory().getTopInventory().equals(inv)) RecipeMenu.open(player);
+                });
+                break;
 
             default:
                 // 点击边框或其他区域，不做处理

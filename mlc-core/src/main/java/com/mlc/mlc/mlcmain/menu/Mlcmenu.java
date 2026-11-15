@@ -29,9 +29,11 @@ public class Mlcmenu {
     public static final int SLOT_MONEY = 14;
     public static final int SLOT_MAIL = 16;
     public static final int SLOT_MAP = 21;
-    public static final int SLOT_ITEMSHOW = 22;
+    public static final int SLOT_ITEMSHOW = 19;
     public static final int SLOT_QUESTION = 23;
     public static final int SLOT_LOBBY = 25;
+    public static final int SLOT_SHOP = 28;
+    public static final int SLOT_RECIPE = 30;
 
     // 超链接URL
     public static final String MAP_URL = "http://43.248.188.28:19423/";
@@ -60,14 +62,14 @@ public class Mlcmenu {
         // 功能物品
         menuinv.setItem(SLOT_RTP, createMenuItem(
                 Material.COMPASS,
-                "<!i><#ffaa00>随机传送 <#aaaaaa>(RTP)",
+                "<!i><#ffaa00>随机传送 ",
                 null,
                 "<!i><#aaaaaa>随机传送到世界某处",
                 "<!i><#ffff55>» 点击执行 <#ffffff>/rtp"));
 
         menuinv.setItem(SLOT_TPA, createMenuItem(
                 Material.ENDER_PEARL,
-                "<!i><#ffaa00>传送请求 <#aaaaaa>(TPA)",
+                "<!i><#ffaa00>传送请求 ",
                 null,
                 "<!i><#aaaaaa>向其他玩家发送传送请求",
                 "<!i><#ffff55>» 点击执行 <#ffffff>/tpa"));
@@ -75,21 +77,21 @@ public class Mlcmenu {
 
         menuinv.setItem(SLOT_MONEY, createMenuItem(
                 Material.GOLD_INGOT,
-                "<!i><#ffaa00>经济 <#aaaaaa>(Money)",
+                "<!i><#ffaa00>钱包",
                 null,
                 "<!i><#aaaaaa>查看你的余额",
                 "<!i><#ffff55>» 点击执行 <#ffffff>/money"));
 
         menuinv.setItem(SLOT_MAIL, createMenuItem(
                 Material.BOOK,
-                "<!i><#ffaa00>邮箱 <#aaaaaa>(Mail)",
+                "<!i><#ffaa00>邮箱 ",
                 null,
                 "<!i><#aaaaaa>打开你的邮箱",
                 "<!i><#ffff55>» 点击执行 <#ffffff>/mail"));
 
         menuinv.setItem(SLOT_MAP, createMenuItem(
                 Material.CHEST,
-                "<!i><#ffaa00>网页地图 <#aaaaaa>(MLC Items)",
+                "<!i><#ffaa00>网页地图 ",
                 null,
                 "<!i><#ffff55>» 点击在聊天栏打开超链接"));
 
@@ -102,16 +104,30 @@ public class Mlcmenu {
 
         menuinv.setItem(SLOT_ITEMSHOW, createMenuItem(
                 Material.NAME_TAG,
-                "<!i><#ffaa00>展示物品 <#aaaaaa>(Item Show)",
+                "<!i><#ffaa00>展示物品",
                 null,
                 "<!i><#aaaaaa>在聊天中展示手中的物品",
                 "<!i><#ffff55>» 点击执行 <#ffffff>/item"));
 
         menuinv.setItem(SLOT_LOBBY,createMenuItem(
                 Material.BEACON,
-                "<!i>返回大厅",
+                "<!i><#ffaa00>返回大厅",
                 null,
-                "<!i>返回大厅"
+                "<!i><#ffff55>» 点击返回大厅传送中枢"
+        ));
+
+        menuinv.setItem(SLOT_RECIPE, createMenuItem(
+                Material.CRAFTING_TABLE,
+                "<!i><#ffaa00>配方查询",
+                null,
+                "<!i><#aaaaaa>查询物品的配方和用途",
+                "<!i><#ffff55>» 点击打开配方查询器"));
+
+        menuinv.setItem(SLOT_SHOP,createMenuItem(
+                Material.ECHO_SHARD,
+                "<!i><#ffaa00>建材商店",
+                "mlc:crystal_coin",
+                "<!i><#ffff55>» 点击打开建材商店"
         ));
     }
 
@@ -153,7 +169,7 @@ public class Mlcmenu {
     }
 
     /**
-     * 创建自定义玩家头颅物品
+     * 创建自定义头颅物品
      * @param name 显示名称 (MiniMessage 格式，支持 <#RRGGBB> 颜色标签)
      * @param uuid 材质哈希 (http://textures.minecraft.net/texture/ 后面的部分)
      * @param modelSpace 自定义物品模型命名空间 (可为null)
