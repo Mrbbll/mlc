@@ -41,6 +41,7 @@ subprojects {
         maven("https://repo.extendedclip.com/releases/")
         maven("https://jitpack.io")
         maven("https://repo.bluecolored.de/releases/")
+        maven("https://repo.codemc.io/repository/maven-releases/")
     }
 
     java {

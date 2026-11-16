@@ -69,6 +69,7 @@ public class Task {
 
         Bukkit.getPluginManager().registerEvents(new Backpacklistener(),instance);
         Bukkit.getPluginManager().registerEvents(new Balloon(), instance);
+        Balloon.refreshOnlinePlayers();
         Bukkit.getPluginManager().registerEvents(new Heavestlistener(),instance);
         Bukkit.getPluginManager().registerEvents(new Guilistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Unsitlistener(), instance);

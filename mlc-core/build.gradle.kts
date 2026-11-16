@@ -7,6 +7,7 @@ val mockitoAgent = configurations.create("mockitoAgent") {
 }
 
 dependencies {
+    implementation("com.github.retrooper:packetevents-spigot:2.14.0")
     compileOnly(libs.vault) {
         exclude("org.bukkit", "bukkit")
     }
@@ -38,6 +39,8 @@ tasks.test {
 tasks {
     shadowJar {
         relocate("com.zaxxer.hikari", "com.mlc.lib.hikari")
+        relocate("com.github.retrooper.packetevents", "com.mlc.lib.packetevents.api")
+        relocate("io.github.retrooper.packetevents", "com.mlc.lib.packetevents.impl")
         // SQLite 不能用 relocate，因为它的 JNI 原生库无法重定位
         // relocate("org.sqlite", "com.mlc.lib.sqlite")
     }

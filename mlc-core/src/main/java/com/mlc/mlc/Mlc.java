@@ -5,6 +5,8 @@ import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
 import com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon;
 import com.mlc.mlc.mlcmain.menu.buildershop;
 import com.mlc.mlc.mlcmain.menu.WalletMenu;
+import com.github.retrooper.packetevents.PacketEvents;
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -38,7 +40,15 @@ public final class Mlc extends JavaPlugin {
 
 
     @Override
+    public void onLoad() {
+        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+        PacketEvents.getAPI().getSettings().checkForUpdates(false);
+        PacketEvents.getAPI().load();
+    }
+
+    @Override
     public void onEnable() {
+        PacketEvents.getAPI().init();
 
 
         //注册经济系统
@@ -121,6 +131,7 @@ public final class Mlc extends JavaPlugin {
     @Override
     public void onDisable() {
         Balloon.shutdown();
+        PacketEvents.getAPI().terminate();
         WalletMenu.closeAll();
         com.mlc.mlcwaystone.Mlcwaystone.shutdown();
         // Plugin shutdown logic

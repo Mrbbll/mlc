@@ -20,6 +20,7 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -135,7 +136,7 @@ public final class Balloon implements Listener {
             event.setCancelled(true);
         }
     }
-    @EventHandler public void onQuit(PlayerQuitEvent event) { close(event.getPlayer()); stopTask(event.getPlayer()); revoke(event.getPlayer()); }
+    @EventHandler public void onQuit(PlayerQuitEvent event) { close(event.getPlayer()); stopTask(event.getPlayer()); revoke(event.getPlayer()); BalloonVisual.quit(event.getPlayer()); }
 
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
@@ -167,6 +168,11 @@ public final class Balloon implements Listener {
         });
     }
 
+    public static void refreshOnlinePlayers() {
+        BalloonVisual.init();
+        for (Player player : Bukkit.getOnlinePlayers()) refreshLater(player);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onHeldUpdate(PlayerItemHeldEvent event) { refreshLater(event.getPlayer()); }
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -186,6 +192,7 @@ public final class Balloon implements Listener {
         if (event.getWhoClicked() instanceof Player player) refreshLater(player);
     }
     @EventHandler public void onJoin(PlayerJoinEvent event) { refreshLater(event.getPlayer()); }
+    @EventHandler public void onRespawn(PlayerRespawnEvent event) { refreshLater(event.getPlayer()); }
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onGameMode(PlayerGameModeChangeEvent event) { refreshLater(event.getPlayer()); }
 
@@ -206,6 +213,7 @@ public final class Balloon implements Listener {
     }
 
     private static void refreshFlight(Player player) {
+        BalloonVisual.refresh(player, isBalloon(mainBalloon(player)) || isBalloon(player.getInventory().getItemInOffHand()));
         boolean powered = available(player, mainBalloon(player))
                 || available(player, player.getInventory().getItemInOffHand());
         if (!powered) {
@@ -308,6 +316,7 @@ public final class Balloon implements Listener {
     }
 
     public static void shutdown() {
+        BalloonVisual.shutdown();
         for (Player player : Bukkit.getOnlinePlayers()) {
             close(player);
             stopTask(player);
