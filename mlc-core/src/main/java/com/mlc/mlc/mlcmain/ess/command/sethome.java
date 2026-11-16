@@ -48,7 +48,7 @@ public class sethome implements CommandExecutor {
                 if (home != null) {
                     homes = home.getKeys(false);
                 }
-                if( homes !=null && homes.size()>=1){
+                if( homes !=null && homes.size()>=2){
                     player.sendMessage(Component.text("超过最大家数量",TextColor.color(0xFF4213)));
                     return false;
                 }
@@ -64,7 +64,7 @@ public class sethome implements CommandExecutor {
             }
         }
         else {
-            player.sendMessage(Component.text("格式：/sethome <家的名字>", TextColor.color(0xFF4213)));
+            player.sendMessage(Component.text("格式：/sethome", TextColor.color(0xFF4213)));
         }
         //有参
 //        try {

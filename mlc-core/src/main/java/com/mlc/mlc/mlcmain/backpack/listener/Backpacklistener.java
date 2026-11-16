@@ -1,6 +1,7 @@
 package com.mlc.mlc.mlcmain.backpack.listener;
 
 import com.mlc.mlc.mlcmain.backpack.backpackgui.Backpack;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -12,6 +13,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -20,6 +22,8 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.Map;
 import java.util.UUID;
+
+import static com.mlc.mlc.Mlc.instance;
 
 /**
  * Listener that drives backpack interaction.
@@ -56,6 +60,28 @@ public class Backpacklistener implements Listener {
 
         Backpack.openBackpack(event.getPlayer(), item);
         event.getPlayer().swingMainHand();
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBackpackInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)
+            || event.getView().getTopInventory().getType() != InventoryType.CRAFTING
+            || event.getClickedInventory() != player.getInventory()
+            || event.getClick() != ClickType.RIGHT
+            || !event.getCursor().getType().isAir()
+            || !Backpack.isBackpackItem(event.getCurrentItem())) return;
+
+        int slot = event.getSlot();
+        ItemStack selected = event.getCurrentItem().clone();
+        var view = event.getView();
+        event.setCancelled(true);
+        Bukkit.getScheduler().runTask(instance, () -> {
+            if (!player.isOnline() || !player.getOpenInventory().equals(view)) return;
+            ItemStack item = player.getInventory().getItem(slot);
+            if (item != null && item.getAmount() == selected.getAmount() && item.isSimilar(selected)) {
+                Backpack.openBackpack(player, item);
+            }
+        });
     }
 
     // ──────────────────────────────────────────────
