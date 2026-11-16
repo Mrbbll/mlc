@@ -69,14 +69,17 @@ public final class Balloon implements Listener {
 
     @EventHandler
     public void onUse(PlayerInteractEvent event) {
-        if (event.getHand() != EquipmentSlot.HAND || (event.getAction() != Action.RIGHT_CLICK_AIR
-                && event.getAction() != Action.RIGHT_CLICK_BLOCK)) return;
-        ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
-        if (!isBalloon(item) || !(item.getItemMeta() instanceof BlockStateMeta meta)
-                || !(meta.getBlockState() instanceof ShulkerBox box)) return;
+        if (event.getAction() != Action.RIGHT_CLICK_AIR
+                && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        ItemStack item = event.getHand() == EquipmentSlot.HAND
+                ? event.getPlayer().getInventory().getItemInMainHand() : event.getItem();
+        if (!isBalloon(item)) return;
         // 拦截原版交互，避免把作为基础材质的潜影盒放到地上。
         event.setUseInteractedBlock(Event.Result.DENY);
         event.setUseItemInHand(Event.Result.DENY);
+        // 副手仅阻止放置；燃料界面仍由主手打开，避免保存到错误的物品。
+        if (event.getHand() != EquipmentSlot.HAND || !(item.getItemMeta() instanceof BlockStateMeta meta)
+                || !(meta.getBlockState() instanceof ShulkerBox box)) return;
         Holder holder = new Holder(event.getPlayer(), item);
         holder.inventory = Bukkit.createInventory(holder, 27, miniMessage.deserialize("<#b8ffde>热气球 <#71877a>· 燃料"));
         // 打开临时界面时读取物品自身的潜影盒内容。
