@@ -13,6 +13,8 @@ import com.mlc.mlc.mlcmain.ess.listener.Tplistener;
 import com.mlc.mlc.mlcmain.ess.command.*;
 import com.mlc.mlc.mlcmain.hook.economy.commands.money;
 import com.mlc.mlc.mlcmain.hook.placeholderapi.Mlceco;
+import com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon;
+import com.mlc.mlc.mlcmain.items.itemfunc.create.Itemlistener;
 import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
@@ -66,6 +68,7 @@ public class Task {
 
 
         Bukkit.getPluginManager().registerEvents(new Backpacklistener(),instance);
+        Bukkit.getPluginManager().registerEvents(new Balloon(), instance);
         Bukkit.getPluginManager().registerEvents(new Heavestlistener(),instance);
         Bukkit.getPluginManager().registerEvents(new Guilistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Unsitlistener(), instance);
@@ -81,6 +84,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new DropmoneyListener(), instance);
         Bukkit.getPluginManager().registerEvents(new JoinMoneyListener(), instance);
         Bukkit.getPluginManager().registerEvents(new Opencreates(), instance);
+        Bukkit.getPluginManager().registerEvents(new Itemlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new menuopenlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new buildershop(), instance);
         Bukkit.getPluginManager().registerEvents(new RecipeMenu(), instance);
@@ -131,6 +135,7 @@ public class Task {
 
         //注册物品配方
         Backpack.backpackrecipe();
+        balloon.backpackrecipe();
         Healfood.healfoodrecipe();
         Elytra.elytrarecipe();
         Moneyitemrecipe.money_nugget_to_ingotrecipe();

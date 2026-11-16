@@ -36,6 +36,7 @@ public class Mlcitems {
     public static ItemStack money_gem;
     public static ItemStack money_coin;
     public static ItemStack crate;
+    public static ItemStack balloon;
     public static Map<Integer,ItemStack> itemsmap;
 
     public static void init(){
@@ -163,6 +164,18 @@ public class Mlcitems {
         itemMeta_13.lore(crateLorelist);
         crate.setItemMeta(itemMeta_13);
 
+        balloon = ItemStack.of(Material.SHULKER_BOX);
+        ItemMeta itemMeta_14 = balloon.getItemMeta();
+        itemMeta_14.itemName(miniMessage.deserialize("热气球束"));
+        itemMeta_14.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
+        itemMeta_14.setItemModel(NamespacedKey.fromString("mlc:balloon"));
+        itemMeta_14.setMaxStackSize(1);
+        List<Component> balloonLorelist = new ArrayList<>();
+        balloonLorelist.add(miniMessage.deserialize("<!i>右键打开添加燃料"));
+        balloonLorelist.add(miniMessage.deserialize("<!i>在主手或者副手启用飞行"));
+        itemMeta_14.lore(balloonLorelist);
+        balloon.setItemMeta(itemMeta_14);
+
         itemsmap.put(1,backpack);
         itemsmap.put(2,healfood);
         itemsmap.put(3,elytraitem);
@@ -177,5 +190,6 @@ public class Mlcitems {
         itemsmap.put(12,money_gem);
         itemsmap.put(13,money_coin);
         itemsmap.put(14,crate);
+        itemsmap.put(15,balloon);
     }
 }
