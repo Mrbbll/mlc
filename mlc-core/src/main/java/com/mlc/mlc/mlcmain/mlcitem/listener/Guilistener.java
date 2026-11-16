@@ -1,83 +1,72 @@
 package com.mlc.mlc.mlcmain.mlcitem.listener;
 
-import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
-import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
-import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
+import com.mlc.mlc.mlcmain.menu.RecipeMenu;
+import com.mlc.mlc.mlcmain.mlcitem.itemgui.Gui;
 import com.mlc.mlc.mlcmain.mlcitem.itemgui.Guitype;
 import com.mlc.mlc.mlcmain.mlcitem.itemgui.Openedgui;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.IOException;
-
-import static com.mlc.mlc.mlcmain.mlcitem.itemgui.Gui.*;
-import static com.mlc.mlc.mlcmain.mlcitem.itemgui.Guitype.CRATESITEMSGUI;
+import static com.mlc.mlc.Mlc.instance;
 
 public class Guilistener implements Listener {
+    @EventHandler
+    public void onClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        Openedgui opened = Gui.openinvmap.get(player);
+        Inventory inv = event.getView().getTopInventory();
+        if (opened == null || !inv.equals(opened.getInv())) return;
+        event.setCancelled(true);
+        int slot = event.getRawSlot();
+        if (slot < 0 || slot >= inv.getSize()) return;
+        if (slot == 45 && opened.getNum() > 0) {
+            Gui.refresh(opened.getGuitype(), player, opened.getNum() - Gui.PAGE_SIZE, opened);
+        } else if (slot == 53 && Gui.hasNext(opened)) {
+            Gui.refresh(opened.getGuitype(), player, opened.getNum() + Gui.PAGE_SIZE, opened);
+        } else if (slot == 48 || slot == 49 || slot == 50) {
+            Guitype type = switch (slot) {
+                case 48 -> Guitype.MLCITEMSGUI;
+                case 49 -> Guitype.FESITEMSGUI;
+                default -> Guitype.CRATESITEMSGUI;
+            };
+            Gui.refresh(type, player, 0, opened);
+        } else if (Gui.isItemSlot(slot) && (event.getClick() == ClickType.LEFT || event.getClick() == ClickType.RIGHT)) {
+            ItemStack item = event.getCurrentItem();
+            if (item == null || item.getType().isAir()) return;
+            ItemStack selected = item.clone();
+            if (player.hasPermission("mlc.op")) {
+                player.give(selected);
+            } else {
+                Bukkit.getScheduler().runTask(instance, () -> {
+                    if (player.isOnline() && player.getOpenInventory().getTopInventory().equals(inv)) {
+                        RecipeMenu.open(player, selected);
+                    }
+                });
+            }
+        }
+    }
 
     @EventHandler
-    //mlcitem界面事件监听
-    public void onClick(InventoryClickEvent e) throws IOException {
-        Player player = (Player) e.getWhoClicked();
-        Inventory inv = player.getOpenInventory().getTopInventory();
-        if (openinvmap.containsKey(player) && inv.equals(openinvmap.get(player).getInv())) {
-            e.setCancelled(true);
-            Openedgui openedgui = openinvmap.get(player);
-            int num = openinvmap.get(player).getNum();
-            Guitype guitype = openinvmap.get(player).getGuitype();
-            if(e.getRawSlot()<0||e.getRawSlot()>=e.getInventory().getSize())
-            {
-                return;
-            };
-            if(e.getRawSlot()==45)
-            {
-                //pageup
-                if(num-45>0){
-                    num-=45;
-                    refresh(guitype,player,num,openedgui);
-                }
-                return;
-            } else if (e.getRawSlot()==53) {
-                //pagedown
-                player.sendMessage(Component.text("num:"+num, TextColor.fromHexString("#f73636")));
+    public void onDrag(InventoryDragEvent event) {
+        if (event.getWhoClicked() instanceof Player player) {
+            Openedgui opened = Gui.openinvmap.get(player);
+            if (opened != null && event.getView().getTopInventory().equals(opened.getInv())) event.setCancelled(true);
+        }
+    }
 
-                int maxnum = switch (guitype) {
-                    case CRATESITEMSGUI -> Cratesitems.itemsmap.size();
-                    case FESITEMSGUI -> Fesitems.itemsmap.size();
-                    case MLCITEMSGUI -> Mlcitems.itemsmap.size();
-                };
-                player.sendMessage(Component.text("maxnum:"+maxnum, TextColor.fromHexString("#f73636")));
-                if(num+45 <= maxnum){
-                    num+=45;
-                    refresh(guitype,player,num,openedgui);
-                    player.sendMessage(Component.text("num1:"+num, TextColor.fromHexString("#f73636")));
-                }
-                return;
-            } else if (e.getRawSlot()==50) {
-                //changemenu
-                refresh(CRATESITEMSGUI,player,1,openedgui);
-                return;
-            } else if (e.getRawSlot()==49) {
-                refresh(Guitype.FESITEMSGUI,player,1,openedgui);
-                return;
-            } else if (e.getRawSlot()==48) {
-                refresh(Guitype.MLCITEMSGUI,player,1,openedgui);
-                return;
-            }
-
-            ItemStack itemStack = e.getCurrentItem();
-            if(itemStack == null)
-            {
-                return;
-            }else {
-                player.give(itemStack);
-            };
-        };
+    @EventHandler
+    public void onClose(InventoryCloseEvent event) {
+        if (event.getPlayer() instanceof Player player) {
+            Openedgui opened = Gui.openinvmap.get(player);
+            if (opened != null && event.getInventory().equals(opened.getInv())) Gui.openinvmap.remove(player);
+        }
     }
 }

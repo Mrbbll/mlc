@@ -48,6 +48,10 @@ public final class RecipeMenu implements Listener {
         show(player, List.of(), 0, null, false);
     }
 
+    public static void open(Player player, ItemStack item) {
+        search(player, item, false);
+    }
+
     private static void search(Player player, ItemStack item, boolean usages) {
         ItemStack query = item.clone();
         query.setAmount(1);

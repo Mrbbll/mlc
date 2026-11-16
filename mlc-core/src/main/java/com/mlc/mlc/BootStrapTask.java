@@ -3,18 +3,24 @@ package com.mlc.mlc;
 import com.mlc.mlc.mlcmain.enchantments.moreenchants.EnchantmentKeys;
 import com.mlc.mlc.mlcmain.enchantments.moreenchants.VeinMine;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
+import io.papermc.paper.plugin.lifecycle.event.LifecycleEvent;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.data.EnchantmentRegistryEntry;
 import io.papermc.paper.registry.event.RegistryEvents;
 import io.papermc.paper.registry.keys.ItemTypeKeys;
+import io.papermc.paper.registry.keys.tags.EnchantmentTagKeys;
 import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.set.RegistrySet;
+import io.papermc.paper.tag.TagEntry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import io.papermc.paper.registry.tag.Tag;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemType;
+
+import java.util.List;
 
 
 public class BootStrapTask {
@@ -46,6 +52,22 @@ public class BootStrapTask {
 
                 }
         ));
+        context.getLifecycleManager().registerEventHandler(
+                LifecycleEvents.TAGS.preFlatten(RegistryKey.ENCHANTMENT).newHandler(
+                        event -> event.registrar().addToTag(
+                                EnchantmentTagKeys.IN_ENCHANTING_TABLE,
+                                List.of(TagEntry.valueEntry(EnchantmentKeys.VEINMINE))
+                        )
+                )
+        );
+        context.getLifecycleManager().registerEventHandler(
+                LifecycleEvents.TAGS.preFlatten(RegistryKey.ENCHANTMENT).newHandler(
+                        event -> event.registrar().addToTag(
+                                EnchantmentTagKeys.TRADEABLE,
+                                List.of(TagEntry.valueEntry(EnchantmentKeys.VEINMINE))
+                        )
+                )
+        );
     }
 
 }

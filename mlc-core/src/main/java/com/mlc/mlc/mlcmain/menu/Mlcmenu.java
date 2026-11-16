@@ -50,6 +50,7 @@ public class Mlcmenu {
     public static final int SLOT_LOBBY = 25;
     public static final int SLOT_SHOP = 28;
     public static final int SLOT_RECIPE = 30;
+    public static final int SLOT_ITEMS = 32;
 
     // 超链接URL
     public static final String MAP_URL = "http://43.248.188.28:19423/";
@@ -166,6 +167,13 @@ public class Mlcmenu {
                 "mlc:crystal_coin",
                 "<!i><#ffff55>» 点击打开建材商店"
         ));
+        menuinv.setItem(SLOT_ITEMS,createMenuItem(
+                Material.ECHO_SHARD,
+                "<!i><#ffaa00>特殊物品",
+                "mlc:crystal_coin",
+                "<!i><#ffff55>» 点击打开特殊物品配方表"
+        ));
+
     }
 
     /**

@@ -2,6 +2,7 @@ package com.mlc.mlc.mlcmain.menu.listener;
 
 import com.mlc.mlc.mlcmain.lobby.LobbyWorld;
 import com.mlc.mlc.mlcmain.menu.Mlcmenu;
+import com.mlc.mlc.mlcmain.mlcitem.itemgui.Gui;
 import com.mlc.mlc.mlcmain.menu.Tpagui;
 import com.mlc.mlc.mlcmain.menu.RecipeMenu;
 import com.mlc.mlc.mlcmain.menu.WalletMenu;
@@ -109,6 +110,12 @@ public class menuopenlistener implements Listener {
             case Mlcmenu.SLOT_RECIPE:
                 Bukkit.getScheduler().runTask(instance, () -> {
                     if (player.isOnline() && player.getOpenInventory().getTopInventory().equals(inv)) RecipeMenu.open(player);
+                });
+                break;
+
+            case Mlcmenu.SLOT_ITEMS:
+                Bukkit.getScheduler().runTask(instance, () -> {
+                    if (player.isOnline() && player.getOpenInventory().getTopInventory().equals(inv)) Gui.open(player);
                 });
                 break;
 
