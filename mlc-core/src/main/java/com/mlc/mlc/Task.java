@@ -38,6 +38,7 @@ import com.mlc.mlc.mlcmain.maxhealth.Eatlistener;
 import com.mlc.mlc.mlcmain.mlcitem.command.mlcitemgui;
 import com.mlc.mlc.mlcmain.mlcitem.listener.Guilistener;
 import com.mlc.mlc.mlcmain.motd.Motd;
+import com.mlc.mlc.mlcmain.mobmove.MobMove;
 import com.mlc.mlc.mlcmain.reload.reload;
 import com.mlc.mlc.mlcmain.respacksender.packsender;
 import com.mlc.mlc.mlcmain.rightclickheavest.Heavestlistener;
@@ -67,6 +68,7 @@ public class Task {
         packsender.init();
 
 
+        Bukkit.getPluginManager().registerEvents(new MobMove(instance), instance);
         Bukkit.getPluginManager().registerEvents(new Backpacklistener(),instance);
         Bukkit.getPluginManager().registerEvents(new Balloon(), instance);
         Balloon.refreshOnlinePlayers();
