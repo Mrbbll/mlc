@@ -8,6 +8,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,16 +75,17 @@ public final class StyteFormatter {
 
 
         TextComponent.Builder builder = Component.text();
-        builder.append(MiniMessage.miniMessage().deserialize("<head:"+player.getUniqueId()+">"));
+        builder.append(MiniMessage.miniMessage().deserialize("<click:suggest_command:/msg " + name + "><hover:show_text:'<#53ff24>点击私聊'><head:"+player.getUniqueId()+"></click>"));
         builder.append(prefix);
         if(displayName!=null){
-            builder.append(displayName);
+            builder.append(MiniMessage.miniMessage().deserialize("<click:suggest_command:/tpa " + name + "><hover:show_text:'<#ffbd14>点击传送'>"+displayName));
         }else{
-            builder.append(name);
+            builder.append(MiniMessage.miniMessage().deserialize("<click:suggest_command:/tpa " + name + "><hover:show_text:'<#ffbd14>点击传送'>"+name));
         }
         builder.append(suffix);
         builder.append(connector);
-        builder.append(message);
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH.mm.ss"));
+        builder.append(MiniMessage.miniMessage().deserialize("<hover:show_text:'<#828282>"+ time + "'>" + message));
 
 
 //        Matcher matcher = PLACEHOLDER_PATTERN.matcher(format);
