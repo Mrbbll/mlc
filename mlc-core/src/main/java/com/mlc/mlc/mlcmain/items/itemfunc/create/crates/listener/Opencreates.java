@@ -1,6 +1,6 @@
-package com.mlc.mlc.mlcmain.crates.listener;
+package com.mlc.mlc.mlcmain.items.itemfunc.create.crates.listener;
 
-import com.mlc.mlc.mlcmain.crates.Crates;
+import com.mlc.mlc.mlcmain.items.itemfunc.create.crates.Crates;
 import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

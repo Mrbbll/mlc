@@ -1,27 +1,31 @@
-package com.mlc.mlc.mlcmain.crates;
+package com.mlc.mlc.mlcmain.items.itemfunc.create.crates;
 
 import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.trim.TrimPattern;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.Random;
-
-import static com.mlc.mlc.Mlc.miniMessage;
 
 public class Crates {
     public static Inventory inventory;
     public  static  List<ItemStack> booklist;
     public static PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
+
+    private static final List<Material> TRIM_TEMPLATES = materialsEndingWith("_ARMOR_TRIM_SMITHING_TEMPLATE");
+    private static final List<Material> POTTERY_SHERDS = materialsEndingWith("_POTTERY_SHERD");
+    private static final List<Material> BANNER_PATTERNS = materialsEndingWith("_BANNER_PATTERN");
 
     public static void getitems(Player player){
         java.util.Random random = new java.util.Random();
@@ -74,23 +78,38 @@ public class Crates {
         ItemStack itemStack = new ItemStack(Material.ENCHANTED_BOOK);
         ItemMeta itemMeta = itemStack.getItemMeta();
         EnchantmentStorageMeta enchantmentStorageMeta = (EnchantmentStorageMeta) itemMeta;
-        EnchantmentRegistry.EnchantmentData data = EnchantmentRegistry.randomEnchantment();
-        enchantmentStorageMeta.addStoredEnchant(data.enchantment(), data.level(), false);
+        List<Enchantment> enchantments = RegistryAccess.registryAccess()
+                .getRegistry(RegistryKey.ENCHANTMENT).stream().toList();
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        Enchantment enchantment = enchantments.get(random.nextInt(enchantments.size()));
+        int level = random.nextInt(enchantment.getStartLevel(), enchantment.getMaxLevel() + 1);
+        enchantmentStorageMeta.addStoredEnchant(enchantment, level, false);
         itemStack.setItemMeta(enchantmentStorageMeta);
         return itemStack;
 
     }
 
     public static ItemStack getrandomtrimpattern() {
-        return new ItemStack(ArmorTrimPatternRegistry.randomTemplate());
+        return randomItem(TRIM_TEMPLATES);
     }
 
     public static ItemStack getrandompotterysherd(){
-        return new ItemStack(PotterySherdRegistry.randomSherd());
+        return randomItem(POTTERY_SHERDS);
     }
 
     public static ItemStack getrandombannerpattern(){
-        return BannerPatternRegistry.randomPattern();
+        return randomItem(BANNER_PATTERNS);
+    }
+
+    private static List<Material> materialsEndingWith(String suffix) {
+        return Arrays.stream(Material.values())
+                .filter(Material::isItem)
+                .filter(material -> material.name().endsWith(suffix))
+                .toList();
+    }
+
+    private static ItemStack randomItem(List<Material> materials) {
+        return new ItemStack(materials.get(ThreadLocalRandom.current().nextInt(materials.size())));
     }
 
     private static void giveitem(Player player, ItemStack item) {
