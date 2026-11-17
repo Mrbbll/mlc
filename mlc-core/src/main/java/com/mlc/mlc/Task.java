@@ -81,7 +81,6 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new Sleeplistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Maillistener(), instance);
         Bukkit.getPluginManager().registerEvents(new ServerJoinListener(), instance);
-        Bukkit.getPluginManager().registerEvents(new com.mlc.mlc.mlcmain.respacksender.Listener.Joinlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new DropmoneyListener(), instance);
         Bukkit.getPluginManager().registerEvents(new JoinMoneyListener(), instance);
         Bukkit.getPluginManager().registerEvents(new Opencreates(), instance);
@@ -100,6 +99,12 @@ public class Task {
             var commands = event.registrar();
             commands.register("mlcreload", "重载配置",
                     new ExecutorCommand("mlcreload", "重载配置", "", "mlc.op", new reload()));
+            commands.register("respack", "上传并分发资源包",
+                    new ExecutorCommand("respack", "上传并分发资源包", "/respack", "mlc.op", (sender, command, label, args) -> {
+                        if (args.length != 0) return false;
+                        packsender.upload(sender);
+                        return true;
+                    }));
             commands.register("back", "回到上个路径点", new ExecutorCommand("back", "回到上个路径点", new back()));
             commands.register("mail", "打开邮箱、发送邮件或给所有人发送邮件",
                     new ExecutorCommand("mail", "打开邮箱、发送邮件或给所有人发送邮件",

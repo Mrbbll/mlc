@@ -7,6 +7,7 @@ val mockitoAgent = configurations.create("mockitoAgent") {
 }
 
 dependencies {
+    implementation("com.google.code.gson:gson:2.11.0")
     implementation("com.github.retrooper:packetevents-spigot:2.14.0")
     compileOnly(libs.vault) {
         exclude("org.bukkit", "bukkit")

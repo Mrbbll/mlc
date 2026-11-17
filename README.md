@@ -72,3 +72,11 @@ mlc/
 ## 许可
 
 MLC 项目许可为 GPL-3.0。`mlc-bot` 中的 Citizens 衍生部分遵循 OSL-3.0，相关许可证随 JAR 一同发布。
+
+## 资源包托管
+
+将资源包文件放在服务器的 `plugins/respack/` 目录中，确保 `pack.mcmeta` 和 `assets/` 直接位于该目录下。插件启动时会异步压缩并上传到 MCPacks，成功后自动发送给在线玩家，之后加入的玩家也会收到资源包。资源包沿用强制接受设置。
+
+管理员可以执行 `/respack` 重新压缩、上传并向在线玩家分发；`/mlcreload` 也会触发上传。这两个命令需要 `mlc.op` 权限（默认 OP）。上传失败时保留上一次成功的资源包信息，缓存在 `plugins/mlc/resource-pack-cache.yml`。首次上传前没有缓存时，上传完成后才会发送资源包。
+
+MCPacks 要求 ZIP 根目录包含有效的 `pack.mcmeta`，且不能包含可执行文件；服务的上传上限为 250 MiB。旧配置项 `resourcepack` 不再使用。

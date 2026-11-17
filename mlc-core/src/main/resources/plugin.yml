@@ -6,7 +6,15 @@ authors: [Mr_bl]
 depend: ["PlaceholderAPI","Vault"]
 softdepend: ["BlueMap", "ProtocolLib", "ProtocolSupport", "ViaVersion", "ViaBackwards", "ViaRewind", "Geyser-Spigot"]
 
+permissions:
+  mlc.op:
+    description: "管理 MLC"
+    default: op
+
 commands:
+  respack:
+    description: "压缩、上传并分发资源包"
+    permission: mlc.op
   item:
     description: "展示物品"
   mlcreload:
