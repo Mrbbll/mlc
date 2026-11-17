@@ -1,6 +1,7 @@
 package com.mlc.mlc;
 
 import com.mlc.mlc.mlcmain.enchantments.moreenchants.EnchantmentKeys;
+import com.mlc.mlc.mlcmain.dialog.QuickActionDialog;
 import com.mlc.mlc.mlcmain.enchantments.moreenchants.VeinMine;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEvent;
@@ -25,6 +26,7 @@ import java.util.List;
 
 public class BootStrapTask {
     public static void run(BootstrapContext context){
+        QuickActionDialog.register(context);
         context.getLogger().info("\n INJECTING ENCHANTMENTS \n");
         context.getLifecycleManager().registerEventHandler(RegistryEvents.ENCHANTMENT.compose().newHandler(
                 event -> {
