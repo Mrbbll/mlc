@@ -134,7 +134,8 @@ final class BalloonVisual {
                 wanted.add(viewer.getUniqueId());
                 if (visual.viewers.add(viewer.getUniqueId())) spawn(viewer, owner, visual, location);
                 else if (yawChanged) rotate(viewer, visual, location);
-                sendEffects(viewer, location);
+                sendEffects(viewer, location.clone().add(location.getDirection().multiply(-0.5))
+                        .add(0, 1.5, 0));
             }
             visual.lastYaw = location.getYaw();
             for (UUID viewerId : Set.copyOf(visual.viewers)) {
@@ -181,8 +182,8 @@ final class BalloonVisual {
         // 每次定时任务都向能看到气球的观察者发送效果，位置随持有者更新。
         var packets = PacketEvents.getAPI().getPlayerManager();
         Vector3d pos = vector(location);
-        packets.sendPacket(viewer, new WrapperPlayServerParticle(new Particle<>(ParticleTypes.END_ROD),
-                false, pos, new Vector3f(0.3f, 0.5f, 0.3f), 0.02f, 12));
+        packets.sendPacket(viewer, new WrapperPlayServerParticle(new Particle<>(ParticleTypes.EXPLOSION_EMITTER),
+                false, pos, new Vector3f(0.3f, 0.5f, 0.3f), 0.02f, 2));
         packets.sendPacket(viewer, new WrapperPlayServerSoundEffect(Sounds.ENTITY_EXPERIENCE_ORB_PICKUP,
                 SoundCategory.PLAYER, pos, 0.5f, 1.2f));
     }
