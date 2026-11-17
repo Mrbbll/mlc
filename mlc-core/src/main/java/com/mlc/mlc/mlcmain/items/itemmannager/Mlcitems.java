@@ -166,13 +166,13 @@ public class Mlcitems {
 
         balloon = ItemStack.of(Material.SHULKER_BOX);
         ItemMeta itemMeta_14 = balloon.getItemMeta();
-        itemMeta_14.itemName(miniMessage.deserialize("热气球束"));
+        itemMeta_14.itemName(miniMessage.deserialize("<b><#ffbe19>热气球束"));
         itemMeta_14.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
         itemMeta_14.setItemModel(NamespacedKey.fromString("mlc:balloon"));
         itemMeta_14.setMaxStackSize(1);
         List<Component> balloonLorelist = new ArrayList<>();
-        balloonLorelist.add(miniMessage.deserialize("<!i>右键打开添加燃料"));
-        balloonLorelist.add(miniMessage.deserialize("<!i>在主手或者副手启用飞行"));
+        balloonLorelist.add(miniMessage.deserialize("<!i><#b3ff6b>右键打开添加燃料"));
+        balloonLorelist.add(miniMessage.deserialize("<!i><#b3ff6b>在主手或者副手启用飞行"));
         itemMeta_14.lore(balloonLorelist);
         balloon.setItemMeta(itemMeta_14);
 

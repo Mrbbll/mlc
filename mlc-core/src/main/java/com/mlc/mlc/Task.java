@@ -13,7 +13,6 @@ import com.mlc.mlc.mlcmain.ess.listener.Tplistener;
 import com.mlc.mlc.mlcmain.ess.command.*;
 import com.mlc.mlc.mlcmain.hook.economy.commands.money;
 import com.mlc.mlc.mlcmain.hook.placeholderapi.Mlceco;
-import com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon;
 import com.mlc.mlc.mlcmain.items.itemfunc.create.Itemlistener;
 import com.mlc.mlc.mlcmain.items.itemmannager.Cratesitems;
 import com.mlc.mlc.mlcmain.items.itemmannager.Fesitems;
@@ -70,8 +69,8 @@ public class Task {
 
         Bukkit.getPluginManager().registerEvents(new MobMove(instance), instance);
         Bukkit.getPluginManager().registerEvents(new Backpacklistener(),instance);
-        Bukkit.getPluginManager().registerEvents(new Balloon(), instance);
-        Balloon.refreshOnlinePlayers();
+        Bukkit.getPluginManager().registerEvents(new com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon(), instance);
+        com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon.refreshOnlinePlayers();
         Bukkit.getPluginManager().registerEvents(new Heavestlistener(),instance);
         Bukkit.getPluginManager().registerEvents(new Guilistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Unsitlistener(), instance);
@@ -138,9 +137,9 @@ public class Task {
 
         //注册物品配方
         Backpack.backpackrecipe();
-        balloon.backpackrecipe();
         Healfood.healfoodrecipe();
         Elytra.elytrarecipe();
+        Balloon.ballonrecipe();
         Moneyitemrecipe.money_nugget_to_ingotrecipe();
         Moneyitemrecipe.money_ingot_to_stackrecipe();
         Moneyitemrecipe.money_gemrecipe();

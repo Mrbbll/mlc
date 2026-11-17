@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.mlc.mlc.Mlc.instance;
 
-/** The balloon display exists only on clients and is never spawned in the world. */
+/** The Balloon display exists only on clients and is never spawned in the world. */
 final class BalloonVisual {
     // Vanilla allocates positive entity IDs. Avoid -1, which is the protocol's detach sentinel.
     private static final AtomicInteger IDS = new AtomicInteger(-2);
@@ -135,7 +135,7 @@ final class BalloonVisual {
                 wanted.add(viewer.getUniqueId());
                 if (visual.viewers.add(viewer.getUniqueId())) spawn(viewer, owner, visual, location);
                 else if (yawChanged) rotate(viewer, visual, location);
-                if (Balloon.isFlyingWithBalloon(owner)) {
+                if (com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon.isFlyingWithBalloon(owner)) {
                     sendEffects(viewer, location.clone().add(location.getDirection().multiply(-0.5))
                             .add(0, 1.5, 0));
                 }

@@ -2,15 +2,14 @@ package com.mlc.mlcstyte;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static net.kyori.adventure.text.minimessage.MiniMessage.miniMessage;
@@ -71,52 +70,27 @@ public final class StyteFormatter {
                                         Component suffix,
                                         Component message,
                                         Component displayName) {
-        Component connector = Component.text(" >> ", TextColor.color(255,170,50)).decoration(TextDecoration.ITALIC,false);
-
-
-        TextComponent.Builder builder = Component.text();
-        builder.append(MiniMessage.miniMessage().deserialize("<click:suggest_command:/msg " + name + "><hover:show_text:'<#53ff24>点击私聊'><head:"+player.getUniqueId()+"></click>"));
-        builder.append(prefix);
-        if(displayName!=null){
-            builder.append(MiniMessage.miniMessage().deserialize("<click:suggest_command:/tpa " + name + "><hover:show_text:'<#ffbd14>点击传送'>"+displayName));
-        }else{
-            builder.append(MiniMessage.miniMessage().deserialize("<click:suggest_command:/tpa " + name + "><hover:show_text:'<#ffbd14>点击传送'>"+name));
-        }
-        builder.append(suffix);
-        builder.append(connector);
+        Component connector = Component.text(" >> ", TextColor.color(255, 170, 50))
+                .decoration(TextDecoration.ITALIC, false);
+        String playerName = player.getName();
+        Component head = miniMessage().deserialize("<head:" + player.getUniqueId() + ">");
+        head = head.clickEvent(ClickEvent.suggestCommand("/msg " + playerName))
+                .hoverEvent(HoverEvent.showText(toComponent("<#53ff24>点击私聊")));
+        Component shownName = (displayName != null ? displayName : name)
+                .clickEvent(ClickEvent.suggestCommand("/tpa " + playerName))
+                .hoverEvent(HoverEvent.showText(toComponent("<#ffbd14>点击传送")));
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH.mm.ss"));
-        builder.append(MiniMessage.miniMessage().deserialize("<hover:show_text:'<#828282>"+ time + "'>" + message));
+        Component timedMessage = Component.empty()
+                .hoverEvent(HoverEvent.showText(toComponent("<#828282>" + time)))
+                .append(message);
 
-
-//        Matcher matcher = PLACEHOLDER_PATTERN.matcher(format);
-//        int lastEnd = 0;
-//
-//        while (matcher.find()) {
-//            // Append literal text before this placeholder — plain text, no parsing
-//            String before = format.substring(lastEnd, matcher.start());
-//            if (!before.isEmpty()) {
-//                builder.append(Component.text(before));
-//            }
-//
-//            // Append the replacement Component for the placeholder
-//            String placeholder = matcher.group();
-//            switch (placeholder) {
-//                case PREFIX_PLACEHOLDER  -> builder.append(prefix);
-//                case SUFFIX_PLACEHOLDER  -> builder.append(suffix);
-//                case NAME_PLACEHOLDER    -> builder.append(name);
-//                case DISPLAYNAME_PLACEHOLDER -> builder.append(displayName);
-//                case MESSAGE_PLACEHOLDER -> builder.append(message);
-//                default                  -> builder.append(Component.text(placeholder));
-//            }
-//            lastEnd = matcher.end();
-//        }
-//
-//
-//        // Append remaining literal text after the last placeholder — plain text
-//        String after = format.substring(lastEnd);
-//        if (!after.isEmpty()) {
-//            builder.append(Component.text(after));
-//        }
+        TextComponent.Builder builder = Component.text()
+                .append(head)
+                .append(prefix)
+                .append(shownName)
+                .append(suffix)
+                .append(connector)
+                .append(timedMessage);
 
         return builder.build();
     }
