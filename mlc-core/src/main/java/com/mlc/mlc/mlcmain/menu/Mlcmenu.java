@@ -170,7 +170,7 @@ public class Mlcmenu {
         menuinv.setItem(SLOT_ITEMS,createMenuItem(
                 Material.ECHO_SHARD,
                 "<!i><#ffaa00>特殊物品",
-                "mlc:crystal_coin",
+                "mlc:balloon",
                 "<!i><#ffff55>» 点击打开特殊物品配方表"
         ));
 

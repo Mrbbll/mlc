@@ -300,8 +300,8 @@ public final class Balloon implements Listener {
             }
         }
         if (remaining <= 0) return false;
-        // 每个 tick 扣除 10 个原版燃烧 tick，燃料消耗速度为熔炉的 10 倍。
-        int left = Math.max(0, remaining - 10);
+        // 每个 tick 扣除 20 个原版燃烧 tick，燃料消耗速度为熔炉的 20 倍。
+        int left = Math.max(0, remaining - 20);
         item.editMeta(meta -> meta.getPersistentDataContainer().set(BURN, PersistentDataType.INTEGER, left));
         return true;
     }

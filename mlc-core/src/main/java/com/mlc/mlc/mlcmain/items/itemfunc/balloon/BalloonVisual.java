@@ -7,12 +7,19 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.protocol.particle.Particle;
+import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes;
+import com.github.retrooper.packetevents.protocol.sound.SoundCategory;
+import com.github.retrooper.packetevents.protocol.sound.Sounds;
 import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.util.Quaternion4f;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPassengers;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSoundEffect;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -127,6 +134,7 @@ final class BalloonVisual {
                 wanted.add(viewer.getUniqueId());
                 if (visual.viewers.add(viewer.getUniqueId())) spawn(viewer, owner, visual, location);
                 else if (yawChanged) rotate(viewer, visual, location);
+                sendEffects(viewer, location);
             }
             visual.lastYaw = location.getYaw();
             for (UUID viewerId : Set.copyOf(visual.viewers)) {
@@ -167,6 +175,16 @@ final class BalloonVisual {
         int[] combined = Arrays.copyOf(existing, existing.length + 1);
         combined[existing.length] = visual.display;
         packets.sendPacket(viewer, new WrapperPlayServerSetPassengers(visual.ownerId, combined));
+    }
+
+    private static void sendEffects(Player viewer, Location location) {
+        // 每次定时任务都向能看到气球的观察者发送效果，位置随持有者更新。
+        var packets = PacketEvents.getAPI().getPlayerManager();
+        Vector3d pos = vector(location);
+        packets.sendPacket(viewer, new WrapperPlayServerParticle(new Particle<>(ParticleTypes.END_ROD),
+                false, pos, new Vector3f(0.3f, 0.5f, 0.3f), 0.02f, 12));
+        packets.sendPacket(viewer, new WrapperPlayServerSoundEffect(Sounds.ENTITY_EXPERIENCE_ORB_PICKUP,
+                SoundCategory.PLAYER, pos, 0.5f, 1.2f));
     }
 
     private static void rotate(Player viewer, Visual visual, Location location) {
