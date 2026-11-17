@@ -22,7 +22,7 @@ import static com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems.*;
 
 public class money implements TabExecutor {
     private Player target;
-    private int money;
+    private double money;
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         if(!(commandSender instanceof Player player)){
@@ -57,11 +57,11 @@ public class money implements TabExecutor {
                     commandSender.sendMessage("玩家不存在");
                     return false;
                 }
-                if(!strings[2].matches("\\d+")){
-                    commandSender.sendMessage("数量必须为整数");
+                if(!strings[2].matches("\\d{1,12}(\\.\\d{1,2})?")){
+                    commandSender.sendMessage("数量必须是最多两位小数的金额");
                     return false;
                 }
-                money = Integer.parseInt(strings[2]);
+                money = Double.parseDouble(strings[2]);
                 if(money <= 0){
                     commandSender.sendMessage("数量必须大于0");
                     return false;
@@ -82,11 +82,11 @@ public class money implements TabExecutor {
                     commandSender.sendMessage("玩家不存在");
                     return false;
                 }
-                if(!strings[2].matches("\\d+")){
-                    commandSender.sendMessage("数量必须为整数");
+                if(!strings[2].matches("\\d{1,12}(\\.\\d{1,2})?")){
+                    commandSender.sendMessage("数量必须是最多两位小数的金额");
                     return false;
                 }
-                money = Integer.parseInt(strings[2]);
+                money = Double.parseDouble(strings[2]);
                 if(money <= 0){
                     commandSender.sendMessage("数量必须大于0");
                     return false;
@@ -105,11 +105,11 @@ public class money implements TabExecutor {
                     commandSender.sendMessage("玩家不存在");
                     return false;
                 }
-                if(!strings[2].matches("\\d+")){
-                    commandSender.sendMessage("数量必须为整数");
+                if(!strings[2].matches("\\d{1,12}(\\.\\d{1,2})?")){
+                    commandSender.sendMessage("数量必须是最多两位小数的金额");
                     return false;
                 }
-                money = Integer.parseInt(strings[2]);
+                money = Double.parseDouble(strings[2]);
                 if(money <= 0){
                     commandSender.sendMessage("数量必须大于0");
                     return false;
@@ -118,7 +118,7 @@ public class money implements TabExecutor {
                     commandSender.sendMessage("不能给自己支付水晶币");
                     return false;
                 }
-                if(playermoneyMap.getOrDefault(player.getUniqueId(),0) < money){
+                if(playermoneyMap.getOrDefault(player.getUniqueId(),0.0) < money){
                     commandSender.sendMessage("你没有足够的水晶币");
                     return false;
                 }
@@ -168,7 +168,7 @@ public class money implements TabExecutor {
                     }
                     break;
                 }else {
-                    int num = Moneyfilemanager.getPlayerMoney(player.getUniqueId());
+                    int num = (int) Moneyfilemanager.getPlayerMoney(player.getUniqueId());
                     if(num<=0){
                         player.sendMessage("余额不足");
                         return false;

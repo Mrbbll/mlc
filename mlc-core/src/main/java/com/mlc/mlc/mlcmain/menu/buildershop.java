@@ -36,7 +36,7 @@ public final class buildershop implements Listener {
     private static final int PROFILE = 49;
     private static final int NEXT = 52;
 
-    private record Product(Material material, int price, ItemStack display) { }
+    private record Product(Material material, double price, ItemStack display) { }
 
     // 只在启动和重载时替换，打开或翻页时均使用同一份内存快照。
     private static List<Product> cachedProducts = List.of();
@@ -84,9 +84,10 @@ public final class buildershop implements Listener {
         }
         for (String key : section.getKeys(false)) {
             Material material = Material.matchMaterial(key);
-            int price = section.getInt(key, -1);
+            double price = section.getDouble(key, -1);
             if (material == null || !material.isItem() || material.isAir() || price <= 0
-                    || (long) price * material.getMaxStackSize() > Integer.MAX_VALUE) {
+                    || !Double.isFinite(price) || java.math.BigDecimal.valueOf(price).stripTrailingZeros().scale() > 2
+                    || price * material.getMaxStackSize() > Integer.MAX_VALUE) {
                 instance.getLogger().warning("建筑商店商品配置无效: " + key);
                 continue;
             }
@@ -102,13 +103,13 @@ public final class buildershop implements Listener {
         return true;
     }
 
-    private static ItemStack createProductDisplay(Material material, int price) {
+    private static ItemStack createProductDisplay(Material material, double price) {
         ItemStack display = new ItemStack(material);
         ItemMeta meta = display.getItemMeta();
         meta.lore(List.of(
                 line(" "),
                 line("<#aab8b0>单价  <#ffd166>" + price + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\">"),
-                line("<#aab8b0>整组  <#ffd166>" + ((long) price * material.getMaxStackSize()) + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\"> <#77867e>(" + material.getMaxStackSize() + " 个)"),
+                line("<#aab8b0>整组  <#ffd166>" + java.math.BigDecimal.valueOf(price).multiply(java.math.BigDecimal.valueOf(material.getMaxStackSize())).stripTrailingZeros().toPlainString() + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\"> <#77867e>(" + material.getMaxStackSize() + " 个)"),
                 line(" "),
                 line("<#b8ffde>左键 <#d8e3dc>购买 1 个"),
                 line("<#b8ffde>Shift + 左键 <#d8e3dc>购买一组")
@@ -188,7 +189,7 @@ public final class buildershop implements Listener {
             player.sendMessage(line("<#ff8a80>背包空间不足，请先整理背包。"));
             return;
         }
-        int cost = product.price() * amount;
+        double cost = java.math.BigDecimal.valueOf(product.price()).multiply(java.math.BigDecimal.valueOf(amount)).doubleValue();
         if (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) < cost) {
             player.sendMessage(line("<#ff8a80>余额不足，需要 <#ffd166>" + cost + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\"><#ff8a80>。"));
             return;

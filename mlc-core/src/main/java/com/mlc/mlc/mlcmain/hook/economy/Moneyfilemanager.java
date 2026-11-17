@@ -18,7 +18,7 @@ public class Moneyfilemanager {
     private final Plugin plugin = instance;
     private final String dbName = "money_data";
     private HikariConfig config = new HikariConfig();
-    public static Map<UUID, Integer> playermoneyMap = new HashMap<>();
+    public static Map<UUID, Double> playermoneyMap = new HashMap<>();
 
     public Moneyfilemanager() throws SQLException {
         moneyfilecreater();
@@ -58,7 +58,7 @@ public class Moneyfilemanager {
             //player_uuid player_name money
             Statement statement = connection.createStatement();
             statement.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS money_data (player_uuid VARCHAR(36) PRIMARY KEY, player_name VARCHAR(16), money INTEGER)
+                    CREATE TABLE IF NOT EXISTS money_data (player_uuid VARCHAR(36) PRIMARY KEY, player_name VARCHAR(16), money REAL)
                     """);
 
             String index = "CREATE INDEX IF NOT EXISTS idx_player_uuid ON money_data (player_uuid)";
@@ -79,7 +79,7 @@ public class Moneyfilemanager {
             // 从数据库加载玩家货币数据
             while (resultSet.next()) {
                 UUID playerUUID = UUID.fromString(resultSet.getString("player_uuid"));
-                int money = resultSet.getInt("money");
+                double money = resultSet.getDouble("money");
                 playermoneyMap.put(playerUUID, money);
             }
         } catch (SQLException e) {
@@ -98,7 +98,7 @@ public class Moneyfilemanager {
             while (resultSet.next()) {
                 UUID playerUUID = UUID.fromString(resultSet.getString("player_uuid"));
                 String playerName = resultSet.getString("player_name");
-                int money = resultSet.getInt("money");
+                double money = resultSet.getDouble("money");
                 topPlayers.append(playerName).append(" ---------- ").append(money).append("\n");
             }
         } catch (SQLException e) {
@@ -107,15 +107,17 @@ public class Moneyfilemanager {
         return topPlayers.toString();
     }
 
-    public static int getPlayerMoney(UUID playerUUID) {
+    public static double getPlayerMoney(UUID playerUUID) {
         if(!hasPlayer(playerUUID)){
             createPlayer(playerUUID, playerUUID.toString());
         }
-        return playermoneyMap.getOrDefault(playerUUID, 0);
+        return playermoneyMap.getOrDefault(playerUUID, 0.0);
     }
 
-    public static void setPlayerMoney(UUID playerUUID, int money) {
+    public static void setPlayerMoney(UUID playerUUID, double money) {
         // 保存到数据库
+        if (!Double.isFinite(money)) return;
+        money = java.math.BigDecimal.valueOf(money).setScale(2, java.math.RoundingMode.HALF_UP).doubleValue();
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement();
         ){
@@ -129,16 +131,16 @@ public class Moneyfilemanager {
     }
 
     /** 仅在余额充足且数据库更新成功时扣款。 */
-    public static boolean withdrawBalance(UUID playerUUID, int amount) {
-        if (amount <= 0 || !hasPlayer(playerUUID)) return false;
-        String sql = "UPDATE money_data SET money = money - ? WHERE player_uuid = ? AND money >= ?";
+    public static boolean withdrawBalance(UUID playerUUID, double amount) {
+        if (!Double.isFinite(amount) || amount <= 0 || !hasPlayer(playerUUID)) return false;
+        String sql = "UPDATE money_data SET money = ROUND(money - ?, 2) WHERE player_uuid = ? AND money >= ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, amount);
+            statement.setDouble(1, amount);
             statement.setString(2, playerUUID.toString());
-            statement.setInt(3, amount);
+            statement.setDouble(3, amount);
             if (statement.executeUpdate() != 1) return false;
-            playermoneyMap.put(playerUUID, playermoneyMap.get(playerUUID) - amount);
+            playermoneyMap.put(playerUUID, java.math.BigDecimal.valueOf(playermoneyMap.get(playerUUID)).subtract(java.math.BigDecimal.valueOf(amount)).doubleValue());
             return true;
         } catch (SQLException e) {
             instance.getLogger().severe("余额扣款失败: " + e.getMessage());
@@ -149,7 +151,7 @@ public class Moneyfilemanager {
     /** 存入实体货币，数据库成功更新后才更新内存余额。 */
     public static boolean depositFromWallet(UUID playerUUID, int amount) {
         if (amount <= 0 || !hasPlayer(playerUUID)) return false;
-        String sql = "UPDATE money_data SET money = money + ? WHERE player_uuid = ? AND money <= ? RETURNING money";
+        String sql = "UPDATE money_data SET money = ROUND(money + ?, 2) WHERE player_uuid = ? AND money <= ? RETURNING money";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, amount);
@@ -157,7 +159,7 @@ public class Moneyfilemanager {
             statement.setInt(3, Integer.MAX_VALUE - amount);
             try (ResultSet result = statement.executeQuery()) {
                 if (!result.next()) return false;
-                int balance = result.getInt(1);
+                double balance = result.getDouble(1);
                 result.close();
                 playermoneyMap.put(playerUUID, balance);
                 return true;
@@ -181,7 +183,7 @@ public class Moneyfilemanager {
         ){
             String insert = "INSERT INTO money_data (player_uuid, player_name, money) VALUES ('" + playerUUID + "', '" + playerName + "', 0)";
             statement.executeUpdate(insert);
-            playermoneyMap.put(playerUUID, 0);
+            playermoneyMap.put(playerUUID, 0.0);
             return true;
         } catch (SQLException e) {
             instance.getLogger().severe("\n\n数据库创建玩家货币数据失败: " + e.getMessage() + "\n\n");

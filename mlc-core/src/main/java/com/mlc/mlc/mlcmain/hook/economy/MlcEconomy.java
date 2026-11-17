@@ -29,10 +29,10 @@ public class MlcEconomy implements Economy {
     public boolean hasBankSupport() {
         return false;
     }
-    // 小数位数,不设置了，不能搞小数
+    // 货币保留两位小数
     @Override
     public int fractionalDigits() {
-        return 0;
+        return 2;
     }
 
     @Override
@@ -114,84 +114,68 @@ public class MlcEconomy implements Economy {
         return Moneyfilemanager.getPlayerMoney(player.getUniqueId()) >= amount;
     }
 
-    @Override
-    public EconomyResponse withdrawPlayer(String playerName, double amount) {
+    private EconomyResponse transact(UUID id, double amount, boolean withdraw) {
+        double balance = Moneyfilemanager.getPlayerMoney(id);
+        if (!Double.isFinite(amount) || amount < 0 || java.math.BigDecimal.valueOf(amount).stripTrailingZeros().scale() > 2) {
+            return new EconomyResponse  (0, balance, EconomyResponse.ResponseType.FAILURE, "金额无效，最多支持两位小数");
+        }
+        if (withdraw && balance < amount) {
+            return new EconomyResponse(0, balance, EconomyResponse.ResponseType.FAILURE, "余额不足");
+        }
+        double updated = java.math.BigDecimal.valueOf(balance).add(java.math.BigDecimal.valueOf(withdraw ? -amount : amount)).doubleValue();
+        if (!Double.isFinite(updated)) return new EconomyResponse(0, balance, EconomyResponse.ResponseType.FAILURE, "金额过大");
+        Moneyfilemanager.setPlayerMoney(id, updated);
+        double actual = Moneyfilemanager.getPlayerMoney(id);
+        if (Double.compare(actual, updated) != 0) return new EconomyResponse(0, actual, EconomyResponse.ResponseType.FAILURE, "保存余额失败");
+        return new EconomyResponse(amount, actual, EconomyResponse.ResponseType.SUCCESS, null);
+    }
+
+    private EconomyResponse transact(String name, double amount, boolean withdraw) {
         try {
-            Moneyfilemanager.setPlayerMoney(UUID.fromString(playerName), (int) (Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) - amount));
+            return transact(UUID.fromString(name), amount, withdraw);
         } catch (IllegalArgumentException e) {
             return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
         }
-        return null;
     }
 
     @Override
-    public EconomyResponse withdrawPlayer(OfflinePlayer player, double amount) {
-        try {
-            Moneyfilemanager.setPlayerMoney(player.getUniqueId(), (int) (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) - amount));
-        } catch (IllegalArgumentException e) {
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
-        }
-        return null;
+    public EconomyResponse withdrawPlayer(String playerName, double amount) {
+        return transact(playerName, amount, true);
     }
 
     @Override
     public EconomyResponse withdrawPlayer(String playerName, String worldName, double amount) {
-        try {
-            Moneyfilemanager.setPlayerMoney(UUID.fromString(playerName), (int) (Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) - amount));
-        } catch (IllegalArgumentException e) {
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
-        }
-        return null;
+        return transact(playerName, amount, true);
+    }
+
+    @Override
+    public EconomyResponse withdrawPlayer(OfflinePlayer player, double amount) {
+        return transact(player.getUniqueId(), amount, true);
     }
 
     @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, String worldName, double amount) {
-        try {
-            Moneyfilemanager.setPlayerMoney(player.getUniqueId(), (int) (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) - amount));
-        } catch (IllegalArgumentException e) {
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
-        }
-        return null;
+        return transact(player.getUniqueId(), amount, true);
     }
 
     @Override
     public EconomyResponse depositPlayer(String playerName, double amount) {
-        try {
-            Moneyfilemanager.setPlayerMoney(UUID.fromString(playerName), (int) (Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) + amount));
-        } catch (IllegalArgumentException e) {
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
-        }
-        return null;
-    }
-
-    @Override
-    public EconomyResponse depositPlayer(OfflinePlayer player, double amount) {
-        try {
-            Moneyfilemanager.setPlayerMoney(player.getUniqueId(), (int) (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + amount));
-        } catch (IllegalArgumentException e) {
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
-        }
-        return null;
+        return transact(playerName, amount, false);
     }
 
     @Override
     public EconomyResponse depositPlayer(String playerName, String worldName, double amount) {
-        try {
-            Moneyfilemanager.setPlayerMoney(UUID.fromString(playerName), (int) (Moneyfilemanager.getPlayerMoney(UUID.fromString(playerName)) + amount));
-        } catch (IllegalArgumentException e) {
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
-        }
-        return null;
+        return transact(playerName, amount, false);
+    }
+
+    @Override
+    public EconomyResponse depositPlayer(OfflinePlayer player, double amount) {
+        return transact(player.getUniqueId(), amount, false);
     }
 
     @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, String worldName, double amount) {
-        try {
-            Moneyfilemanager.setPlayerMoney(player.getUniqueId(), (int) (Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + amount));
-        } catch (IllegalArgumentException e) {
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "玩家不存在");
-        }
-        return null;
+        return transact(player.getUniqueId(), amount, false);
     }
 
     @Override
