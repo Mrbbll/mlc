@@ -53,8 +53,13 @@ public final class Balloon implements Listener {
     private static final class Holder implements InventoryHolder {
         final Player player;
         final ItemStack item;
+        final int slot;
         Inventory inventory;
-        Holder(Player player, ItemStack item) { this.player = player; this.item = item; }
+        Holder(Player player, ItemStack item) {
+            this.player = player;
+            this.item = item;
+            this.slot = player.getInventory().getHeldItemSlot();
+        }
         @Override public @NotNull Inventory getInventory() { return inventory; }
     }
 
@@ -159,6 +164,7 @@ public final class Balloon implements Listener {
                 meta.setBlockState(box);
             }
         });
+        holder.player.getInventory().setItem(holder.slot, holder.item);
     }
 
     // 玩家切换物品、修改背包或上下线时更新权限，不再持续扫描所有玩家。
@@ -251,7 +257,12 @@ public final class Balloon implements Listener {
         }
         ItemStack main = mainBalloon(player);
         ItemStack offhand = player.getInventory().getItemInOffHand();
-        if (!(isBalloon(main) && burn(player, main)) && !(isBalloon(offhand) && burn(player, offhand))) {
+        if (isBalloon(main) && burn(player, main)) {
+            Holder holder = open.get(player.getUniqueId());
+            player.getInventory().setItem(holder != null ? holder.slot : player.getInventory().getHeldItemSlot(), main);
+        } else if (isBalloon(offhand) && burn(player, offhand)) {
+            player.getInventory().setItemInOffHand(offhand);
+        } else {
             stopTask(player);
             revoke(player);
         }
@@ -289,7 +300,7 @@ public final class Balloon implements Listener {
                 remaining = type.getBurnDuration();
                 boolean lavaBucket = fuel.getType() == Material.LAVA_BUCKET;
                 fuel.setAmount(fuel.getAmount() - 1);
-                if (fuel.getAmount() == 0) contents.setItem(slot, null);
+                contents.setItem(slot, fuel.getAmount() == 0 ? null : fuel);
                 // 岩浆桶燃尽后返还空桶；背包已满时将其掉落在附近。
                 if (lavaBucket) {
                     player.getInventory().addItem(new ItemStack(Material.BUCKET)).values()
