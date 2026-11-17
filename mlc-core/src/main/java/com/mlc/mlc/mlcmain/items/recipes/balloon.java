@@ -11,8 +11,10 @@ import static com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems.balloon;
 public class balloon {
     public static void backpackrecipe(){
         ShapedRecipe shapedRecipe = new ShapedRecipe(new NamespacedKey(instance,"balloonrecipe"),balloon);
-        shapedRecipe = shapedRecipe.shape("bcb", "cxc", "ccc");
-        shapedRecipe = shapedRecipe.setIngredient('c', Material.LEATHER).setIngredient('x', Material.SHULKER_BOX).setIngredient('b', Material.LEAD);
+        shapedRecipe = shapedRecipe.shape("xxx", "abc", "ded");
+        shapedRecipe = shapedRecipe.setIngredient('x', Material.LEATHER)
+                .setIngredient('a', Material.LIME_DYE).setIngredient('b', Material.LIGHT_BLUE_DYE).setIngredient('c',Material.YELLOW_DYE)
+                .setIngredient('d',Material.STRING).setIngredient('e',Material.BLAST_FURNACE);
         Bukkit.addRecipe(shapedRecipe);
     }
 }

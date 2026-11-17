@@ -240,6 +240,10 @@ public final class Balloon implements Listener {
         if (task != null) task.cancel();
     }
 
+    static boolean isFlyingWithBalloon(Player player) {
+        return player.isFlying() && flightTasks.containsKey(player.getUniqueId());
+    }
+
     private static void burnTick(Player player) {
         if (!player.isOnline() || !player.isFlying()) {
             stopTask(player);
