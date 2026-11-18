@@ -21,6 +21,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -198,7 +199,19 @@ public final class Balloon implements Listener {
         if (event.getWhoClicked() instanceof Player player) refreshLater(player);
     }
     @EventHandler public void onJoin(PlayerJoinEvent event) { refreshLater(event.getPlayer()); }
-    @EventHandler public void onRespawn(PlayerRespawnEvent event) { refreshLater(event.getPlayer()); }
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTeleport(PlayerTeleportEvent event) { refreshViewLater(event.getPlayer()); }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onRespawn(PlayerRespawnEvent event) { refreshViewLater(event.getPlayer()); }
+
+    private static void refreshViewLater(Player player) {
+        Bukkit.getScheduler().runTask(instance, () -> {
+            if (!player.isOnline()) return;
+            BalloonVisual.resetView(player);
+            refreshFlight(player);
+        });
+    }
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onGameMode(PlayerGameModeChangeEvent event) { refreshLater(event.getPlayer()); }
 

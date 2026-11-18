@@ -211,6 +211,17 @@ final class BalloonVisual {
 
     static void remove(Player owner) { remove(owner.getUniqueId()); }
 
+    /** 传送或重生会改变客户端的实体视图，重新建立持有者和观察者两侧的显示。 */
+    static void resetView(Player player) {
+        remove(player);
+        UUID viewerId = player.getUniqueId();
+        for (Visual visual : visuals.values()) {
+            if (visual.viewers.remove(viewerId)) destroy(player, visual);
+        }
+        mounted.remove(viewerId);
+        passengers.remove(viewerId);
+    }
+
     static void quit(Player player) {
         remove(player);
         mounted.remove(player.getUniqueId());
