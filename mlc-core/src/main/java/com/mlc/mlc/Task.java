@@ -1,5 +1,6 @@
 package com.mlc.mlc;
 
+import com.mlc.mlc.mlcmain.anvilcost.Anvilcost;
 import com.mlc.mlc.mlcmain.backpack.listener.Backpacklistener;
 import com.mlc.mlc.mlcmain.chat.commands.Item;
 import com.mlc.mlc.mlcmain.chat.listener.Chatlistener;
@@ -92,6 +93,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new VeinMine(), instance);
         Bukkit.getPluginManager().registerEvents(new Chatlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new EnchantRestricter(), instance);
+        Bukkit.getPluginManager().registerEvents(new Anvilcost(), instance);
 
 
         // Paper plugins do not register commands declared in YAML.
