@@ -13,7 +13,7 @@ public class Joinlistener implements Listener {
     @EventHandler
     public void playerjion(PlayerJoinEvent event){
         Player player = event.getPlayer();
-        player.sendMessage(Component.text("服务器插件部分为腐竹自研，如果遇到bug或者功能建议请联系腐竹(。・ω・。)", TextColor.color(0x66EE1D)));
+        player.sendMessage(Component.text("服务器插件部分为腐竹自研，如果遇到bug或者功能建议请联系腐竹(。・ω・。)", TextColor.color(0x2EEEC3)));
         Motd.setmotd();
     }
 

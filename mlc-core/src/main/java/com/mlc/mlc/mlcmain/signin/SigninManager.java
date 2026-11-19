@@ -24,6 +24,6 @@ public class SigninManager {
                     player.getUniqueId(),
                     Moneyfilemanager.getPlayerMoney(player.getUniqueId()) + finalRewardMoney);
         });
-        player.sendMessage(miniMessage.deserialize("<green>连续登录"+ loginCount + "天" + "\n+"+ finalRewardMoney));
+        player.sendMessage(miniMessage.deserialize("<green>连续登录"+ loginCount + "天" + "\n+"+ finalRewardMoney+" "));
     }
 }

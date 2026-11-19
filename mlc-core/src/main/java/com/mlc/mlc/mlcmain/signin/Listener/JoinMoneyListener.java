@@ -35,7 +35,7 @@ public class JoinMoneyListener implements Listener{
 
             //如果玩家上次登录时间为0L,则说明是第一次登录
             if(lastlogintime==0L){
-                player.sendMessage(miniMessage.deserialize("<green>欢迎来到MLC服务器"));
+                player.sendMessage(miniMessage.deserialize("<green><b>欢迎来到MLC服务器"));
 
                 org.bukkit.scheduler.BukkitTask task = new BukkitRunnable() {
                     @Override
@@ -53,20 +53,20 @@ public class JoinMoneyListener implements Listener{
                 if(System.currentTimeMillis()-lastlogintime>= hour_24
                         &&System.currentTimeMillis()-lastlogintime< hour_48){
                 //根据连续登录数奖励
-                    player.sendMessage(miniMessage.deserialize("<green>欢迎回来"));
+                    player.sendMessage(miniMessage.deserialize("<green><b>欢迎回来"));
                     SigninManager.reward(player,logincount + 1);
                     pdc.set(LASTLOGINTIME,PersistentDataType.LONG,System.currentTimeMillis());
                     pdc.set(LOGINCOUNT,PersistentDataType.INTEGER,logincount + 1);
                 }else if(System.currentTimeMillis()-lastlogintime>= hour_48) {
                     //如果玩家上次登录时间距离当前时间大于48小时
-                    player.sendMessage(miniMessage.deserialize("<green>欢迎回来"));
+                    player.sendMessage(miniMessage.deserialize("<green><b>欢迎回来"));
                     pdc.set(LASTLOGINTIME,PersistentDataType.LONG,System.currentTimeMillis());
                     pdc.set(LOGINCOUNT,PersistentDataType.INTEGER,1);
                     SigninManager.reward(player,1);
                 }
                 else {
                     //如果玩家上次登录时间距离当前时间小于24小时
-                    player.sendMessage(miniMessage.deserialize("<green>欢迎回来"));
+                    player.sendMessage(miniMessage.deserialize("<green><b>欢迎回来"));
                 }
             }
 

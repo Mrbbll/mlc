@@ -1,58 +1,121 @@
 
 package com.mlc.mlc.mlcmain.dropmoney;
 
+import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems.money_nugget;
 
 public class DropmoneyListener implements Listener {
 
+    // 金币基础掉落概率
+    private static final double MONEY_CHANCE = 0.12;
+
+    // 矿物掉落概率表
+    private static final List<OreChance> ORE_CHANCES = List.of(
+            new OreChance(Material.RAW_COPPER, 0.030),
+            new OreChance(Material.RAW_IRON, 0.020),
+            new OreChance(Material.REDSTONE, 0.015),
+            new OreChance(Material.LAPIS_LAZULI, 0.008),
+            new OreChance(Material.AMETHYST_SHARD, 0.006),
+            new OreChance(Material.RAW_GOLD, 0.004),
+            new OreChance(Material.DIAMOND, 0.0005)
+    );
+
+    private record OreChance(Material material, double chance) {}
+
     @EventHandler(ignoreCancelled = true)
     public void onDropmoney(BlockBreakEvent event) {
 
+        ItemStack tool = event.getPlayer()
+                .getInventory()
+                .getItemInMainHand();
+
+        // 精准采集不触发特殊掉落
+        if (tool.containsEnchantment(Enchantment.SILK_TOUCH)) {
+            return;
+        }
+
+        int fortune = tool.getEnchantmentLevel(
+                Enchantment.FORTUNE
+        );
+
         switch (event.getBlock().getType()) {
+
+            // 原有金币掉落
             case ANDESITE, DIORITE, GRANITE, TUFF -> {
+                dropMoney(event, fortune);
+            }
 
-                ItemStack tool = event.getPlayer()
-                        .getInventory()
-                        .getItemInMainHand();
+            // 新增矿物掉落
+            case STONE, DEEPSLATE -> {
+                dropOre(event, fortune);
+            }
 
-                // 精准采集不掉落金币
-                if (tool.containsEnchantment(Enchantment.SILK_TOUCH)) {
-                    return;
-                }
+            default -> {
+            }
+        }
+    }
 
-                // 固定12%概率
-                if (ThreadLocalRandom.current().nextDouble() >= 0.12) {
-                    return;
-                }
+    // 金币掉落
+    private void dropMoney(BlockBreakEvent event, int fortune) {
 
-                // 获取时运等级
-                int fortune = tool.getEnchantmentLevel(Enchantment.FORTUNE);
+        ThreadLocalRandom random = ThreadLocalRandom.current();
 
-                // 根据时运等级随机决定金币数量
-                int amount = 1 + ThreadLocalRandom.current()
-                        .nextInt(fortune + 1);
+        if (random.nextDouble() >= MONEY_CHANCE) {
+            return;
+        }
 
-                ItemStack drop = money_nugget.clone();
-                drop.setAmount(amount);
+        int amount = 1 + random.nextInt(fortune + 1);
+
+        ItemStack drop = money_nugget.clone();
+        drop.setAmount(amount);
+
+        event.getBlock().getWorld().dropItemNaturally(
+                event.getBlock().getLocation().add(0.5,0.5,0.5),
+                drop
+        );
+
+        // 金币替代原版方块掉落
+        event.setDropItems(false);
+    }
+
+    // 矿物掉落
+    private void dropOre(BlockBreakEvent event, int fortune) {
+
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+
+        double roll = random.nextDouble();
+
+        for (OreChance ore : ORE_CHANCES) {
+
+            if (roll < ore.chance()) {
+
+                // 时运增加数量，不影响概率
+                int amount = 1 + random.nextInt(fortune + 1);
+
+                ItemStack drop = new ItemStack(
+                        ore.material(),
+                        amount
+                );
 
                 event.getBlock().getWorld().dropItemNaturally(
-                        event.getBlock().getLocation(),
+                        event.getBlock().getLocation().add(0.5,0.5,0.5),
                         drop
                 );
 
-                // 取消原版方块掉落
-                event.setDropItems(false);
+                return;
             }
-            default -> {
-            }
+
+            roll -= ore.chance();
         }
     }
 }

@@ -4,6 +4,7 @@ import com.mlc.mlc.mlcmain.anvilcost.Anvilcost;
 import com.mlc.mlc.mlcmain.backpack.listener.Backpacklistener;
 import com.mlc.mlc.mlcmain.chat.commands.Item;
 import com.mlc.mlc.mlcmain.chat.listener.Chatlistener;
+import com.mlc.mlc.mlcmain.enchantments.listener.Villanplus;
 import com.mlc.mlc.mlcmain.items.itemfunc.create.crates.listener.Opencreates;
 import com.mlc.mlc.mlcmain.dialog.Listener.ServerJoinListener;
 import com.mlc.mlc.mlcmain.dropmoney.DropmoneyListener;
@@ -94,6 +95,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new Chatlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new EnchantRestricter(), instance);
         Bukkit.getPluginManager().registerEvents(new Anvilcost(), instance);
+        Bukkit.getPluginManager().registerEvents(new Villanplus(), instance);
 
 
         // Paper plugins do not register commands declared in YAML.
