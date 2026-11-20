@@ -1,5 +1,6 @@
 package com.mlc.mlc;
 
+import com.mlc.mlc.mlcmain.damageindicator.DamageIndicatorService;
 import com.mlc.mlc.mlcmain.hook.economy.MlcEconomy;
 import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
 import com.mlc.mlc.mlcmain.hook.xearomap.XaeroMapHook;
@@ -39,6 +40,7 @@ public final class Mlc extends JavaPlugin {
     public static File playerfiledir;
     public static MiniMessage miniMessage;
     private XaeroMapHook xaeroMapHook;
+    private DamageIndicatorService damageIndicator;
 
 
     @Override
@@ -127,13 +129,27 @@ public final class Mlc extends JavaPlugin {
         com.mlc.mlcstyte.MlcStyte.init(this);
 
         xaeroMapHook = XaeroMapHook.init(this);
+        damageIndicator = new DamageIndicatorService(this);
+        getServer().getPluginManager().registerEvents(damageIndicator, this);
 
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
     }
 
 
     @Override
+    public void reloadConfig() {
+        super.reloadConfig();
+        if (damageIndicator != null) {
+            damageIndicator.reload();
+        }
+    }
+
+    @Override
     public void onDisable() {
+        if (damageIndicator != null) {
+            damageIndicator.shutdown();
+            damageIndicator = null;
+        }
         if (xaeroMapHook != null) {
             xaeroMapHook.shutdown();
             xaeroMapHook = null;

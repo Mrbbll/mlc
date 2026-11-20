@@ -1,0 +1,26 @@
+# MLC 实体攻击伤害浮字配置。
+enabled: true
+
+# 只有距离受击实体不超过此距离的玩家能看到浮字。
+view-distance: 32.0
+
+# 浮字生成在目标头顶附近；horizontal-spread 用于让连续命中时文字稍微错开。
+position:
+  height-offset: 0.55
+  horizontal-spread: 0.35
+
+# 文本支持 MiniMessage，<damage> 会替换为本次事件的最终伤害。
+# 未取消的攻击事件若最终伤害为零，则显示 miss-format。
+miss-format: '<white><bold>MISS</bold>'
+formats:
+  NORMAL: '<gray>NORMAL <white><damage></white>'
+
+# 缩放动画的每个阶段均以 tick 为单位；20 tick = 1 秒。
+animation:
+  spawn-scale: 0.10
+  pop-scale: 1.25
+  settle-scale: 1.00
+  pop-delay: 1
+  settle-delay: 5
+  shrink-delay: 16
+  remove-delay: 19
