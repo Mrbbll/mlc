@@ -14,8 +14,8 @@ import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
+import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -59,7 +59,7 @@ final class DamageHologram {
         this.location = location;
         this.text = text;
         this.viewers = viewers;
-        this.entityId = Bukkit.getUnsafe().nextEntityId(location.getWorld());
+        this.entityId = SpigotReflectionUtil.generateEntityId(location.getWorld());
     }
 
     void start(Runnable expire) {
