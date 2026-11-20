@@ -44,6 +44,11 @@ public final class packsender implements Listener {
     private packsender() {}
 
     public static void init() {
+        if (hasCraftEngine()) {
+            instance.getLogger().info("检测到 CraftEngine，资源包分发交由 CraftEngine 处理。");
+            return;
+        }
+
         Path directory = instance.getDataFolder().toPath().getParent().resolve("mlc/respack");
         try {
             Files.createDirectories(directory);
@@ -59,6 +64,11 @@ public final class packsender implements Listener {
     }
 
     public static void upload(CommandSender sender) {
+        if (hasCraftEngine()) {
+            if (sender != null) sender.sendMessage(Component.text("资源包由 CraftEngine 管理。"));
+            return;
+        }
+
         if (uploading) {
             if (sender != null) sender.sendMessage(Component.text("资源包正在上传，请稍候。"));
             return;
@@ -94,6 +104,10 @@ public final class packsender implements Listener {
                 });
             }
         });
+    }
+
+    private static boolean hasCraftEngine() {
+        return Bukkit.getPluginManager().getPlugin("CraftEngine") != null;
     }
 
     private static Path cachePath() {
@@ -161,7 +175,7 @@ public final class packsender implements Listener {
 
     private static void send(Player player) {
         ResourcePackInfo info = currentPack;
-        if (info == null) return;
+        if (info == null || hasCraftEngine()) return;
         player.sendResourcePacks(ResourcePackRequest.resourcePackRequest().packs(info)
                 .prompt(Component.text("请下载服务器材质包")) .required(true).build());
     }

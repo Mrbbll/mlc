@@ -35,7 +35,7 @@ public class reload implements CommandExecutor {
         initserverjoindialog();
         // 清除缓存的GUI，使玩家重新打开/mlcitem时能获取到刷新后的物品
         Gui.openinvmap.clear();
-        commandSender.sendMessage(Component.text("配置、物品和公告已刷新，正在更新资源包信息"));
+        commandSender.sendMessage(Component.text("配置、物品和公告已刷新。"));
         packsender.upload(commandSender);
         return true;
     }

@@ -19,6 +19,10 @@ dependencies:
       load: BEFORE
       required: false
       join-classpath: true
+    CraftEngine:
+      load: BEFORE
+      required: false
+      join-classpath: false
     ProtocolLib:
       load: BEFORE
       required: false
