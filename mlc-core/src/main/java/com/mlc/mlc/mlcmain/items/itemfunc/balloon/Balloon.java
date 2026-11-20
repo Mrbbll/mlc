@@ -2,6 +2,7 @@ package com.mlc.mlc.mlcmain.items.itemfunc.balloon;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.ShulkerBox;
@@ -19,6 +20,7 @@ import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -50,6 +52,17 @@ public final class Balloon implements Listener {
     // 仅记录由热气球开启飞行的玩家，以便结束时撤销。
     private static final Set<UUID> grantedFlight = new HashSet<>();
     private static final Map<UUID, BukkitTask> flightTasks = new HashMap<>();
+    // 每 tick 检查气球飞行位移，并为服务端施加的速度预留逐渐衰减的额度。
+    private static final double MAX_FLIGHT_DISTANCE_PER_TICK = 0.65;
+    private static final double VELOCITY_DECAY = 0.98;
+    private static final Map<UUID, FlightMovement> flightMovement = new HashMap<>();
+
+    private static final class FlightMovement {
+        Location position;
+        double externalVelocity;
+        boolean correcting;
+        FlightMovement(Location position) { this.position = position; }
+    }
 
     private static final class Holder implements InventoryHolder {
         final Player player;
@@ -200,7 +213,15 @@ public final class Balloon implements Listener {
     }
     @EventHandler public void onJoin(PlayerJoinEvent event) { refreshLater(event.getPlayer()); }
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onTeleport(PlayerTeleportEvent event) { refreshViewLater(event.getPlayer()); }
+    public void onTeleport(PlayerTeleportEvent event) {
+        FlightMovement movement = flightMovement.get(event.getPlayer().getUniqueId());
+        if (movement != null) {
+            if (movement.correcting) return;
+            movement.position = event.getTo().clone();
+            movement.externalVelocity = 0;
+        }
+        refreshViewLater(event.getPlayer());
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onRespawn(PlayerRespawnEvent event) { refreshViewLater(event.getPlayer()); }
@@ -220,6 +241,14 @@ public final class Balloon implements Listener {
     public void onToggleFlight(PlayerToggleFlightEvent event) {
         if (event.isFlying()) refreshLater(event.getPlayer());
         else stopTask(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFlightVelocity(PlayerVelocityEvent event) {
+        FlightMovement movement = flightMovement.get(event.getPlayer().getUniqueId());
+        if (movement != null) {
+            movement.externalVelocity = Math.max(movement.externalVelocity, event.getVelocity().length());
+        }
     }
 
     private static ItemStack mainBalloon(Player player) {
@@ -250,11 +279,13 @@ public final class Balloon implements Listener {
 
     private static void startTask(Player player) {
         if (flightTasks.containsKey(player.getUniqueId())) return;
+        flightMovement.put(player.getUniqueId(), new FlightMovement(player.getLocation()));
         BukkitTask task = Bukkit.getScheduler().runTaskTimer(instance, () -> burnTick(player), 1L, 1L);
         flightTasks.put(player.getUniqueId(), task);
     }
 
     private static void stopTask(Player player) {
+        flightMovement.remove(player.getUniqueId());
         BukkitTask task = flightTasks.remove(player.getUniqueId());
         if (task != null) task.cancel();
     }
@@ -268,6 +299,7 @@ public final class Balloon implements Listener {
             stopTask(player);
             return;
         }
+        checkFlightMovement(player);
         ItemStack main = mainBalloon(player);
         ItemStack offhand = player.getInventory().getItemInOffHand();
         if (isBalloon(main) && burn(player, main)) {
@@ -279,6 +311,42 @@ public final class Balloon implements Listener {
             stopTask(player);
             revoke(player);
         }
+    }
+
+    private static void checkFlightMovement(Player player) {
+        FlightMovement movement = flightMovement.get(player.getUniqueId());
+        if (movement == null) return;
+        Location current = player.getLocation();
+        if (!grantedFlight.contains(player.getUniqueId()) || player.getGameMode() == GameMode.CREATIVE
+                || player.getGameMode() == GameMode.SPECTATOR || player.isInsideVehicle()
+                || !current.getWorld().equals(movement.position.getWorld())) {
+            movement.position = current;
+            movement.externalVelocity = 0;
+            return;
+        }
+        double dx = current.getX() - movement.position.getX();
+        double dy = current.getY() - movement.position.getY();
+        double dz = current.getZ() - movement.position.getZ();
+        double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        double allowed = MAX_FLIGHT_DISTANCE_PER_TICK + movement.externalVelocity;
+        movement.externalVelocity *= VELOCITY_DECAY;
+        if (movement.externalVelocity < 0.01) movement.externalVelocity = 0;
+        if (distance > allowed) {
+            double scale = allowed / distance;
+            Location limited = current.clone();
+            limited.setX(movement.position.getX() + dx * scale);
+            limited.setY(movement.position.getY() + dy * scale);
+            limited.setZ(movement.position.getZ() + dz * scale);
+            // 修正会产生传送事件，避免将它误当作普通传送并重置基准。
+            movement.correcting = true;
+            try {
+                player.teleport(limited);
+            } finally {
+                movement.correcting = false;
+            }
+            current = player.getLocation();
+        }
+        movement.position = current;
     }
 
     // 起飞前只检查是否有燃料，不取出燃料或减少剩余燃烧时间。
