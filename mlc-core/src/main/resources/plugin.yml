@@ -4,7 +4,7 @@ main: com.mlc.mlc.Mlc
 api-version: '1.21'
 authors: [Mr_bl]
 depend: ["PlaceholderAPI","Vault"]
-softdepend: ["BlueMap", "CraftEngine", "ProtocolLib", "ProtocolSupport", "ViaVersion", "ViaBackwards", "ViaRewind", "Geyser-Spigot"]
+softdepend: ["BlueMap", "CraftEngine", "ProtocolLib", "ProtocolSupport", "ViaVersion", "ViaBackwards", "ViaRewind", "Geyser-Spigot", "XaeroTracker"]
 
 permissions:
   mlc.op:

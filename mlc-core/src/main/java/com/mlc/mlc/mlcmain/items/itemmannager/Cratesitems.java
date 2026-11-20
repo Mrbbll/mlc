@@ -12,6 +12,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.EquippableComponent;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -19,6 +20,7 @@ import java.util.*;
 
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.miniMessage;
+import static com.mlc.mlc.Mlc.raritytier;
 import static com.mlc.mlc.mlcmain.items.loader.Itemflagloader.applyItemFlags;
 
 
@@ -105,13 +107,17 @@ public class Cratesitems {
             }
 
             if(configurationSection_item.contains("tagged")){
-                PDCloader.loadpdc(configurationSection_item,meta,itemid);
+                PDCloader.loadpdc(configurationSection_item, meta);
             }
 
             itemStack.setItemMeta(meta);
             itemsmap.put(itemid, itemStack);
-
-
+            int tier = meta.getPersistentDataContainer().getOrDefault(raritytier, PersistentDataType.INTEGER, 0);
+            switch (tier) {
+                case 1 -> t1list.add(itemid);
+                case 2 -> t2list.add(itemid);
+                case 3 -> t3list.add(itemid);
+            }
         }
     }
 

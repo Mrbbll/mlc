@@ -11,6 +11,7 @@ items:
     tagged:
       armortype:
       damagetype:
+      # 填写 1、2 或 3 将物品加入对应奖励池，留空则不参与抽奖。
       cratesraritytier:
     durability:
       max_custom_durability: 114514

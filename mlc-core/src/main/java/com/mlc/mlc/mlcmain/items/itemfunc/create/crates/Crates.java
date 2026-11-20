@@ -27,26 +27,28 @@ public class Crates {
     private static final List<Material> POTTERY_SHERDS = materialsEndingWith("_POTTERY_SHERD");
     private static final List<Material> BANNER_PATTERNS = materialsEndingWith("_BANNER_PATTERN");
 
-    public static void getitems(Player player){
-        java.util.Random random = new java.util.Random();
-        //随机进入3个物品池，概率为70% 27% 3%
-        int randomnum = random.nextInt(100);
-        if(randomnum < 70){
-            randomnum = random.nextInt(Cratesitems.t3list.size());
-            //判断背包满没，满了掉地上
-            Integer itemid = Cratesitems.t3list.get(randomnum);
-            giveitem(player, itemid);
-        }else if(randomnum < 97){
-            randomnum = random.nextInt(Cratesitems.t2list.size());
-            Integer itemid = Cratesitems.t2list.get(randomnum);
-            giveitem(player, itemid);
-        }else{
-            randomnum = random.nextInt(Cratesitems.t1list.size());
-            Integer itemid = Cratesitems.t1list.get(randomnum);
-            giveitem(player, itemid);
+    public static boolean getitems(Player player) {
+        int t3Weight = Cratesitems.t3list.isEmpty() ? 0 : 70;
+        int t2Weight = Cratesitems.t2list.isEmpty() ? 0 : 27;
+        int t1Weight = Cratesitems.t1list.isEmpty() ? 0 : 3;
+        int totalWeight = t3Weight + t2Weight + t1Weight;
+        if (totalWeight == 0) {
+            player.sendMessage(Component.text("抽奖箱暂无可用奖励，请联系管理员。"));
+            return false;
         }
 
-
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int roll = random.nextInt(totalWeight);
+        List<Integer> pool;
+        if (roll < t3Weight) {
+            pool = Cratesitems.t3list;
+        } else if (roll < t3Weight + t2Weight) {
+            pool = Cratesitems.t2list;
+        } else {
+            pool = Cratesitems.t1list;
+        }
+        giveitem(player, pool.get(random.nextInt(pool.size())));
+        return true;
     }
 
     private static void giveitem(Player player, Integer itemid) {

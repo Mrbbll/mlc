@@ -2,6 +2,7 @@ package com.mlc.mlc;
 
 import com.mlc.mlc.mlcmain.hook.economy.MlcEconomy;
 import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
+import com.mlc.mlc.mlcmain.hook.xearomap.XaeroMapHook;
 import com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon;
 import com.mlc.mlc.mlcmain.menu.buildershop;
 import com.mlc.mlc.mlcmain.menu.WalletMenu;
@@ -37,6 +38,7 @@ public final class Mlc extends JavaPlugin {
     public static Map<UUID,UUID> Tpaheremap = new HashMap<>();
     public static File playerfiledir;
     public static MiniMessage miniMessage;
+    private XaeroMapHook xaeroMapHook;
 
 
     @Override
@@ -124,12 +126,18 @@ public final class Mlc extends JavaPlugin {
         // Initialize mlc-styte system
         com.mlc.mlcstyte.MlcStyte.init(this);
 
+        xaeroMapHook = XaeroMapHook.init(this);
+
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
     }
 
 
     @Override
     public void onDisable() {
+        if (xaeroMapHook != null) {
+            xaeroMapHook.shutdown();
+            xaeroMapHook = null;
+        }
         Balloon.shutdown();
         PacketEvents.getAPI().terminate();
         WalletMenu.closeAll();

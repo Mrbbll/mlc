@@ -79,7 +79,7 @@ public final class StyteFormatter {
         Component shownName = (displayName != null ? displayName : name)
                 .clickEvent(ClickEvent.suggestCommand("/tpa " + playerName))
                 .hoverEvent(HoverEvent.showText(toComponent("<#ffbd14>点击传送")));
-        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH.mm.ss"));
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         Component timedMessage = Component.empty()
                 .hoverEvent(HoverEvent.showText(toComponent("<#828282>" + time)))
                 .append(message);

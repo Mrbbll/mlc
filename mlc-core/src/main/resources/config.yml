@@ -20,3 +20,11 @@ mobmove:
     - SHEEP
     - CHICKEN
     -
+
+# Xaero 地图玩家追踪，修改后需要重启。
+xaero-map:
+  enabled: true
+  only-sync-same-world: true
+  sync-interval-ticks: 5
+  # 已有服务端实现发送 level ID 时可关闭。首次启用时会自动生成并保存 level-id。
+  send-level-id: true

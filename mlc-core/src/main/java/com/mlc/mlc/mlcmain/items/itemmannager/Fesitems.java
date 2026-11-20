@@ -99,7 +99,7 @@ public class Fesitems {
             }
 
             if(configurationSection_item.contains("tagged")){
-                PDCloader.loadpdc(configurationSection_item,meta,itemid);
+                PDCloader.loadpdc(configurationSection_item, meta);
             }
 
             itemStack.setItemMeta(meta);
