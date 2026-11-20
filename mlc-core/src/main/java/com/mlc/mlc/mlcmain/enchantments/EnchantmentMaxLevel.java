@@ -21,6 +21,9 @@ public class EnchantmentMaxLevel {
         maxLevelMap.put(Enchantment.EFFICIENCY,7);
         maxLevelMap.put(Enchantment.FORTUNE,5);
         maxLevelMap.put(Enchantment.PROTECTION,6);
+        maxLevelMap.put(Enchantment.UNBREAKING,5);
+        maxLevelMap.put(Enchantment.QUICK_CHARGE,5);
+        maxLevelMap.put(Enchantment.POWER,7);
     }
 
     public static int getMaxLevel(Enchantment enchantment) {
