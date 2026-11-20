@@ -44,7 +44,7 @@ public final class packsender implements Listener {
     private packsender() {}
 
     public static void init() {
-        Path directory = instance.getDataFolder().toPath().getParent().resolve("respack");
+        Path directory = instance.getDataFolder().toPath().getParent().resolve("mlc/respack");
         try {
             Files.createDirectories(directory);
             YamlConfiguration cache = YamlConfiguration.loadConfiguration(cachePath().toFile());
@@ -52,7 +52,7 @@ public final class packsender implements Listener {
             String hash = cache.getString("sha1");
             if (url != null && hash != null) currentPack = packInfo(url, hash);
         } catch (IOException | IllegalArgumentException e) {
-            instance.getLogger().log(Level.WARNING, "无法读取资源包缓存或创建 plugins/respack", e);
+            instance.getLogger().log(Level.WARNING, "无法读取资源包缓存或创建 plugins/mlc/respack", e);
         }
         Bukkit.getPluginManager().registerEvents(new packsender(), instance);
         upload(null);

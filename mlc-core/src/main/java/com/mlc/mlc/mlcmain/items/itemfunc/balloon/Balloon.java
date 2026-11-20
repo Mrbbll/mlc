@@ -53,13 +53,17 @@ public final class Balloon implements Listener {
     private static final Set<UUID> grantedFlight = new HashSet<>();
     private static final Map<UUID, BukkitTask> flightTasks = new HashMap<>();
     // 每 tick 检查气球飞行位移，并为服务端施加的速度预留逐渐衰减的额度。
-    private static final double MAX_FLIGHT_DISTANCE_PER_TICK = 0.65;
+    private static final double MAX_HORIZONTAL_PER_TICK = 1.25;
+    private static final double MAX_VERTICAL_PER_TICK = 0.5;
     private static final double VELOCITY_DECAY = 0.98;
     private static final Map<UUID, FlightMovement> flightMovement = new HashMap<>();
 
     private static final class FlightMovement {
         Location position;
-        double externalVelocity;
+        double horizontalVelocity;
+        double verticalVelocity;
+        double horizontalCredit = MAX_HORIZONTAL_PER_TICK;
+        double verticalCredit = MAX_VERTICAL_PER_TICK;
         boolean correcting;
         FlightMovement(Location position) { this.position = position; }
     }
@@ -218,7 +222,10 @@ public final class Balloon implements Listener {
         if (movement != null) {
             if (movement.correcting) return;
             movement.position = event.getTo().clone();
-            movement.externalVelocity = 0;
+            movement.horizontalVelocity = 0;
+            movement.verticalVelocity = 0;
+            movement.horizontalCredit = MAX_HORIZONTAL_PER_TICK;
+            movement.verticalCredit = MAX_VERTICAL_PER_TICK;
         }
         refreshViewLater(event.getPlayer());
     }
@@ -247,7 +254,9 @@ public final class Balloon implements Listener {
     public void onFlightVelocity(PlayerVelocityEvent event) {
         FlightMovement movement = flightMovement.get(event.getPlayer().getUniqueId());
         if (movement != null) {
-            movement.externalVelocity = Math.max(movement.externalVelocity, event.getVelocity().length());
+            var velocity = event.getVelocity();
+            movement.horizontalVelocity = Math.max(movement.horizontalVelocity, Math.hypot(velocity.getX(), velocity.getZ()));
+            movement.verticalVelocity = Math.max(movement.verticalVelocity, Math.abs(velocity.getY()));
         }
     }
 
@@ -321,21 +330,35 @@ public final class Balloon implements Listener {
                 || player.getGameMode() == GameMode.SPECTATOR || player.isInsideVehicle()
                 || !current.getWorld().equals(movement.position.getWorld())) {
             movement.position = current;
-            movement.externalVelocity = 0;
+            movement.horizontalVelocity = 0;
+            movement.verticalVelocity = 0;
+            movement.horizontalCredit = MAX_HORIZONTAL_PER_TICK;
+            movement.verticalCredit = MAX_VERTICAL_PER_TICK;
             return;
         }
         double dx = current.getX() - movement.position.getX();
         double dy = current.getY() - movement.position.getY();
         double dz = current.getZ() - movement.position.getZ();
-        double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        double allowed = MAX_FLIGHT_DISTANCE_PER_TICK + movement.externalVelocity;
-        movement.externalVelocity *= VELOCITY_DECAY;
-        if (movement.externalVelocity < 0.01) movement.externalVelocity = 0;
-        if (distance > allowed) {
-            double scale = allowed / distance;
+        // 最多储存一个 tick 的余量，容忍短时集中到达的移动数据。
+        double horizontalAllowance = MAX_HORIZONTAL_PER_TICK + movement.horizontalCredit;
+        double verticalAllowance = MAX_VERTICAL_PER_TICK + movement.verticalCredit;
+        double horizontal = Math.hypot(dx, dz);
+        double vertical = Math.abs(dy);
+        double allowedHorizontal = horizontalAllowance + movement.horizontalVelocity;
+        double allowedVertical = verticalAllowance + movement.verticalVelocity;
+        movement.horizontalCredit = Math.min(MAX_HORIZONTAL_PER_TICK,
+                Math.max(0, horizontalAllowance - Math.max(0, horizontal - movement.horizontalVelocity)));
+        movement.verticalCredit = Math.min(MAX_VERTICAL_PER_TICK,
+                Math.max(0, verticalAllowance - Math.max(0, vertical - movement.verticalVelocity)));
+        movement.horizontalVelocity *= VELOCITY_DECAY;
+        movement.verticalVelocity *= VELOCITY_DECAY;
+        if (movement.horizontalVelocity < 0.01) movement.horizontalVelocity = 0;
+        if (movement.verticalVelocity < 0.01) movement.verticalVelocity = 0;
+        if (horizontal > allowedHorizontal || vertical > allowedVertical) {
+            double scale = horizontal > allowedHorizontal ? allowedHorizontal / horizontal : 1;
             Location limited = current.clone();
             limited.setX(movement.position.getX() + dx * scale);
-            limited.setY(movement.position.getY() + dy * scale);
+            limited.setY(movement.position.getY() + Math.copySign(Math.min(vertical, allowedVertical), dy));
             limited.setZ(movement.position.getZ() + dz * scale);
             // 修正会产生传送事件，避免将它误当作普通传送并重置基准。
             movement.correcting = true;
