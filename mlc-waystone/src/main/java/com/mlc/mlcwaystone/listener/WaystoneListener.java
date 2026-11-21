@@ -182,18 +182,22 @@ public class WaystoneListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPistonExtend(BlockPistonExtendEvent event) {
-        for (Block block : event.getBlocks()) {
-            if (isWaystoneBlock(block)) {
-                event.setCancelled(true);
-                return;
-            }
-        }
+        protectFromPiston(event, event.getBlocks());
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPistonRetract(BlockPistonRetractEvent event) {
-        for (Block block : event.getBlocks()) {
-            if (isWaystoneBlock(block)) {
+        protectFromPiston(event, event.getBlocks());
+    }
+
+    private void protectFromPiston(BlockPistonEvent event, List<Block> blocks) {
+        if (waystoneDataMap.isEmpty()) {
+            return;
+        }
+        for (Block block : blocks) {
+            if (isPossibleWaystoneTop(block.getX(), block.getY(), block.getZ())
+                    && block.getType() == Material.SOUL_LANTERN
+                    && isAboveRegisteredLodestone(block)) {
                 event.setCancelled(true);
                 return;
             }
@@ -376,20 +380,16 @@ public class WaystoneListener implements Listener {
      * Covers both the LODESTONE base and the SOUL_LANTERN/BEACON top block.
      */
     private boolean isWaystoneBlock(Block block) {
-        // Check if this block is a registered LODESTONE
-        if (block.getType() == Material.LODESTONE) {
-            if (getWaystoneAt(block.getLocation()) != null) {
-                return true;
-            }
+        Material type = block.getType();
+        if (type == Material.LODESTONE) {
+            return getWaystoneAt(block.getLocation()) != null;
         }
-        // Check if this block is the top block of a registered waystone
-        if (block.getType() == Material.SOUL_LANTERN || block.getType() == Material.BEACON) {
-            Block below = block.getRelative(BlockFace.DOWN);
-            if (below.getType() == Material.LODESTONE && getWaystoneAt(below.getLocation()) != null) {
-                return true;
-            }
-        }
-        return false;
+        return (type == Material.SOUL_LANTERN || type == Material.BEACON) && isAboveRegisteredLodestone(block);
+    }
+
+    private boolean isAboveRegisteredLodestone(Block block) {
+        Block below = block.getRelative(BlockFace.DOWN);
+        return below.getType() == Material.LODESTONE && getWaystoneAt(below.getLocation()) != null;
     }
 
     /**

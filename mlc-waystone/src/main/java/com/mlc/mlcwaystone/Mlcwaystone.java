@@ -12,7 +12,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,6 +23,9 @@ public final class Mlcwaystone {
     public static File dataFile;
     private static WaystoneBeamManager beamManager;
     public static ConcurrentHashMap<UUID, WaystoneData> waystoneDataMap = new ConcurrentHashMap<>();
+    private static volatile Set<BlockPosition> waystoneTopPositions = Set.of();
+
+    private record BlockPosition(int x, int y, int z) {}
 
     /**
      * Initialize waystone system. Called from Mlc.onEnable().
@@ -98,6 +103,7 @@ public final class Mlcwaystone {
                 }
             }
         }
+        rebuildWaystoneTopPositions();
     }
 
     /**
@@ -162,6 +168,7 @@ public final class Mlcwaystone {
      */
     public static void addWaystone(WaystoneData data) {
         waystoneDataMap.put(data.getId(), data);
+        rebuildWaystoneTopPositions();
         saveData();
         if (data.isPublic()) {
             createBlueMapMarker(data);
@@ -174,10 +181,27 @@ public final class Mlcwaystone {
      */
     public static void removeWaystone(UUID id) {
         WaystoneData data = waystoneDataMap.remove(id);
-        if (data != null && data.isPublic()) {
-            removeBlueMapMarker(data);
+        if (data != null) {
+            rebuildWaystoneTopPositions();
+            if (data.isPublic()) {
+                removeBlueMapMarker(data);
+            }
         }
         saveData();
+    }
+
+    private static void rebuildWaystoneTopPositions() {
+        Set<BlockPosition> positions = new HashSet<>();
+        for (WaystoneData data : waystoneDataMap.values()) {
+            Location base = data.getLocation();
+            positions.add(new BlockPosition(base.getBlockX(), base.getBlockY() + 1, base.getBlockZ()));
+        }
+        waystoneTopPositions = positions;
+    }
+
+    /** Fast coordinate filter. The caller verifies the world, block material and registration. */
+    public static boolean isPossibleWaystoneTop(int x, int y, int z) {
+        return waystoneTopPositions.contains(new BlockPosition(x, y, z));
     }
 
     /**
