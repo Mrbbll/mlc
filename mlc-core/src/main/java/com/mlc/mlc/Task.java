@@ -41,6 +41,7 @@ import com.mlc.mlc.mlcmain.mlcitem.command.mlcitemgui;
 import com.mlc.mlc.mlcmain.mlcitem.listener.Guilistener;
 import com.mlc.mlc.mlcmain.motd.Motd;
 import com.mlc.mlc.mlcmain.mobmove.MobMove;
+import com.mlc.mlc.mlcmain.playerhead.PlayerHeadListener;
 import com.mlc.mlc.mlcmain.reload.reload;
 import com.mlc.mlc.mlcmain.respacksender.packsender;
 import com.mlc.mlc.mlcmain.rightclickheavest.Heavestlistener;
@@ -82,6 +83,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new Joinlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Tplistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Deadlistener(), instance);
+        Bukkit.getPluginManager().registerEvents(new PlayerHeadListener(), instance);
         Bukkit.getPluginManager().registerEvents(new Eatlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new EnchantUpgradelistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Sleeplistener(), instance);
