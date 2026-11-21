@@ -115,18 +115,24 @@ public class Moneyfilemanager {
     }
 
     public static void setPlayerMoney(UUID playerUUID, double money) {
+        trySetPlayerMoney(playerUUID, money);
+    }
+
+    public static boolean trySetPlayerMoney(UUID playerUUID, double money) {
         // 保存到数据库
-        if (!Double.isFinite(money)) return;
+        if (!Double.isFinite(money)) return false;
         money = java.math.BigDecimal.valueOf(money).setScale(2, java.math.RoundingMode.HALF_UP).doubleValue();
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement();
         ){
             OfflinePlayer player = instance.getServer().getOfflinePlayer(playerUUID);
             String update = "UPDATE money_data SET player_name = '" + player.getName() + "', money = " + money + " WHERE player_uuid = '" + playerUUID + "'";
-            statement.executeUpdate(update);
+            if (statement.executeUpdate(update) != 1) return false;
             playermoneyMap.put(playerUUID, money);
+            return true;
         } catch (SQLException e) {
             instance.getLogger().severe("\n\n数据库保存玩家货币数据失败: " + e.getMessage() + "\n\n");
+            return false;
         }
     }
 

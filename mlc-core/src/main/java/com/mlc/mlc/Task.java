@@ -43,6 +43,7 @@ import com.mlc.mlc.mlcmain.reload.reload;
 import com.mlc.mlc.mlcmain.respacksender.packsender;
 import com.mlc.mlc.mlcmain.rightclickheavest.Heavestlistener;
 import com.mlc.mlc.mlcmain.signin.Listener.JoinMoneyListener;
+import com.mlc.mlc.mlcmain.signin.SigninCommand;
 import com.mlc.mlc.mlcmain.sit.listener.Unsitlistener;
 import com.mlc.mlc.mlcmain.sleep.Sleeplistener;
 import org.bukkit.Bukkit;
@@ -121,6 +122,8 @@ public class Task {
             //新版本更新了，这个指令没什么用了，但保留写法吧
 //            commands.register("sit", "坐下", new ExecutorCommand("sit", "坐下", new Sit()));
             commands.register("money", "操作货币", new ExecutorCommand("money", "操作货币", new money()));
+            commands.register("signin", "手动签到",
+                    new ExecutorCommand("signin", "手动签到", "/signin", null, new SigninCommand()));
             commands.register("item", "展示物品", new ExecutorCommand("item", "展示物品", new Item()));
             commands.register("rtp", "随机传送", new ExecutorCommand("rtp", "随机传送", new rtp()));
             commands.register("recipe", "打开配方查询器", new ExecutorCommand("recipe", "打开配方查询器", new recipe()));
