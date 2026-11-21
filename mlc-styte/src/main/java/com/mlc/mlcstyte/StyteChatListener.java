@@ -1,5 +1,6 @@
 package com.mlc.mlcstyte;
 
+import com.mlc.mlcstyte.chatmanager.formattermanager;
 import io.papermc.paper.chat.ChatRenderer;
 import io.papermc.paper.event.player.AsyncChatEvent;
 
@@ -17,6 +18,11 @@ import org.bukkit.event.server.ServiceUnregisterEvent;
  * Ported from VaultChatFormatter and modernized for Adventure Components.
  */
 public class StyteChatListener implements Listener {
+    private final formattermanager chatEffects;
+
+    public StyteChatListener(formattermanager chatEffects) {
+        this.chatEffects = chatEffects;
+    }
 
     /**
      * Set a custom renderer that builds the formatted chat Component using
@@ -24,6 +30,7 @@ public class StyteChatListener implements Listener {
      */
     @EventHandler(priority = EventPriority.LOW)
     public void onAsyncChat(AsyncChatEvent event) {
+        formattermanager.Selection selection = chatEffects.selection(event.getPlayer().getUniqueId());
 
         event.renderer(ChatRenderer.viewerUnaware((
                 source ,sourceDisplayName,message)->{
@@ -36,13 +43,15 @@ public class StyteChatListener implements Listener {
                         suffix = StyteFormatter.toComponent(chat.getPlayerSuffix(source));
                     }
 
+                    Component name = Component.text(source.getName());
+                    Component displayName = sourceDisplayName == null ? name : sourceDisplayName;
                     return StyteFormatter.buildFormat(
                             event.getPlayer(),
                             prefix,
-                            Component.text(source.getName()),
+                            name,
                             suffix,
-                            message,
-                            sourceDisplayName
+                            selection.message().apply(message),
+                            selection.name().apply(displayName)
                     );
                 }
             )

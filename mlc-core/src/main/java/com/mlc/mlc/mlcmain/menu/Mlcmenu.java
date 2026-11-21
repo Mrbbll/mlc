@@ -51,6 +51,7 @@ public class Mlcmenu {
     public static final int SLOT_SHOP = 28;
     public static final int SLOT_RECIPE = 30;
     public static final int SLOT_ITEMS = 32;
+    public static final int SLOT_CHAT_FORMAT = 34;
 
     // 超链接URL
     public static final String MAP_URL = "http://43.248.188.28:19423/";
@@ -174,6 +175,12 @@ public class Mlcmenu {
                 "<!i><#ffff55>» 点击打开特殊物品配方表"
         ));
 
+        menuinv.setItem(SLOT_CHAT_FORMAT, createMenuItem(
+                Material.AMETHYST_SHARD,
+                "<!i><#d8b9ff>聊天特效",
+                null,
+                "<!i><#aaaaaa>设置名字和聊天正文的动态特效",
+                "<!i><#b8ffde>» 点击打开特效选择"));
     }
 
     /**

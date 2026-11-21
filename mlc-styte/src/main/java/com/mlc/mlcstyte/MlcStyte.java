@@ -1,5 +1,6 @@
 package com.mlc.mlcstyte;
 
+import com.mlc.mlcstyte.chatmanager.formattermanager;
 import net.milkbowl.vault.chat.Chat;
 
 import org.bukkit.Bukkit;
@@ -19,6 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class MlcStyte {
     public static JavaPlugin instance;
     public static volatile Chat vaultChat = null;
+    private static formattermanager chatEffects;
 
     public static final String FORMAT = "<{prefix}{name}{suffix}> {message}";
 
@@ -38,9 +40,14 @@ public final class MlcStyte {
         refreshVault();
 
         // Register chat listener
-        Bukkit.getPluginManager().registerEvents(new StyteChatListener(), instance);
+        chatEffects = new formattermanager(plugin);
+        Bukkit.getPluginManager().registerEvents(new StyteChatListener(chatEffects), instance);
 
         instance.getLogger().info("mlc-styte 模块加载成功");
+    }
+
+    public static formattermanager chatEffects() {
+        return chatEffects;
     }
 
     /**

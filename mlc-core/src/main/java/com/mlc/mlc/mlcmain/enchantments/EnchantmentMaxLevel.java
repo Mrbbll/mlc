@@ -16,7 +16,7 @@ public class EnchantmentMaxLevel {
 
 
     static {
-        maxLevelMap.put(VeinMine.VEINMINE,3);
+        maxLevelMap.put(VeinMine.VEINMINE,5);
         maxLevelMap.put(Enchantment.SHARPNESS,7);
         maxLevelMap.put(Enchantment.EFFICIENCY,7);
         maxLevelMap.put(Enchantment.FORTUNE,5);
