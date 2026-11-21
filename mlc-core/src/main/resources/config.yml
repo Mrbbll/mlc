@@ -28,3 +28,10 @@ xaero-map:
   sync-interval-ticks: 5
   # 已有服务端实现发送 level ID 时可关闭。首次启用时会自动生成并保存 level-id。
   send-level-id: true
+
+# 在线时长排行榜 HTTP API，修改后重启生效。
+web:
+  enabled: true
+  # 穿透客户端和服务端同机时使用回环地址。异机时改为服务端可达的内网地址。
+  bind-address: "127.0.0.1"
+  port: 8090

@@ -69,6 +69,25 @@ mlc/
 
 将 `target/mlc-*.jar` 放入 Paper 服务端的 `plugins/` 目录，并确保 Vault 和 PlaceholderAPI 已安装。BlueMap 可选；未安装时其地图集成功能不会启用。
 
+## 在线时长排行榜 API
+
+1. 在游戏内执行 `/papi ecloud download Statistic` 和 `/papi reload`，再用 `/papi parse me %statistic_seconds_played%` 确认变量返回累计秒数。
+2. MLC 默认监听 `127.0.0.1:8090`。可在 `plugins/mlc/config.yml` 的 `web` 下设置 `enabled`、`bind-address` 和 `port`，修改后重启。穿透客户端与服务端同机时，将公网 TCP 端口映射到 `127.0.0.1:8090`。
+
+本地可用以下命令检查接口。网站通过同源入口转发 API 时，浏览器可使用相对路径调用。
+
+```powershell
+curl.exe -i "http://127.0.0.1:8090/api/v1/leaderboard/playtime?limit=10&period=all"
+```
+
+接口公开只读，`limit` 默认 100、范围 1–500，`period` 默认 `all` 且只接受 `all`。成功响应包含快照时间 `updatedAt`、全量有效玩家数 `totalPlayers` 和截断后的 `players`。每个玩家条目包含 `uuid`、`name` 和整数 `seconds`。成功响应支持最长 5 分钟的 HTTP 缓存。
+
+MLC 约每分钟分批读取在线和离线玩家的 PAPI 累计秒数，按时长降序、同秒按名称升序生成快照。玩家优先使用当前登录名或最后已知名称，缺少名称时显示 UUID。
+
+错误响应包含 `error.code` 和 `error.message`。无效条数返回 `400 INVALID_LIMIT`，不支持的周期返回 `400 UNSUPPORTED_PERIOD`，其他 HTTP 方法返回 `405 METHOD_NOT_ALLOWED`。首次采集完成前或 Statistic 扩展不可用时，接口返回 `500 INTERNAL_ERROR`。
+
+时长口径与存盘由 Statistic 扩展底层的 Minecraft 统计决定，包含挂机时间。MLC 只读取并缓存结果，因此崩溃后能恢复到哪个时点取决于服务端何时保存统计。
+
 ## 许可
 
 MLC 项目许可为 GPL-3.0。`mlc-bot` 中的 Citizens 衍生部分遵循 OSL-3.0，相关许可证随 JAR 一同发布。
