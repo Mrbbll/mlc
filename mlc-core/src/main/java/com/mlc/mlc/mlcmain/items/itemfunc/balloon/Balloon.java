@@ -53,8 +53,9 @@ public final class Balloon implements Listener {
     private static final Set<UUID> grantedFlight = new HashSet<>();
     private static final Map<UUID, BukkitTask> flightTasks = new HashMap<>();
     // 每 tick 检查气球飞行位移，并为服务端施加的速度预留逐渐衰减的额度。
-    private static final double MAX_HORIZONTAL_PER_TICK = 1.25;
-    private static final double MAX_VERTICAL_PER_TICK = 0.5;
+    // 气球飞行速度限制，单位为格/tick；修改后重新构建插件。
+    private static final double MAX_HORIZONTAL_PER_TICK = 1.3;
+    private static final double MAX_VERTICAL_PER_TICK = 0.6;
     private static final double VELOCITY_DECAY = 0.98;
     private static final Map<UUID, FlightMovement> flightMovement = new HashMap<>();
 
@@ -419,8 +420,8 @@ public final class Balloon implements Listener {
             }
         }
         if (remaining <= 0) return false;
-        // 每个 tick 扣除 20 个原版燃烧 tick，燃料消耗速度为熔炉的 20 倍。
-        int left = Math.max(0, remaining - 20);
+        // 每个 tick 扣除 20 个原版燃烧 tick，燃料消耗速度为熔炉的 40 倍。
+        int left = Math.max(0, remaining - 40);
         item.editMeta(meta -> meta.getPersistentDataContainer().set(BURN, PersistentDataType.INTEGER, left));
         return true;
     }
