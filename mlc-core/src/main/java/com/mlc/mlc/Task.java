@@ -1,6 +1,7 @@
 package com.mlc.mlc;
 
 import com.mlc.mlc.mlcmain.anvilcost.Anvilcost;
+import com.mlc.mlc.mlcmain.backpack.listener.BackpackDyeListener;
 import com.mlc.mlc.mlcmain.backpack.listener.Backpacklistener;
 import com.mlc.mlc.mlcmain.chat.commands.Item;
 import com.mlc.mlc.mlcmain.chat.listener.Chatlistener;
@@ -72,6 +73,7 @@ public class Task {
 
         Bukkit.getPluginManager().registerEvents(new MobMove(instance), instance);
         Bukkit.getPluginManager().registerEvents(new Backpacklistener(),instance);
+        Bukkit.getPluginManager().registerEvents(new BackpackDyeListener(), instance);
         Bukkit.getPluginManager().registerEvents(new com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon(), instance);
         com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon.refreshOnlinePlayers();
         Bukkit.getPluginManager().registerEvents(new Heavestlistener(),instance);
@@ -99,6 +101,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new EnchantRestricter(), instance);
         Bukkit.getPluginManager().registerEvents(new Anvilcost(), instance);
         Bukkit.getPluginManager().registerEvents(new Villanplus(), instance);
+
 
 
         // Paper plugins do not register commands declared in YAML.

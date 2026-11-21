@@ -11,6 +11,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.FoodComponent;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +52,11 @@ public class Mlcitems {
         lorelist.add(miniMessage.deserialize("<!i>请不要存储贵重物品，建议存储建筑材料").color(TextColor.color(0x7CFF4D)));
         lorelist.add(miniMessage.deserialize("<!i>可能有丢失风险").color(TextColor.color(0x7CFF4D)));
         itemMeta.lore(lorelist);
+        itemMeta.getPersistentDataContainer().set(
+                new NamespacedKey(instance, "backpack_id"),
+                PersistentDataType.BYTE,
+                (byte) 1
+        );
         itemMeta.setTooltipStyle(NamespacedKey.fromString("mlc:mlc"));
         backpack.setItemMeta(itemMeta);
 

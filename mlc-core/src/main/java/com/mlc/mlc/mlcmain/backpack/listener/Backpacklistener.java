@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -16,6 +17,7 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
@@ -38,28 +40,40 @@ import static com.mlc.mlc.Mlc.instance;
  */
 public class Backpacklistener implements Listener {
 
+    private static final int OFF_HAND_SLOT = 40;
+
     // ──────────────────────────────────────────────
     //  Right-click → open
     // ──────────────────────────────────────────────
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onRightClick(PlayerInteractEvent event) {
-        if (event.getAction() == Action.LEFT_CLICK_AIR
-            || event.getAction() == Action.LEFT_CLICK_BLOCK
-            || event.getAction() == Action.PHYSICAL) {
-            return;
-        }
+        if (event.getAction() != Action.RIGHT_CLICK_AIR
+            && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 
-        ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
-        if (item.isEmpty()) return;
+        EquipmentSlot hand = event.getHand();
+        if (hand == null || !Backpack.isBackpackItem(event.getItem())) return;
+
+        Player player = event.getPlayer();
+        PlayerInventory inventory = player.getInventory();
+        ItemStack item = inventory.getItem(hand);
         if (!Backpack.isBackpackItem(item)) return;
+
+        boolean canOpen = hand == EquipmentSlot.HAND && event.useItemInHand() != Event.Result.DENY;
 
         // Prevent the shulker-box base item from being placed as a block
         event.setUseInteractedBlock(Event.Result.DENY);
         event.setUseItemInHand(Event.Result.DENY);
 
-        Backpack.openBackpack(event.getPlayer(), item);
-        event.getPlayer().swingMainHand();
+        if (!canOpen || !Backpack.openBackpack(player, item)) return;
+        player.swingMainHand();
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBackpackPlace(BlockPlaceEvent event) {
+        if (Backpack.isBackpackItem(event.getItemInHand())) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -67,6 +81,7 @@ public class Backpacklistener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)
             || event.getView().getTopInventory().getType() != InventoryType.CRAFTING
             || event.getClickedInventory() != player.getInventory()
+            || event.getSlot() == OFF_HAND_SLOT
             || event.getClick() != ClickType.RIGHT
             || !event.getCursor().getType().isAir()
             || !Backpack.isBackpackItem(event.getCurrentItem())) return;
@@ -138,6 +153,9 @@ public class Backpacklistener implements Listener {
             ItemStack hotbarItem = player.getInventory().getItem(event.getHotbarButton());
             boolean hotbarIsStorage = Backpack.isStorageItem(hotbarItem);
             cancel = (hotbarIsStorage || clickedIsStorage) && !clickedIsPlayerInv;
+        }
+        if (!cancel && event.getClick() == ClickType.SWAP_OFFHAND && !clickedIsPlayerInv) {
+            cancel = Backpack.isStorageItem(player.getInventory().getItemInOffHand());
         }
 
         if (cancel) {
