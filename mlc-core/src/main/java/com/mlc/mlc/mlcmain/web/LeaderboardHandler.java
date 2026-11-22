@@ -15,17 +15,16 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /** 负责 v1 排行榜的参数校验、响应格式和缓存头。 */
-final class LeaderboardHandler {
-    static final String PATH = "/api/v1/leaderboard/playtime";
+final class LeaderboardHandler<T> {
     private static final Gson GSON = new Gson();
 
-    private record Response(String updatedAt, int totalPlayers, List<LeaderboardSnapshot.PlayerTime> players) {}
+    private record Response<T>(String updatedAt, int totalPlayers, List<T> players) {}
     private record ErrorResponse(ApiError error) {}
     private record ApiError(String code, String message) {}
 
-    private final Supplier<LeaderboardSnapshot> snapshots;
+    private final Supplier<LeaderboardSnapshot<T>> snapshots;
 
-    LeaderboardHandler(Supplier<LeaderboardSnapshot> snapshots) {
+    LeaderboardHandler(Supplier<LeaderboardSnapshot<T>> snapshots) {
         this.snapshots = snapshots;
     }
 
@@ -53,16 +52,16 @@ final class LeaderboardHandler {
             return;
         }
 
-        LeaderboardSnapshot snapshot = snapshots.get();
+        LeaderboardSnapshot<T> snapshot = snapshots.get();
         if (snapshot == null) {
             error(exchange, 500, "INTERNAL_ERROR", "Leaderboard data is unavailable");
             return;
         }
-        List<LeaderboardSnapshot.PlayerTime> players = snapshot.players();
+        List<T> players = snapshot.players();
         long age = Math.max(0, Duration.between(snapshot.updatedAt(), Instant.now()).toSeconds());
         exchange.getResponseHeaders().set("Cache-Control", "public, max-age=300");
         exchange.getResponseHeaders().set("Age", Long.toString(age));
-        json(exchange, 200, new Response(snapshot.updatedAt().toString(), snapshot.totalPlayers(),
+        json(exchange, 200, new Response<>(snapshot.updatedAt().toString(), snapshot.totalPlayers(),
                 players.subList(0, Math.min(limit, players.size()))));
     }
 

@@ -7,13 +7,18 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static com.mlc.mlc.Mlc.instance;
 
 public class Moneyfilemanager {
+    public record RankedBalance(String uuid, String name, double balance) {}
+    public record BalanceRanking(int totalPlayers, List<RankedBalance> players) {}
+
     private static HikariDataSource dataSource;
     private final Plugin plugin = instance;
     private final String dbName = "money_data";
@@ -105,6 +110,39 @@ public class Moneyfilemanager {
             instance.getLogger().severe("\n\n数据库加载玩家货币数据失败: " + e.getMessage() + "\n\n");
         }
         return topPlayers.toString();
+    }
+
+    /** 同一条只读查询返回总账户数和前几名，包含已存档的离线账户。 */
+    public static BalanceRanking getBalanceRanking(int limit) throws SQLException {
+        if (limit < 1) {
+            throw new IllegalArgumentException("limit must be positive");
+        }
+        String query = """
+                SELECT player_uuid,
+                       COALESCE(NULLIF(TRIM(player_name), ''), player_uuid) AS display_name,
+                       money, COUNT(*) OVER () AS total_players
+                FROM money_data
+                WHERE money BETWEEN ? AND ?
+                ORDER BY money DESC, display_name ASC, player_uuid ASC
+                LIMIT ?
+                """;
+        List<RankedBalance> players = new ArrayList<>();
+        int totalPlayers = 0;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            // 排除旧库中缺失或无法作为 JSON 数字返回的余额。
+            statement.setDouble(1, -Double.MAX_VALUE);
+            statement.setDouble(2, Double.MAX_VALUE);
+            statement.setInt(3, limit);
+            try (ResultSet rows = statement.executeQuery()) {
+                while (rows.next()) {
+                    totalPlayers = rows.getInt("total_players");
+                    players.add(new RankedBalance(rows.getString("player_uuid"), rows.getString("display_name"),
+                            rows.getDouble("money")));
+                }
+            }
+        }
+        return new BalanceRanking(totalPlayers, List.copyOf(players));
     }
 
     public static double getPlayerMoney(UUID playerUUID) {

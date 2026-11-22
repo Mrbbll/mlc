@@ -1,5 +1,6 @@
-package com.mlc.mlc.mlcmain.web;
+package com.mlc.mlc.mlcmain.web.source;
 
+import com.mlc.mlc.mlcmain.web.LeaderboardSnapshot;
 import com.mlc.mlcbot.BotIdentity;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
@@ -20,27 +21,27 @@ import java.util.logging.Level;
  * 定期读取 PAPI 的累计时长。PAPI 和 Bukkit 调用都留在游戏线程，离线玩家分批读取。
  * HTTP 线程通过 latest() 读取最近一次完整采集的不可变快照。
  */
-final class PapiPlaytimeSource implements AutoCloseable {
+public final class PapiPlaytimeSource implements AutoCloseable {
     private static final String EXPANSION = "statistic";
     private static final String PLACEHOLDER = "%statistic_seconds_played%";
     private static final int PLAYERS_PER_TICK = 8;
     private static final long REFRESH_TICKS = 20 * 60;
 
     private final JavaPlugin plugin;
-    private volatile LeaderboardSnapshot latest;
+    private volatile LeaderboardSnapshot<LeaderboardSnapshot.PlayerTime> latest;
     private BukkitTask refreshTask;
     private BukkitTask batchTask;
     private String previousWarning;
 
-    PapiPlaytimeSource(JavaPlugin plugin) {
+    public PapiPlaytimeSource(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
-    void start() {
+    public void start() {
         refreshTask = Bukkit.getScheduler().runTaskTimer(plugin, this::startRefresh, 1, REFRESH_TICKS);
     }
 
-    LeaderboardSnapshot latest() {
+    public LeaderboardSnapshot<LeaderboardSnapshot.PlayerTime> latest() {
         return latest;
     }
 

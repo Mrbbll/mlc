@@ -5,10 +5,10 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,14 +17,13 @@ final class WebServer implements AutoCloseable {
     private final HttpServer server;
     private final ThreadPoolExecutor workers;
 
-    WebServer(InetSocketAddress address, Supplier<LeaderboardSnapshot> snapshots, Logger logger)
+    WebServer(InetSocketAddress address, Map<String, LeaderboardHandler<?>> routes, Logger logger)
             throws IOException {
         server = HttpServer.create(address, 32);
         workers = new ThreadPoolExecutor(2, 8, 30, TimeUnit.SECONDS, new ArrayBlockingQueue<>(64),
                 Thread.ofPlatform().daemon().name("mlc-web-", 0).factory());
-        LeaderboardHandler leaderboard = new LeaderboardHandler(snapshots);
         server.setExecutor(workers);
-        server.createContext("/", exchange -> dispatch(exchange, leaderboard, logger));
+        server.createContext("/", exchange -> dispatch(exchange, routes, logger));
     }
 
     void start() {
@@ -35,12 +34,13 @@ final class WebServer implements AutoCloseable {
         return server.getAddress();
     }
 
-    private static void dispatch(HttpExchange exchange, LeaderboardHandler leaderboard, Logger logger)
+    private static void dispatch(HttpExchange exchange, Map<String, LeaderboardHandler<?>> routes, Logger logger)
             throws IOException {
         try (exchange) {
             try {
                 exchange.getResponseHeaders().set("X-Content-Type-Options", "nosniff");
-                if (LeaderboardHandler.PATH.equals(exchange.getRequestURI().getPath())) {
+                LeaderboardHandler<?> leaderboard = routes.get(exchange.getRequestURI().getPath());
+                if (leaderboard != null) {
                     leaderboard.handle(exchange);
                 } else {
                     LeaderboardHandler.error(exchange, 404, "NOT_FOUND", "Unknown API endpoint");

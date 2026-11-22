@@ -88,6 +88,22 @@ MLC 约每分钟分批读取在线和离线玩家的 PAPI 累计秒数，按时�
 
 时长口径与存盘由 Statistic 扩展底层的 Minecraft 统计决定，包含挂机时间。MLC 只读取并缓存结果，因此崩溃后能恢复到哪个时点取决于服务端何时保存统计。
 
+## 经济排行榜 API
+
+`GET /api/v1/leaderboard/economy?limit=10` 与在线时长榜使用同一 HTTP 端口、查询参数和错误格式。接口公开只读，按当前账户余额降序、同余额按名称升序排列，约每分钟从 MLC 自身的经济数据库刷新一次。已存档的离线账户也参与排名。
+
+```json
+{
+  "updatedAt": "2026-11-22T10:00:00Z",
+  "totalPlayers": 42,
+  "players": [
+    {"uuid": "8667ba71-b85a-4004-af54-457a9734eed7", "name": "Steve", "balance": 1250.75}
+  ]
+}
+```
+
+`balance` 是 JSON 数字，表示账户里的当前余额。`totalPlayers` 是有有效余额的账户总数，不受 `limit` 影响。账户没有存档名称时，`name` 返回 UUID。经济榜直接读取数据库，独立于 PAPI Statistic 扩展。
+
 ## 许可
 
 MLC 项目许可为 GPL-3.0。`mlc-bot` 中的 Citizens 衍生部分遵循 OSL-3.0，相关许可证随 JAR 一同发布。
