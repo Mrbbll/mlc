@@ -48,10 +48,8 @@ public class WaystoneGUI {
     public static void open(Player player, int page) {
         UUID playerUuid = player.getUniqueId();
         boolean publicView = playerPublicView.getOrDefault(player, false);
-        Comparator<WaystoneData> order = publicView
-                ? Comparator.comparingLong(WaystoneData::getPromotionAmount).reversed()
-                    .thenComparingLong(WaystoneData::getCreatedAt).thenComparing(WaystoneData::getId)
-                : Comparator.comparingLong(WaystoneData::getCreatedAt).thenComparing(WaystoneData::getId);
+        Comparator<WaystoneData> order = Comparator.comparingLong(WaystoneData::getPromotionAmount).reversed()
+                .thenComparingLong(WaystoneData::getCreatedAt).thenComparing(WaystoneData::getId);
         List<WaystoneData> sorted = waystoneDataMap.values().stream()
                 .filter(data -> publicView ? data.isPublic()
                         : data.isPrivate() && (player.isOp() || data.getOwner().equals(playerUuid)))
@@ -184,16 +182,15 @@ public class WaystoneGUI {
                 .decoration(TextDecoration.ITALIC, false)
                 .color(TextColor.fromHexString("#B5EE59")));
 
-        if (data.isPublic()) {
-            lore.add(Component.empty());
-            lore.add(currencyLine("<#FFD166>✦ 排名投入: " + data.getPromotionAmount()));
-            lore.add(currencyLine("<#80CBC4>Shift + 左键  ·  投入 10"));
-            lore.add(currencyLine("<#80CBC4>Shift + 右键  ·  投入 100"));
-            lore.add(Component.text("仅传送点拥有者可投入")
-                    .decoration(TextDecoration.ITALIC, false).color(TextColor.fromHexString("#AAAAAA")));
-        }
         lore.add(Component.empty());
-        lore.add(Component.text("» 点击传送")
+        lore.add(currencyLine("<#FFD166>✦ 排名投入: " + data.getPromotionAmount()));
+        lore.add(currencyLine("<#80CBC4>Shift + 左键  ·  投入 10"));
+        lore.add(currencyLine("<#80CBC4>Shift + 右键  ·  投入 100"));
+        lore.add(currencyLine("<#80CBC4>右键  ·  取回 10"));
+        lore.add(Component.text("仅传送点拥有者可投入或取回")
+                .decoration(TextDecoration.ITALIC, false).color(TextColor.fromHexString("#AAAAAA")));
+        lore.add(Component.empty());
+        lore.add(Component.text("» 左键传送")
                 .decoration(TextDecoration.ITALIC, false)
                 .color(TextColor.fromHexString("#FF5555")));
 

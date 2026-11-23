@@ -332,15 +332,24 @@ public class WaystoneListener implements Listener {
             }
 
             if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
-                if (!data.isPublic() || !data.getOwner().equals(player.getUniqueId())) {
-                    player.sendMessage(Component.text("只有公共传送点的拥有者可以提升排名")
+                if (!data.getOwner().equals(player.getUniqueId())) {
+                    player.sendMessage(Component.text("只有传送点的拥有者可以提升排名")
                             .color(TextColor.fromHexString("#FF5555")));
                     return;
                 }
                 promote(player, data, event.getClick() == ClickType.SHIFT_LEFT ? 10 : 100);
                 return;
             }
-            if (event.getClick() != ClickType.LEFT && event.getClick() != ClickType.RIGHT) return;
+            if (event.getClick() == ClickType.RIGHT) {
+                if (!data.getOwner().equals(player.getUniqueId())) {
+                    player.sendMessage(Component.text("只有传送点的拥有者可以取回投入")
+                            .color(TextColor.fromHexString("#FF5555")));
+                    return;
+                }
+                withdrawPromotion(player, data);
+                return;
+            }
+            if (event.getClick() != ClickType.LEFT) return;
             if (data.isPrivate() && !player.isOp() && !data.getOwner().equals(player.getUniqueId())) return;
 
             // Teleport the player
@@ -399,6 +408,38 @@ public class WaystoneListener implements Listener {
             return;
         }
         player.sendMessage(Component.text("已投入 " + amount + " 水晶币，累计投入 " + data.getPromotionAmount() + " 水晶币")
+                .color(TextColor.fromHexString("#80CBC4")));
+        WaystoneGUI.open(player, WaystoneGUI.playerPageMap.getOrDefault(player, 1));
+    }
+
+    private void withdrawPromotion(Player player, WaystoneData data) {
+        long previous = data.getPromotionAmount();
+        if (previous < 10) {
+            player.sendMessage(Component.text("投入不足 10 水晶币，无法取回")
+                    .color(TextColor.fromHexString("#FF5555")));
+            return;
+        }
+        data.setPromotionAmount(previous - 10);
+        if (!saveData()) {
+            data.setPromotionAmount(previous);
+            player.sendMessage(Component.text("保存失败，未取回水晶币")
+                    .color(TextColor.fromHexString("#FF5555")));
+            return;
+        }
+        EconomyResponse refund = economy.depositPlayer(player, 10);
+        if (!refund.transactionSuccess()) {
+            data.setPromotionAmount(previous);
+            if (!saveData()) {
+                instance.getLogger().severe("传送点取回失败，恢复投入记录失败: " + data.getId());
+                player.sendMessage(Component.text("取回失败且恢复记录失败，请联系管理员")
+                        .color(TextColor.fromHexString("#FF5555")));
+            } else {
+                player.sendMessage(Component.text("取回失败: " + refund.errorMessage)
+                        .color(TextColor.fromHexString("#FF5555")));
+            }
+            return;
+        }
+        player.sendMessage(Component.text("已取回 10 水晶币，剩余投入 " + data.getPromotionAmount() + " 水晶币")
                 .color(TextColor.fromHexString("#80CBC4")));
         WaystoneGUI.open(player, WaystoneGUI.playerPageMap.getOrDefault(player, 1));
     }
