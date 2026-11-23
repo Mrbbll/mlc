@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
@@ -19,9 +20,11 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class VeinMine implements Listener {
     public static Enchantment VEINMINE;
+    private final Set<UUID> mining = new HashSet<>();
 
     public VeinMine() {
         VEINMINE = RegistryAccess.registryAccess()
@@ -30,11 +33,10 @@ public class VeinMine implements Listener {
     }
 
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockbreak(BlockBreakEvent event){
-        if(event.isCancelled()) return;
-
         Player player = event.getPlayer();
+        if (mining.contains(player.getUniqueId())) return;
         if(player.isSneaking()){
             return;
         }
@@ -45,18 +47,22 @@ public class VeinMine implements Listener {
 
         Material block = event.getBlock().getType();
 
-        if (!(tool.getItemMeta() instanceof Damageable damageable)) {
+        if (!(tool.getItemMeta() instanceof Damageable)) {
             return;
         }
 
         int limit = tool.getEnchantmentLevel(VEINMINE) * 8;    // 等级越高挖越多
 
-        breakVein(event.getBlock(), block, limit, tool,player);
-        event.setCancelled(true);
+        mining.add(player.getUniqueId());
+        try {
+            breakVein(event.getBlock(), block, limit, player);
+        } finally {
+            mining.remove(player.getUniqueId());
+        }
     }
 
 
-    static void breakVein(Block start, Material ore, int limit, ItemStack tool, Player player) {
+    static void breakVein(Block start, Material ore, int limit, Player player) {
         // BFS 洪水填充:从起点扩散,只处理同类方块
         Deque<Block> queue = new ArrayDeque<>();
         Set<Block> visited = new HashSet<>();
@@ -72,9 +78,9 @@ public class VeinMine implements Listener {
                     !DomainProtection.canBreak(player, b)){
                 continue;
             }
-            if (!b.breakNaturally(tool)) continue;  // 掉落物按玩家工具计算
+            // 起点由原始事件处理；其他方块走完整玩家挖掘流程。
+            if (!b.equals(start) && !player.breakBlock(b)) continue;
             broken++;
-            tool.damage(1,player);
 
             ItemStack currentTool = player.getInventory().getItemInMainHand();
             if (broken >= limit || currentTool.getAmount() <= 0 || currentTool.getType() == Material.AIR) {
