@@ -9,15 +9,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UpgradeRulesTest {
     @Test
-    void calculatesFailureProbabilityAndRepairTimeFromLevelSum() {
-        assertEquals(0.0, UpgradeRules.failureProbability(1));
-        assertEquals(0.75, UpgradeRules.failureProbability(4));
+    void weightsTheTargetLevelTwiceAsMuchAsOtherLevels() {
+        assertEquals(1.0, UpgradeRules.successProbability(1, 0));
+        assertEquals(0.25, UpgradeRules.successProbability(3, 2));
+        assertEquals(1.0 / 5.5, UpgradeRules.successProbability(5, 1));
+        assertEquals(1.0 / 3.5, UpgradeRules.successProbability(1, 5));
+    }
+
+    @Test
+    void floorsTheSuccessProbabilityAtOnePercent() {
+        assertEquals(0.02, UpgradeRules.successProbability(50, 0));
+        assertEquals(0.01, UpgradeRules.successProbability(100, 0));
+        assertEquals(0.01, UpgradeRules.successProbability(90, 60));
+    }
+
+    @Test
+    void calculatesRepairTimeFromLevelSum() {
         assertEquals(4L * 60 * 60 * 1000, UpgradeRules.repairDurationMillis(4));
     }
 
     @Test
     void rejectsItemsWithoutEnchantments() {
-        assertThrows(IllegalArgumentException.class, () -> UpgradeRules.failureProbability(0));
+        assertThrows(IllegalArgumentException.class, () -> UpgradeRules.successProbability(0, 0));
+        assertThrows(IllegalArgumentException.class, () -> UpgradeRules.successProbability(1, -1));
         assertThrows(IllegalArgumentException.class, () -> UpgradeRules.repairDurationMillis(0));
     }
 

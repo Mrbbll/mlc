@@ -31,6 +31,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -81,8 +83,13 @@ public final class EnchantUpgradeMenu implements Listener {
         if (!(event.getView().getTopInventory().getHolder() instanceof Menu menu)
                 || !(event.getWhoClicked() instanceof Player player)) return;
         int raw = event.getRawSlot();
+        if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
+            event.setCancelled(true);
+            shiftTransfer(event, menu, player);
+            return;
+        }
         if (raw >= menu.inventory.getSize()) {
-            // 禁止跨库存移动、快捷键和双击收集，以免绕过输入槽校验。
+            // 快捷键和双击收集可能绕过输入槽校验。
             if (event.getClick() != ClickType.LEFT && event.getClick() != ClickType.RIGHT) event.setCancelled(true);
             return;
         }
@@ -111,6 +118,58 @@ public final class EnchantUpgradeMenu implements Listener {
             menu.page++;
             render(menu);
         }
+    }
+
+    private static void shiftTransfer(InventoryClickEvent event, Menu menu, Player player) {
+        ItemStack source = event.getCurrentItem();
+        if (source == null || source.isEmpty()) return;
+
+        Inventory inv = menu.inventory;
+        int raw = event.getRawSlot();
+        int amount = source.getAmount();
+        int remaining;
+        if (isInputSlot(raw)) {
+            ItemStack leftover = player.getInventory().addItem(source.clone()).get(0);
+            remaining = leftover == null ? 0 : leftover.getAmount();
+            if (raw == EQUIPMENT && remaining < amount) menu.page = 0;
+        } else if (raw >= inv.getSize() && event.getClickedInventory() == event.getView().getBottomInventory()) {
+            if (isRune(source)) {
+                remaining = insertRunes(inv, source);
+            } else {
+                ItemStack equipment = inv.getItem(EQUIPMENT);
+                if ((equipment != null && !equipment.isEmpty()) || !accepts(EQUIPMENT, source)) return;
+                inv.setItem(EQUIPMENT, source.asOne());
+                remaining = amount - 1;
+                menu.page = 0;
+            }
+        } else {
+            return;
+        }
+        if (remaining == amount) return;
+        event.setCurrentItem(remaining == 0 ? null : source.asQuantity(remaining));
+        render(menu);
+    }
+
+    private static int insertRunes(Inventory inventory, ItemStack source) {
+        int remaining = source.getAmount();
+        int limit = Math.min(source.getMaxStackSize(), inventory.getMaxStackSize());
+        for (int slot : RUNE_SLOTS) {
+            ItemStack current = inventory.getItem(slot);
+            if (current == null || !current.isSimilar(source) || current.getAmount() >= limit) continue;
+            int moved = Math.min(remaining, limit - current.getAmount());
+            inventory.setItem(slot, current.asQuantity(current.getAmount() + moved));
+            remaining -= moved;
+            if (remaining == 0) return 0;
+        }
+        for (int slot : RUNE_SLOTS) {
+            ItemStack current = inventory.getItem(slot);
+            if (current != null && !current.isEmpty()) continue;
+            int moved = Math.min(remaining, limit);
+            inventory.setItem(slot, source.asQuantity(moved));
+            remaining -= moved;
+            if (remaining == 0) return 0;
+        }
+        return remaining;
     }
 
     @EventHandler
@@ -193,7 +252,11 @@ public final class EnchantUpgradeMenu implements Listener {
 
     private static boolean accepts(int slot, ItemStack item) {
         if (slot == EQUIPMENT) return UpgradeItems.isType(item, "broken_item") || !item.getEnchantments().isEmpty();
-        return RUNE_SLOTS.contains(slot) && RUNE_TYPES.stream().anyMatch(type -> UpgradeItems.isType(item, type));
+        return RUNE_SLOTS.contains(slot) && isRune(item);
+    }
+
+    private static boolean isRune(ItemStack item) {
+        return RUNE_TYPES.stream().anyMatch(type -> UpgradeItems.isType(item, type));
     }
 
     private static boolean isInputSlot(int slot) {
@@ -215,6 +278,7 @@ public final class EnchantUpgradeMenu implements Listener {
         if (UpgradeItems.isType(equipment, "broken_item")) {
             inv.setItem(INSTRUCTIONS, icon(Material.KNOWLEDGE_BOOK, "<#b8ffde>装备修复说明",
                     "<#aab8b0>修复符文可放入左下任意一个空格",
+                    "<#aab8b0>按住 Shift 点击可快速转移装备或符文",
                     "<#aab8b0>将鼠标移到铁砧上查看修复条件"));
             long now = System.currentTimeMillis();
             if (UpgradeItems.refreshLore(equipment, now)) inv.setItem(EQUIPMENT, equipment);
@@ -236,29 +300,27 @@ public final class EnchantUpgradeMenu implements Listener {
         inv.setItem(INSTRUCTIONS, icon(Material.KNOWLEDGE_BOOK, "<#b8ffde>附魔升级说明",
                 "<#aab8b0>把已附魔的装备放入左侧空格",
                 "<#aab8b0>符文可放入左下任意一个空格",
+                "<#aab8b0>按住 Shift 点击可快速转移装备或符文",
                 "<#aab8b0>点击右侧魔咒尝试升级"));
-        menu.enchantments = equipment == null ? List.of() : equipment.getEnchantments().keySet().stream()
+        Map<Enchantment, Integer> appliedEnchantments = equipment == null ? Map.of() : equipment.getEnchantments();
+        menu.enchantments = appliedEnchantments.keySet().stream()
                 .filter(enchantment -> !NegativeEnchantments.isNegative(enchantment))
                 .sorted(Comparator.comparing(e -> e.getKey().toString())).toList();
         int pageSize = ENCHANT_SLOTS.size();
         int pages = Math.max(1, (menu.enchantments.size() + pageSize - 1) / pageSize);
         menu.page = Math.min(menu.page, pages - 1);
-        int total = equipment == null ? 0 : equipment.getEnchantments().values().stream().mapToInt(Integer::intValue).sum();
-        List<String> costs = new ArrayList<>(List.of(
+        int positiveLevels = positiveEnchantmentLevels(appliedEnchantments);
+        inv.setItem(COST_OR_REPAIR, icon(Material.ENCHANTING_TABLE, "<#b8ffde>本次升级消耗",
                 "<#aab8b0>经验等级 <#ffd166>" + UpgradeRules.UPGRADE_EXPERIENCE_LEVELS + " <#aab8b0>级",
                 "<#aab8b0>升级符文 <#ffd166>" + UpgradeRules.UPGRADE_RUNES_PER_ATTEMPT
                         + " <#aab8b0>个（已放入 " + countRunes(inv, UPGRADE_RUNE) + " 个）",
                 "<#aab8b0>升级失败时可消耗 <#ffd166>" + UpgradeRules.PROTECTION_RUNES_ON_FAILURE + " <#aab8b0>个保护符文",
                 "<#aab8b0>触发负面魔咒时可消耗 <#ffd166>" + UpgradeRules.STABILITY_RUNES_PER_PREVENTION + " <#aab8b0>个稳定符文"));
-        if (!menu.enchantments.isEmpty()) {
-            costs.add("<#aab8b0>失败概率 <#ffb4a8>" + String.format(java.util.Locale.ROOT, "%.2f%%", UpgradeRules.failureProbability(total) * 100));
-        }
-        inv.setItem(COST_OR_REPAIR, icon(Material.ENCHANTING_TABLE, "<#b8ffde>本次升级消耗", costs.toArray(String[]::new)));
         for (int i = 0; i < pageSize; i++) {
             int index = menu.page * pageSize + i;
             if (index >= menu.enchantments.size()) break;
             Enchantment enchant = menu.enchantments.get(index);
-            int level = equipment.getEnchantmentLevel(enchant);
+            int level = appliedEnchantments.get(enchant);
             int maxLevel = EnchantmentMaxLevel.getMaxLevel(enchant);
             if (level >= maxLevel) {
                 inv.setItem(ENCHANT_SLOTS.get(i), icon(Material.BARRIER, enchantName(enchant, "<#ffb4a8>"),
@@ -266,9 +328,11 @@ public final class EnchantUpgradeMenu implements Listener {
                         "", "<#ffb4a8>◆ 已达到等级上限"));
                 continue;
             }
+            double success = UpgradeRules.successProbability(level, positiveLevels - level);
             ItemStack option = icon(Material.ENCHANTED_BOOK, enchantName(enchant, "<#b8ffde>"),
                     "<#aab8b0>当前等级 <#d8e3dc>" + level + " <#71877a>/ <#d8e3dc>" + maxLevel,
                     "<#aab8b0>升级后 <#b8ffde>" + (level + 1) + " 级",
+                    "<#aab8b0>成功率 <#b8ffde>" + String.format(Locale.ROOT, "%.2f%%", success * 100),
                     "", "<#b8ffde>✦ 点击尝试升级");
             inv.setItem(ENCHANT_SLOTS.get(i), option);
         }
@@ -309,8 +373,10 @@ public final class EnchantUpgradeMenu implements Listener {
         if (!EnchantUpgradelistener.checkblock(menu.center)) {
             player.sendMessage(Component.text("多方块结构不完整。")); return;
         }
-        if (equipment == null || equipment.getAmount() != 1 || !equipment.getEnchantments().containsKey(enchant)) return;
-        int level = equipment.getEnchantmentLevel(enchant);
+        if (equipment == null || equipment.getAmount() != 1) return;
+        Map<Enchantment, Integer> appliedEnchantments = equipment.getEnchantments();
+        int level = appliedEnchantments.getOrDefault(enchant, 0);
+        if (level <= 0 || NegativeEnchantments.isNegative(enchant)) return;
         if (level >= EnchantmentMaxLevel.getMaxLevel(enchant)) {
             player.sendMessage(Component.text("这个魔咒已经达到等级上限。")); return;
         }
@@ -320,9 +386,8 @@ public final class EnchantUpgradeMenu implements Listener {
         if (player.getLevel() < UpgradeRules.UPGRADE_EXPERIENCE_LEVELS) {
             player.sendMessage(Component.text("经验等级不足。")); return;
         }
-        int total = equipment.getEnchantments().values().stream().mapToInt(Integer::intValue).sum();
-        if (total <= 0) return;
-        boolean failure = ThreadLocalRandom.current().nextDouble() < UpgradeRules.failureProbability(total);
+        int otherPositiveLevels = positiveEnchantmentLevels(appliedEnchantments) - level;
+        boolean failure = ThreadLocalRandom.current().nextDouble() >= UpgradeRules.successProbability(level, otherPositiveLevels);
         boolean protectedFailure = failure
                 && countRunes(inv, PROTECTION_RUNE) >= UpgradeRules.PROTECTION_RUNES_ON_FAILURE;
         // 先准备结果，成功后才扣除输入，避免结果创建失败导致损失。
@@ -337,7 +402,10 @@ public final class EnchantUpgradeMenu implements Listener {
                 if (!prevented) result.addUnsafeEnchantment(negative, 1);
             }
         }
-        if (failure && !protectedFailure) result = UpgradeItems.breakItem(result, total, System.currentTimeMillis());
+        if (failure && !protectedFailure) {
+            int total = appliedEnchantments.values().stream().mapToInt(Integer::intValue).sum();
+            result = UpgradeItems.breakItem(result, total, System.currentTimeMillis());
+        }
         inv.setItem(EQUIPMENT, result);
         consumeRunes(inv, UPGRADE_RUNE, UpgradeRules.UPGRADE_RUNES_PER_ATTEMPT);
         if (protectedFailure) consumeRunes(inv, PROTECTION_RUNE, UpgradeRules.PROTECTION_RUNES_ON_FAILURE);
@@ -348,6 +416,13 @@ public final class EnchantUpgradeMenu implements Listener {
         if (prevented) player.sendMessage(Component.text("稳定符文阻止了负面魔咒。"));
         else if (negative != null) player.sendMessage(Component.text("装备获得了负面魔咒：").append(negative.description()));
         render(menu);
+    }
+
+    private static int positiveEnchantmentLevels(Map<Enchantment, Integer> enchantments) {
+        return enchantments.entrySet().stream()
+                .filter(entry -> !NegativeEnchantments.isNegative(entry.getKey()))
+                .mapToInt(Map.Entry::getValue)
+                .sum();
     }
 
     private static void repair(Player player, Menu menu) {

@@ -54,6 +54,19 @@ public class Cratesitems {
         ConfigurationSection configurationSection_item = configurationSection.getConfigurationSection(itemid.toString());
 
         if (configurationSection_item != null) {
+            if (configurationSection_item.contains("mlc_item")) {
+                int mlcItemId = configurationSection_item.getInt("mlc_item");
+                ItemStack template = configurationSection_item.isInt("mlc_item")
+                        ? Mlcitems.itemsmap.get(mlcItemId) : null;
+                if (template == null) {
+                    instance.getLogger().warning("items/cratesitems.yml 中的奖励 " + itemid
+                            + " 引用了无效的 MLC 物品编号 " + configurationSection_item.get("mlc_item"));
+                    return;
+                }
+                int tier = configurationSection_item.getInt("tagged.cratesraritytier");
+                registerItem(itemid, template.clone(), tier);
+                return;
+            }
             if(!configurationSection_item.contains("type")){
                 return;
             }
@@ -111,13 +124,17 @@ public class Cratesitems {
             }
 
             itemStack.setItemMeta(meta);
-            itemsmap.put(itemid, itemStack);
             int tier = meta.getPersistentDataContainer().getOrDefault(raritytier, PersistentDataType.INTEGER, 0);
-            switch (tier) {
-                case 1 -> t1list.add(itemid);
-                case 2 -> t2list.add(itemid);
-                case 3 -> t3list.add(itemid);
-            }
+            registerItem(itemid, itemStack, tier);
+        }
+    }
+
+    private static void registerItem(int itemid, ItemStack item, int tier) {
+        itemsmap.put(itemid, item);
+        switch (tier) {
+            case 1 -> t1list.add(itemid);
+            case 2 -> t2list.add(itemid);
+            case 3 -> t3list.add(itemid);
         }
     }
 

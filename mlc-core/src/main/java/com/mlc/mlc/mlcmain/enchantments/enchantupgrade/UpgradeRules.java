@@ -16,10 +16,11 @@ public final class UpgradeRules {
     private UpgradeRules() {
     }
 
-    /** 失败概率 = 1 - 1 / 已有魔咒等级之和。 */
-    public static double failureProbability(int totalLevels) {
-        if (totalLevels <= 0) throw new IllegalArgumentException("totalLevels must be positive");
-        return 1.0 - 1.0 / totalLevels;
+    /** 目标等级全计，其他正面魔咒等级折半，成功率最低为 1%。 */
+    public static double successProbability(int targetLevel, int otherPositiveLevels) {
+        if (targetLevel <= 0) throw new IllegalArgumentException("targetLevel must be positive");
+        if (otherPositiveLevels < 0) throw new IllegalArgumentException("otherPositiveLevels must be nonnegative");
+        return Math.max(0.01, 1.0 / (targetLevel + otherPositiveLevels / 2.0));
     }
 
     /** 修复时间 = 已有魔咒等级之和 × 每级小时数。 */

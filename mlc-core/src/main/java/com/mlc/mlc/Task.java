@@ -149,9 +149,9 @@ public class Task {
 
 
 
+        Mlcitems.init();
         Cratesitems.init();
         Fesitems.init();
-        Mlcitems.init();
         Mlcmenu.initmenuinv();
 
         //注册物品配方

@@ -29,9 +29,9 @@ public class reload implements CommandExecutor {
         if (!buildershop.reload()) {
             commandSender.sendMessage(Component.text("商店配置重载失败，保留原有商品，请查看控制台", NamedTextColor.RED));
         }
+        Mlcitems.init();
         Cratesitems.init();
         Fesitems.init();
-        Mlcitems.init();
         initserverjoindialog();
         // 清除缓存的GUI，使玩家重新打开/mlcitem时能获取到刷新后的物品
         Gui.openinvmap.clear();

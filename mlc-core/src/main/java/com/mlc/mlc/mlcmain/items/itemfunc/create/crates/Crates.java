@@ -52,7 +52,7 @@ public class Crates {
     }
 
     private static void giveitem(Player player, Integer itemid) {
-        ItemStack item = Cratesitems.itemsmap.get(itemid);
+        ItemStack item = Cratesitems.itemsmap.get(itemid).clone();
 
 
         if(serializer.serialize(item.effectiveName()).equals("随机附魔书")){
