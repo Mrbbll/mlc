@@ -6,5 +6,7 @@ plugins {
 dependencies {
     paperweight.paperDevBundle("26.3.build.+")
     implementation(libs.adventure.serializer.plain)
+    implementation(libs.adventure.minimessage)
+    compileOnly(libs.vault) { exclude("org.bukkit", "bukkit") }
     compileOnly(libs.bluemap)
 }

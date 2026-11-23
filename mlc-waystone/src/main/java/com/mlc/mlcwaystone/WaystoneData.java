@@ -20,6 +20,7 @@ public class WaystoneData {
     private String iconType;    // Material enum name, e.g. "CAMPFIRE"
     private String iconName;    // Display name in GUI
     private NamespacedKey iconModel; // Optional item model
+    private long promotionAmount;
     private long createdAt;     // System.currentTimeMillis() at creation
 
     public WaystoneData(UUID id, UUID owner, String ownerName, String type,
@@ -44,6 +45,8 @@ public class WaystoneData {
     public String getIconType() { return iconType; }
     public String getIconName() { return iconName; }
     public NamespacedKey getIconModel() { return iconModel; }
+    public long getPromotionAmount() { return promotionAmount; }
+    public void setPromotionAmount(long amount) { this.promotionAmount = amount; }
     public long getCreatedAt() { return createdAt; }
 
     // --- Setters ---
@@ -77,6 +80,7 @@ public class WaystoneData {
         String iconName = section.getString("iconName", "未命名传送点");
         long createdAt = section.getLong("createdAt", System.currentTimeMillis());
         WaystoneData data = new WaystoneData(id, owner, ownerName, type, location, iconType, iconName, createdAt);
+        data.setPromotionAmount(Math.max(0, section.getLong("promotionAmount", 0)));
         String model = section.getString("iconModel");
         if (model != null && !model.isBlank()) {
             NamespacedKey key = NamespacedKey.fromString(model);
@@ -99,6 +103,7 @@ public class WaystoneData {
         map.put("iconName", data.getIconName());
         if (data.getIconModel() != null) map.put("iconModel", data.getIconModel().toString());
         map.put("createdAt", data.getCreatedAt());
+        map.put("promotionAmount", data.getPromotionAmount());
         return map;
     }
 

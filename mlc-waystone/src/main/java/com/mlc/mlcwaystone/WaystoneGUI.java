@@ -3,6 +3,7 @@ package com.mlc.mlcwaystone;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,10 +23,12 @@ public class WaystoneGUI {
     private static final int GUI_SIZE = 54;
     private static final int WAYSTONE_SLOTS = 45;  // rows 0-4
     public static final int SLOT_PREV = 45;
+    public static final int SLOT_SWITCH = 47;
     public static final int SLOT_PAGE_INFO = 49;
     public static final int SLOT_NEXT = 53;
 
     // Per-player state tracking
+    public static final Map<Player, Boolean> playerPublicView = new HashMap<>();
     public static final Map<Player, Integer> playerPageMap = new HashMap<>();
     public static final Map<Player, List<UUID>> playerWaystoneOrder = new HashMap<>();
     public static final Map<Player, Inventory> playerCurrentInv = new HashMap<>();
@@ -35,6 +38,7 @@ public class WaystoneGUI {
      * Open the waystone GUI for a player at page 1.
      */
     public static void open(Player player) {
+        playerPublicView.put(player, false);
         open(player, 1);
     }
 
@@ -42,14 +46,16 @@ public class WaystoneGUI {
      * Open the waystone GUI for a player at a specific page.
      */
     public static void open(Player player, int page) {
-        // Filter: only show public waystones + the player's own private waystones
-        // Build sorted list: private first, then public
         UUID playerUuid = player.getUniqueId();
+        boolean publicView = playerPublicView.getOrDefault(player, false);
+        Comparator<WaystoneData> order = publicView
+                ? Comparator.comparingLong(WaystoneData::getPromotionAmount).reversed()
+                    .thenComparingLong(WaystoneData::getCreatedAt).thenComparing(WaystoneData::getId)
+                : Comparator.comparingLong(WaystoneData::getCreatedAt).thenComparing(WaystoneData::getId);
         List<WaystoneData> sorted = waystoneDataMap.values().stream()
-                .filter(data -> player.isOp() || data.isPublic() || data.getOwner().equals(playerUuid))
-                .sorted(Comparator
-                        .comparing(WaystoneData::isPrivate).reversed()   // true (private) before false (public)
-                        .thenComparingLong(WaystoneData::getCreatedAt))
+                .filter(data -> publicView ? data.isPublic()
+                        : data.isPrivate() && (player.isOp() || data.getOwner().equals(playerUuid)))
+                .sorted(order)
                 .collect(Collectors.toList());
 
         List<UUID> sortedUuids = sorted.stream()
@@ -73,7 +79,7 @@ public class WaystoneGUI {
         playerWaystoneOrder.put(player, sortedUuids);
 
         // Create inventory
-        Component title = Component.text("传送点 - 第 " + page + "/" + totalPages + " 页");
+        Component title = Component.text((publicView ? "✦ 公共传送点" : "✦ 私人传送点") + "  ·  " + page + "/" + totalPages);
         Inventory inv = Bukkit.createInventory(null, GUI_SIZE, title);
 
         // Fill waystone slots for current page
@@ -106,8 +112,8 @@ public class WaystoneGUI {
         inv.setItem(SLOT_PAGE_INFO, createPageInfoItem(page, totalPages, sorted.size()));
 
         // Tip items at decorative slots
-        inv.setItem(47, createTipItem("Shift+右键", "手持物品可设置图标"));
-        inv.setItem(51, createTipItem("私人 = 灵魂灯笼+磁石", "公共 = 信标+磁石"));
+        inv.setItem(SLOT_SWITCH, createSwitchItem(publicView));
+        inv.setItem(51, createTipItem("✦ 设置传送点图标", "对石碑手持物品 Shift + 右键"));
 
         openInvs.add(inv);
         playerCurrentInv.put(player, inv);
@@ -134,6 +140,7 @@ public class WaystoneGUI {
      * Clean up per-player state when they close the GUI.
      */
     public static void cleanup(Player player) {
+        playerPublicView.remove(player);
         playerPageMap.remove(player);
         playerWaystoneOrder.remove(player);
         playerCurrentInv.remove(player);
@@ -177,6 +184,14 @@ public class WaystoneGUI {
                 .decoration(TextDecoration.ITALIC, false)
                 .color(TextColor.fromHexString("#B5EE59")));
 
+        if (data.isPublic()) {
+            lore.add(Component.empty());
+            lore.add(currencyLine("<#FFD166>✦ 排名投入: " + data.getPromotionAmount()));
+            lore.add(currencyLine("<#80CBC4>Shift + 左键  ·  投入 10"));
+            lore.add(currencyLine("<#80CBC4>Shift + 右键  ·  投入 100"));
+            lore.add(Component.text("仅传送点拥有者可投入")
+                    .decoration(TextDecoration.ITALIC, false).color(TextColor.fromHexString("#AAAAAA")));
+        }
         lore.add(Component.empty());
         lore.add(Component.text("» 点击传送")
                 .decoration(TextDecoration.ITALIC, false)
@@ -187,8 +202,13 @@ public class WaystoneGUI {
         return item;
     }
 
+    private static Component currencyLine(String text) {
+        return MiniMessage.miniMessage().deserialize(text + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\">")
+                .decoration(TextDecoration.ITALIC, false);
+    }
+
     private static ItemStack createBorderItem() {
-        ItemStack item = ItemStack.of(Material.GREEN_STAINED_GLASS_PANE);
+        ItemStack item = ItemStack.of(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta meta = item.getItemMeta();
         meta.itemName(Component.text(" "));
         item.setItemMeta(meta);
@@ -232,10 +252,24 @@ public class WaystoneGUI {
         lore.add(Component.text("共 " + totalWaystones + " 个传送点")
                 .decoration(TextDecoration.ITALIC, false)
                 .color(TextColor.fromHexString("#B5EE59")));
-        lore.add(Component.text("金色 = 私人 | 蓝色 = 公共")
+        lore.add(Component.text("使用左侧按钮切换私人 / 公共")
                 .decoration(TextDecoration.ITALIC, false)
                 .color(TextColor.fromHexString("#AAAAAA")));
         meta.lore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private static ItemStack createSwitchItem(boolean publicView) {
+        ItemStack item = ItemStack.of(publicView ? Material.SOUL_LANTERN : Material.BEACON);
+        ItemMeta meta = item.getItemMeta();
+        meta.itemName(Component.text(publicView ? "切换至私人传送点" : "切换至公共传送点")
+                .color(TextColor.fromHexString("#80CBC4")));
+        meta.lore(List.of(
+                Component.text(publicView ? "当前: 公共传送点" : "当前: 私人传送点")
+                        .decoration(TextDecoration.ITALIC, false).color(TextColor.fromHexString("#AAAAAA")),
+                Component.text("» 点击切换分类")
+                        .decoration(TextDecoration.ITALIC, false).color(TextColor.fromHexString("#FFD166"))));
         item.setItemMeta(meta);
         return item;
     }

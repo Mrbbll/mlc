@@ -3,6 +3,7 @@ package com.mlc.mlcwaystone;
 import com.mlc.mlcwaystone.commands.Reload;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import com.mlc.mlcwaystone.listener.WaystoneListener;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class Mlcwaystone {
     public static JavaPlugin instance;
+    public static Economy economy;
     public static File dataFile;
     private static WaystoneBeamManager beamManager;
     public static ConcurrentHashMap<UUID, WaystoneData> waystoneDataMap = new ConcurrentHashMap<>();
@@ -30,8 +32,9 @@ public final class Mlcwaystone {
     /**
      * Initialize waystone system. Called from Mlc.onEnable().
      */
-    public static void init(JavaPlugin plugin) {
+    public static void init(JavaPlugin plugin, Economy currency) {
         instance = plugin;
+        economy = currency;
         instance.getLogger().info("传送石碑系统加载中...");
 
         // Ensure data directory exists
@@ -149,7 +152,7 @@ public final class Mlcwaystone {
     /**
      * Save all waystones from the in-memory map to data.yml.
      */
-    public static void saveData() {
+    public static boolean saveData() {
         FileConfiguration config = new YamlConfiguration();
         for (Map.Entry<UUID, WaystoneData> entry : waystoneDataMap.entrySet()) {
             config.set("waystones." + entry.getKey().toString(),
@@ -157,8 +160,10 @@ public final class Mlcwaystone {
         }
         try {
             config.save(dataFile);
+            return true;
         } catch (IOException e) {
             instance.getLogger().severe("保存传送石碑数据失败: " + e.getMessage());
+            return false;
         }
     }
 

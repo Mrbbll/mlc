@@ -17,6 +17,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.ClickType;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -118,50 +120,43 @@ public class WaystoneListener implements Listener {
 
     // ==================== Waystone Destruction ====================
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
         Block brokenBlock = event.getBlock();
         Player player = event.getPlayer();
 
-        WaystoneData waystone = null;
-        Block lodestoneBlock = null;
-
-        // Case 1: Breaking the LODESTONE itself
-        if (brokenBlock.getType() == Material.LODESTONE) {
-            waystone = getWaystoneAt(brokenBlock.getLocation());
-            lodestoneBlock = brokenBlock;
+        // Match by position even if another plugin has already changed the block type.
+        WaystoneData waystone = getWaystoneAt(brokenBlock.getLocation());
+        boolean base = waystone != null;
+        if (!base) {
+            waystone = getWaystoneAt(brokenBlock.getRelative(BlockFace.DOWN).getLocation());
         }
-        // Case 2: Breaking the SOUL_LANTERN or BEACON on top of a LODESTONE
-        else if (brokenBlock.getType() == Material.SOUL_LANTERN || brokenBlock.getType() == Material.BEACON) {
-            Block blockBelow = brokenBlock.getRelative(BlockFace.DOWN);
-            if (blockBelow.getType() == Material.LODESTONE) {
-                waystone = getWaystoneAt(blockBelow.getLocation());
-                lodestoneBlock = blockBelow;
-            }
-        }
+        if (waystone == null) return;
 
-        if (waystone == null || lodestoneBlock == null) {
-            return;
-        }
-
-        // Authorization check: owner or OP
         if (!canManage(player, waystone)) {
+            if (!event.isCancelled()) {
+                player.sendMessage(Component.text("你没有权限拆除这个传送石碑")
+                        .color(TextColor.fromHexString("#FF5555")));
+            }
             event.setCancelled(true);
-            player.sendMessage(Component.text("你没有权限拆除这个传送石碑")
-                    .color(TextColor.fromHexString("#FF5555")));
-            return;
         }
 
-        // Remove the waystone data
-        removeWaystone(waystone.getId());
-
-        String typeName = waystone.isPrivate() ? "私人" : "公共";
-        player.sendMessage(Component.text("已拆除" + typeName + "传送石碑")
-                .color(TextColor.fromHexString("#00ff33")));
-
-        instance.getLogger().info("玩家 " + player.getName() + " 拆除了" + typeName + "传送石碑"
-                + " 位于 " + lodestoneBlock.getWorld().getName()
-                + " (" + lodestoneBlock.getX() + ", " + lodestoneBlock.getY() + ", " + lodestoneBlock.getZ() + ")");
+        WaystoneData captured = waystone;
+        Material expected = base ? Material.LODESTONE
+                : (waystone.isPrivate() ? Material.SOUL_LANTERN : Material.BEACON);
+        // Some plugins cancel the Bukkit event and remove the block themselves. Check the
+        // actual result after all event handlers and the normal block break have completed.
+        instance.getServer().getScheduler().runTask(instance, () -> {
+            if (waystoneDataMap.get(captured.getId()) != captured || brokenBlock.getType() == expected) return;
+            removeWaystone(captured.getId());
+            String typeName = captured.isPrivate() ? "私人" : "公共";
+            player.sendMessage(Component.text("已拆除" + typeName + "传送石碑")
+                    .color(TextColor.fromHexString("#00ff33")));
+            Location loc = captured.getLocation();
+            instance.getLogger().info("玩家 " + player.getName() + " 拆除了" + typeName + "传送石碑"
+                    + " 位于 " + loc.getWorld().getName()
+                    + " (" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ")");
+        });
     }
 
     // ==================== Explosion Protection ====================
@@ -300,6 +295,12 @@ public class WaystoneListener implements Listener {
             return;
         }
 
+        if (slot == WaystoneGUI.SLOT_SWITCH) {
+            WaystoneGUI.playerPublicView.put(player, !WaystoneGUI.playerPublicView.getOrDefault(player, false));
+            WaystoneGUI.open(player, 1);
+            return;
+        }
+
         // Pagination: previous page
         if (slot == WaystoneGUI.SLOT_PREV) {
             Integer currentPage = WaystoneGUI.playerPageMap.get(player);
@@ -330,6 +331,18 @@ public class WaystoneListener implements Listener {
                 return;
             }
 
+            if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
+                if (!data.isPublic() || !data.getOwner().equals(player.getUniqueId())) {
+                    player.sendMessage(Component.text("只有公共传送点的拥有者可以提升排名")
+                            .color(TextColor.fromHexString("#FF5555")));
+                    return;
+                }
+                promote(player, data, event.getClick() == ClickType.SHIFT_LEFT ? 10 : 100);
+                return;
+            }
+            if (event.getClick() != ClickType.LEFT && event.getClick() != ClickType.RIGHT) return;
+            if (data.isPrivate() && !player.isOp() && !data.getOwner().equals(player.getUniqueId())) return;
+
             // Teleport the player
             Location loc = data.getLocation();
             if (loc.getWorld() == null) {
@@ -359,6 +372,35 @@ public class WaystoneListener implements Listener {
                         .color(TextColor.fromHexString("#FF5555")));
             }
         }
+    }
+
+    private void promote(Player player, WaystoneData data, int amount) {
+        long previous = data.getPromotionAmount();
+        if (previous > Long.MAX_VALUE - amount) {
+            player.sendMessage(Component.text("排名投入已达到上限").color(TextColor.fromHexString("#FF5555")));
+            return;
+        }
+        EconomyResponse payment = economy.withdrawPlayer(player, amount);
+        if (!payment.transactionSuccess()) {
+            player.sendMessage(Component.text("投入失败: " + payment.errorMessage)
+                    .color(TextColor.fromHexString("#FF5555")));
+            return;
+        }
+        data.setPromotionAmount(previous + amount);
+        if (!saveData()) {
+            data.setPromotionAmount(previous);
+            EconomyResponse refund = economy.depositPlayer(player, amount);
+            if (!refund.transactionSuccess()) {
+                instance.getLogger().severe("传送点排名保存失败，退款也失败: 玩家 " + player.getUniqueId() + "，金额 " + amount);
+                player.sendMessage(Component.text("保存失败且退款失败，请联系管理员").color(TextColor.fromHexString("#FF5555")));
+            } else {
+                player.sendMessage(Component.text("保存失败，水晶币已退回").color(TextColor.fromHexString("#FF5555")));
+            }
+            return;
+        }
+        player.sendMessage(Component.text("已投入 " + amount + " 水晶币，累计投入 " + data.getPromotionAmount() + " 水晶币")
+                .color(TextColor.fromHexString("#80CBC4")));
+        WaystoneGUI.open(player, WaystoneGUI.playerPageMap.getOrDefault(player, 1));
     }
 
     // ==================== GUI Close Cleanup ====================

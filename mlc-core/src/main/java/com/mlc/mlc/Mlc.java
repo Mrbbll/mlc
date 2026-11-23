@@ -125,7 +125,7 @@ public final class Mlc extends JavaPlugin {
         com.mlc.mlcdomain.Mlcdomain.init(this);
 
         // Initialize waystone (传送石碑) system
-        com.mlc.mlcwaystone.Mlcwaystone.init(this);
+        com.mlc.mlcwaystone.Mlcwaystone.init(this, mlcEconomy);
 
         // Initialize mlc-styte system
         com.mlc.mlcstyte.MlcStyte.init(this);
