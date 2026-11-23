@@ -22,13 +22,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.Mlc.miniMessage;
 
-/** 建筑商店：商品在 menu/shop.yml 的 builder-shop.products 中配置。 */
+/** 商店商品按分类配置在 menu/shop.yml 中。 */
 public final class buildershop implements Listener {
     private static final int SIZE = 54;
     private static final int PAGE_SIZE = 28;
@@ -36,17 +38,37 @@ public final class buildershop implements Listener {
     private static final int PROFILE = 49;
     private static final int NEXT = 52;
 
+    private enum Category {
+        BUILDING("建材", Material.BRICKS, 2, "building-products"),
+        EGGS("刷怪蛋", Material.CREEPER_SPAWN_EGG, 4, "egg-products"),
+        REDSTONE("红石元件", Material.REDSTONE, 6, "redstone-products");
+
+        private final String name;
+        private final Material icon;
+        private final int slot;
+        private final String configKey;
+
+        Category(String name, Material icon, int slot, String configKey) {
+            this.name = name;
+            this.icon = icon;
+            this.slot = slot;
+            this.configKey = configKey;
+        }
+    }
+
     private record Product(Material material, double price, ItemStack display) { }
 
     // 只在启动和重载时替换，打开或翻页时均使用同一份内存快照。
-    private static List<Product> cachedProducts = List.of();
+    private static Map<Category, List<Product>> cachedProducts = Map.of();
 
     private static final class ShopHolder implements InventoryHolder {
+        private final Category category;
         private final int page;
         private final List<Product> products;
         private Inventory inventory;
 
-        private ShopHolder(int page, List<Product> products) {
+        private ShopHolder(Category category, int page, List<Product> products) {
+            this.category = category;
             this.page = page;
             this.products = products;
         }
@@ -65,11 +87,10 @@ public final class buildershop implements Listener {
     }
 
     public static void open(Player player) {
-        open(player, 0, cachedProducts);
+        open(player, Category.BUILDING, 0, cachedProducts.getOrDefault(Category.BUILDING, List.of()));
     }
 
     public static boolean reload() {
-        List<Product> products = new ArrayList<>();
         YamlConfiguration config = new YamlConfiguration();
         try {
             config.load(new File(instance.getDataFolder(), "menu/shop.yml"));
@@ -77,30 +98,40 @@ public final class buildershop implements Listener {
             instance.getLogger().severe("无法读取商店配置 menu/shop.yml: " + e.getMessage());
             return false;
         }
-        ConfigurationSection section = config.getConfigurationSection("builder-shop.products");
-        if (section == null) {
-            instance.getLogger().severe("商店配置缺少 builder-shop.products，保留原有商品");
-            return false;
+        Map<Category, List<Product>> products = new EnumMap<>(Category.class);
+        for (Category category : Category.values()) products.put(category, new ArrayList<>());
+        for (Category category : Category.values()) {
+            ConfigurationSection section = config.getConfigurationSection("builder-shop." + category.configKey);
+            if (section == null) {
+                instance.getLogger().severe("商店配置缺少 builder-shop." + category.configKey + "，保留原有商品");
+                return false;
+            }
+            loadProducts(section, products.get(category));
         }
+        for (Category category : Category.values()) products.put(category, List.copyOf(products.get(category)));
+        cachedProducts = Map.copyOf(products);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getOpenInventory().getTopInventory().getHolder() instanceof ShopHolder holder) {
+                List<Product> categoryProducts = cachedProducts.get(holder.category);
+                int lastPage = Math.max(0, (categoryProducts.size() - 1) / PAGE_SIZE);
+                open(player, holder.category, Math.min(holder.page, lastPage), categoryProducts);
+            }
+        }
+        return true;
+    }
+
+    private static void loadProducts(ConfigurationSection section, List<Product> products) {
         for (String key : section.getKeys(false)) {
             Material material = Material.matchMaterial(key);
             double price = section.getDouble(key, -1);
             if (material == null || !material.isItem() || material.isAir() || price <= 0
                     || !Double.isFinite(price) || java.math.BigDecimal.valueOf(price).stripTrailingZeros().scale() > 2
                     || price * material.getMaxStackSize() > Integer.MAX_VALUE) {
-                instance.getLogger().warning("建筑商店商品配置无效: " + key);
+                instance.getLogger().warning("商店商品配置无效: " + key);
                 continue;
             }
             products.add(new Product(material, price, createProductDisplay(material, price)));
         }
-        cachedProducts = List.copyOf(products);
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getOpenInventory().getTopInventory().getHolder() instanceof ShopHolder holder) {
-                int lastPage = Math.max(0, (cachedProducts.size() - 1) / PAGE_SIZE);
-                open(player, Math.min(holder.page, lastPage), cachedProducts);
-            }
-        }
-        return true;
     }
 
     private static ItemStack createProductDisplay(Material material, double price) {
@@ -118,15 +149,22 @@ public final class buildershop implements Listener {
         return display;
     }
 
-    private static void open(Player player, int page, List<Product> products) {
+    private static void open(Player player, Category category, int page, List<Product> products) {
         int pages = Math.max(1, (products.size() + PAGE_SIZE - 1) / PAGE_SIZE);
-        ShopHolder holder = new ShopHolder(page, products);
+        ShopHolder holder = new ShopHolder(category, page, products);
         Inventory inventory = Bukkit.createInventory(holder, SIZE,
-                miniMessage.deserialize("<#b8ffde>建筑商店 <#8a9a91>· " + (page + 1) + "/" + pages));
+                miniMessage.deserialize("<#b8ffde>商店 <#8a9a91>· <#d8e3dc>" + category.name + " <#8a9a91>· " + (page + 1) + "/" + pages));
         holder.inventory = inventory;
         ItemStack border = item(Material.GRAY_STAINED_GLASS_PANE, "<!i> ");
         for (int slot = 0; slot < SIZE; slot++) {
             if (slot < 9 || slot >= 45 || slot % 9 == 0 || slot % 9 == 8) inventory.setItem(slot, border);
+        }
+        for (Category tab : Category.values()) {
+            ItemStack button = item(tab.icon, "<!i>" + (tab == category ? "<#ffd166>▸ " : "<#b8ffde>") + tab.name);
+            ItemMeta meta = button.getItemMeta();
+            meta.lore(List.of(line(tab == category ? "<#ffd166>当前分类" : "<#aab8b0>点击切换分类")));
+            button.setItemMeta(meta);
+            inventory.setItem(tab.slot, button);
         }
         for (int i = 0; i < PAGE_SIZE && page * PAGE_SIZE + i < products.size(); i++) {
             Product product = products.get(page * PAGE_SIZE + i);
@@ -165,12 +203,18 @@ public final class buildershop implements Listener {
         event.setCancelled(true);
         if (!(event.getWhoClicked() instanceof Player player)) return;
         int slot = event.getRawSlot();
+        for (Category tab : Category.values()) {
+            if (slot == tab.slot) {
+                if (tab != holder.category) refresh(player, holder, tab, 0);
+                return;
+            }
+        }
         if (slot == PREVIOUS && holder.page > 0) {
-            refresh(player, holder, holder.page - 1);
+            refresh(player, holder, holder.category, holder.page - 1);
             return;
         }
         if (slot == NEXT && (holder.page + 1) * PAGE_SIZE < holder.products.size()) {
-            refresh(player, holder, holder.page + 1);
+            refresh(player, holder, holder.category, holder.page + 1);
             return;
         }
         if (event.getClick() != ClickType.LEFT && event.getClick() != ClickType.SHIFT_LEFT) return;
@@ -200,13 +244,13 @@ public final class buildershop implements Listener {
         }
         player.getInventory().addItem(purchase);
         player.sendMessage(line("<#b8ffde>购买成功 <#aab8b0>· <#ffd166>" + cost + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\"> <#aab8b0>· " + amount + " 个"));
-        refresh(player, holder, holder.page);
+        refresh(player, holder, holder.category, holder.page);
     }
 
-    private static void refresh(Player player, ShopHolder holder, int page) {
+    private static void refresh(Player player, ShopHolder holder, Category category, int page) {
         Bukkit.getScheduler().runTask(instance, () -> {
             if (player.isOnline() && player.getOpenInventory().getTopInventory().equals(holder.inventory)) {
-                open(player, page, holder.products);
+                open(player, category, page, category == holder.category ? holder.products : cachedProducts.getOrDefault(category, List.of()));
             }
         });
     }

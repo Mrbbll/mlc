@@ -17,17 +17,17 @@ import static com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems.money_nugget;
 public class DropmoneyListener implements Listener {
 
     // 金币基础掉落概率
-    private static final double MONEY_CHANCE = 0.12;
+    private static final double MONEY_CHANCE = 0.1;
 
     // 矿物掉落概率表
     private static final List<OreChance> ORE_CHANCES = List.of(
-            new OreChance(Material.RAW_COPPER, 0.030),
-            new OreChance(Material.RAW_IRON, 0.020),
-            new OreChance(Material.REDSTONE, 0.015),
-            new OreChance(Material.LAPIS_LAZULI, 0.008),
-            new OreChance(Material.AMETHYST_SHARD, 0.006),
-            new OreChance(Material.RAW_GOLD, 0.004),
-            new OreChance(Material.DIAMOND, 0.0005)
+            new OreChance(Material.RAW_COPPER, 0.010),
+            new OreChance(Material.RAW_IRON, 0.005),
+            new OreChance(Material.REDSTONE, 0.0010),
+            new OreChance(Material.LAPIS_LAZULI, 0.0008),
+            new OreChance(Material.AMETHYST_SHARD, 0.0006),
+            new OreChance(Material.RAW_GOLD, 0.0004),
+            new OreChance(Material.DIAMOND, 0.00001)
     );
 
     private record OreChance(Material material, double chance) {}
