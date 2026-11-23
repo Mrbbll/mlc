@@ -19,7 +19,7 @@ import java.util.logging.Level;
 
 /**
  * 定期读取 PAPI 的累计时长。PAPI 和 Bukkit 调用都留在游戏线程，离线玩家分批读取。
- * HTTP 线程通过 latest() 读取最近一次完整采集的不可变快照。
+ * 排行榜排序在异步线程执行，HTTP 线程通过 latest() 读取最近一次完整采集的不可变快照。
  */
 public final class PapiPlaytimeSource implements AutoCloseable {
     private static final String EXPANSION = "statistic";
@@ -32,6 +32,8 @@ public final class PapiPlaytimeSource implements AutoCloseable {
     private BukkitTask refreshTask;
     private BukkitTask batchTask;
     private String previousWarning;
+    private volatile boolean closed;
+    private long generation;
 
     public PapiPlaytimeSource(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -49,6 +51,7 @@ public final class PapiPlaytimeSource implements AutoCloseable {
         if (batchTask != null) {
             return;
         }
+        long refreshGeneration = ++generation;
         try {
             if (!PlaceholderAPI.isRegistered(EXPANSION)) {
                 unavailable("在线时长排行榜需要启用 PlaceholderAPI 的 Statistic 扩展。", null);
@@ -61,7 +64,7 @@ public final class PapiPlaytimeSource implements AutoCloseable {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 players.put(player.getUniqueId(), player);
             }
-            batchTask = new Refresh(new ArrayList<>(players.values())).runTaskTimer(plugin, 1, 1);
+            batchTask = new Refresh(new ArrayList<>(players.values()), refreshGeneration).runTaskTimer(plugin, 1, 1);
         } catch (RuntimeException exception) {
             unavailable("准备在线时长排行榜失败。", exception);
         }
@@ -72,9 +75,11 @@ public final class PapiPlaytimeSource implements AutoCloseable {
         private final List<LeaderboardSnapshot.PlayerTime> entries = new ArrayList<>();
         private int cursor;
         private int invalidValues;
+        private final long refreshGeneration;
 
-        private Refresh(List<OfflinePlayer> players) {
+        private Refresh(List<OfflinePlayer> players, long refreshGeneration) {
             this.players = players;
+            this.refreshGeneration = refreshGeneration;
         }
 
         @Override
@@ -88,7 +93,8 @@ public final class PapiPlaytimeSource implements AutoCloseable {
                     if (!PlaceholderAPI.isRegistered(EXPANSION) || (entries.isEmpty() && invalidValues > 0)) {
                         unavailable("PlaceholderAPI 在线时长变量未返回可用数据。", null);
                     } else {
-                        latest = LeaderboardSnapshot.from(entries);
+                        // 此后不再修改 entries，由工作线程独占并生成不可变快照。
+                        publishAsync(entries, refreshGeneration);
                         if (invalidValues == 0) {
                             previousWarning = null;
                         } else {
@@ -138,6 +144,22 @@ public final class PapiPlaytimeSource implements AutoCloseable {
         }
     }
 
+    private void publishAsync(List<LeaderboardSnapshot.PlayerTime> entries, long refreshGeneration) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                LeaderboardSnapshot<LeaderboardSnapshot.PlayerTime> snapshot = LeaderboardSnapshot.from(entries);
+                if (closed) return;
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (!closed && generation == refreshGeneration) latest = snapshot;
+                });
+            } catch (RuntimeException exception) {
+                if (!closed) {
+                    plugin.getLogger().log(Level.WARNING, "生成在线时长排行榜失败。", exception);
+                }
+            }
+        });
+    }
+
     private void unavailable(String message, RuntimeException exception) {
         latest = null;
         warn(message, exception);
@@ -152,6 +174,8 @@ public final class PapiPlaytimeSource implements AutoCloseable {
 
     @Override
     public void close() {
+        closed = true;
+        generation++;
         if (refreshTask != null) {
             refreshTask.cancel();
         }
