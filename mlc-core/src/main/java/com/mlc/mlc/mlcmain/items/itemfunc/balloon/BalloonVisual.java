@@ -127,6 +127,11 @@ final class BalloonVisual {
             }
             Location location = position(owner);
             boolean yawChanged = Float.compare(visual.lastYaw, location.getYaw()) != 0;
+            Quaternion4f orientation = yawChanged ? rotation(location.getYaw()) : null;
+            boolean flying = Balloon.isFlyingWithBalloon(owner);
+            Vector3d effectPosition = flying
+                    ? vector(location.clone().add(location.getDirection().multiply(-0.5)).add(0, 1.5, 0))
+                    : null;
             Set<Player> visible = new HashSet<>(owner.getTrackedBy());
             visible.add(owner);
             Set<UUID> wanted = new HashSet<>();
@@ -134,10 +139,9 @@ final class BalloonVisual {
                 if (!viewer.isOnline() || !viewer.getWorld().equals(owner.getWorld()) || !viewer.canSee(owner)) continue;
                 wanted.add(viewer.getUniqueId());
                 if (visual.viewers.add(viewer.getUniqueId())) spawn(viewer, owner, visual, location);
-                else if (yawChanged) rotate(viewer, visual, location);
-                if (com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon.isFlyingWithBalloon(owner)) {
-                    sendEffects(viewer, location.clone().add(location.getDirection().multiply(-0.5))
-                            .add(0, 1.5, 0));
+                else if (yawChanged) rotate(viewer, visual, orientation);
+                if (flying) {
+                    sendEffects(viewer, effectPosition);
                 }
             }
             visual.lastYaw = location.getYaw();
@@ -181,10 +185,9 @@ final class BalloonVisual {
         packets.sendPacket(viewer, new WrapperPlayServerSetPassengers(visual.ownerId, combined));
     }
 
-    private static void sendEffects(Player viewer, Location location) {
+    private static void sendEffects(Player viewer, Vector3d pos) {
         // 飞行期间向能看到气球的观察者发送效果，位置随持有者更新。
         var packets = PacketEvents.getAPI().getPlayerManager();
-        Vector3d pos = vector(location);
         packets.sendPacket(viewer, new WrapperPlayServerParticle(
                 new Particle<>(ParticleTypes.GEYSER_POOF, new ParticleGeyserBaseData(1, 0.02f)),
                 false, pos, new Vector3f(0.3f, 0.5f, 0.3f), 0.02f, 1));
@@ -192,12 +195,12 @@ final class BalloonVisual {
                 SoundCategory.PLAYER, pos, 3f, 1.5f));
     }
 
-    private static void rotate(Player viewer, Visual visual, Location location) {
+    private static void rotate(Player viewer, Visual visual, Quaternion4f orientation) {
         PacketEvents.getAPI().getPlayerManager().sendPacket(viewer,
                 new WrapperPlayServerEntityMetadata(visual.display, List.of(
                         new EntityData<>(TRANSFORM_START, EntityDataTypes.INT, 0),
                         new EntityData<>(TRANSFORM_DURATION, EntityDataTypes.INT, ROTATION_TICKS),
-                        new EntityData<>(LEFT_ROTATION, EntityDataTypes.QUATERNION, rotation(location.getYaw())))));
+                        new EntityData<>(LEFT_ROTATION, EntityDataTypes.QUATERNION, orientation))));
     }
 
     private static Quaternion4f rotation(float yaw) {

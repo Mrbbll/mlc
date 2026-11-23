@@ -43,7 +43,8 @@ public class VeinMine implements Listener {
 
 
         ItemStack tool = player.getInventory().getItemInMainHand();
-        if (tool.getEnchantmentLevel(VEINMINE) == 0) return;   // 没这把附魔就不管
+        int level = tool.getEnchantmentLevel(VEINMINE);
+        if (level == 0) return;   // 没这把附魔就不管
 
         Material block = event.getBlock().getType();
 
@@ -51,7 +52,7 @@ public class VeinMine implements Listener {
             return;
         }
 
-        int limit = tool.getEnchantmentLevel(VEINMINE) * 8;    // 等级越高挖越多
+        int limit = level * 8;    // 等级越高挖越多
 
         mining.add(player.getUniqueId());
         try {
@@ -88,6 +89,7 @@ public class VeinMine implements Listener {
             }
 
             int x = b.getX(), y = b.getY(), z = b.getZ();
+            int chunkX = x >> 4, chunkZ = z >> 4;
             // 26 邻接：入队前去重，不为每个方块分配邻居集合；只扩展成功破坏的方块。
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dy = -1; dy <= 1; dy++) {
@@ -96,7 +98,9 @@ public class VeinMine implements Listener {
                     for (int dz = -1; dz <= 1; dz++) {
                         if (dx == 0 && dy == 0 && dz == 0) continue;
                         int nx = x + dx, nz = z + dz;
-                        if (!world.isChunkLoaded(nx >> 4, nz >> 4)) continue;
+                        // 当前方块的区块已验证；只有跨区块邻居需要再次查询。
+                        if (((nx >> 4) != chunkX || (nz >> 4) != chunkZ)
+                                && !world.isChunkLoaded(nx >> 4, nz >> 4)) continue;
                         Block neighbor = world.getBlockAt(nx, ny, nz);
                         if (visited.add(neighbor) && neighbor.getType() == ore) queue.add(neighbor);
                     }

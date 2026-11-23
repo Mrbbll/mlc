@@ -153,7 +153,7 @@ public class EnchantRestricter implements Listener {
 
     // 【单个物品】保留其他物品属性，仅在附魔超限时写回元数据。
     private void restrictItem(ItemStack item) {
-        if (item == null || item.getType().isAir()) return;
+        if (item == null || item.getType().isAir() || !item.hasItemMeta()) return;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
 

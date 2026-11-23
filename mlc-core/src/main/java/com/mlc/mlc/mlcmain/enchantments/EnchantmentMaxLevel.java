@@ -27,7 +27,8 @@ public class EnchantmentMaxLevel {
     }
 
     public static int getMaxLevel(Enchantment enchantment) {
-        return maxLevelMap.getOrDefault(enchantment,enchantment.getMaxLevel());
+        Integer configured = maxLevelMap.get(enchantment);
+        return configured != null ? configured : enchantment.getMaxLevel();
     }
 }
 
