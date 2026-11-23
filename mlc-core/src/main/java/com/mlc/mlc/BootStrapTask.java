@@ -85,6 +85,17 @@ public class BootStrapTask {
                         )
                 )
         );
+        context.getLifecycleManager().registerEventHandler(
+                LifecycleEvents.TAGS.preFlatten(RegistryKey.ENCHANTMENT).newHandler(
+                        event -> event.registrar().addToTag(
+                                EnchantmentTagKeys.CURSE,
+                                List.of(
+                                        TagEntry.valueEntry(EnchantmentKeys.BRITTLE),
+                                        TagEntry.valueEntry(EnchantmentKeys.FRAGILE)
+                                )
+                        )
+                )
+        );
     }
 
 }

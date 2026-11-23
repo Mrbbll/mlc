@@ -13,11 +13,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerRiptideEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.random.RandomGenerator;
 
 /** 易损、脆弱的注册表访问与使用效果。 */
@@ -73,14 +74,30 @@ public final class NegativeEnchantments implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onArmorDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player) || event.getFinalDamage() <= 0) return;
-        // 仅当伤害实际受到盔甲减免时，将这次受击视为盔甲使用。
-        if (!event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)
-                || event.getDamage(EntityDamageEvent.DamageModifier.ARMOR) >= 0) return;
-        for (EquipmentSlot slot : List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET)) {
-            applyToSlot(player, slot);
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onArmorDamage(PlayerItemDamageEvent event) {
+        Player player = event.getPlayer();
+        int durabilityDamage = event.getDamage();
+        if (player.getGameMode() == GameMode.CREATIVE || durabilityDamage <= 0) return;
+
+        ItemStack item = event.getItem();
+        if (!(item.getItemMeta() instanceof Damageable meta) || meta.isUnbreakable()) return;
+        boolean brittle = item.containsEnchantment(brittle());
+        boolean fragile = item.containsEnchantment(fragile());
+        if (!brittle && !fragile) return;
+
+        for (ItemStack armor : player.getInventory().getArmorContents()) {
+            if (!item.equals(armor)) continue;
+
+            int maximum = meta.hasMaxDamage() ? meta.getMaxDamage() : item.getType().getMaxDurability();
+            int current = meta.getDamage();
+            int remaining = maximum - current;
+            if (remaining <= 0 || durabilityDamage >= remaining) return;
+
+            int damage = damageAfterUse(current + durabilityDamage, maximum, brittle, fragile,
+                    ThreadLocalRandom.current().nextDouble());
+            event.setDamage(damage < 0 ? remaining : damage - current);
+            return;
         }
     }
 
@@ -142,7 +159,7 @@ public final class NegativeEnchantments implements Listener {
         int maximum = meta.hasMaxDamage() ? meta.getMaxDamage() : item.getType().getMaxDurability();
         if (maximum <= 0) return item;
         int damage = damageAfterUse(meta.getDamage(), maximum, brittle, fragile,
-                java.util.concurrent.ThreadLocalRandom.current().nextDouble());
+                ThreadLocalRandom.current().nextDouble());
         if (damage < 0) {
             player.getServer().getPluginManager().callEvent(new PlayerItemBreakEvent(player, item.clone()));
             player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);

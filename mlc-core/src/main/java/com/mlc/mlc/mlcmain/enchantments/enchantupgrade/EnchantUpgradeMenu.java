@@ -31,22 +31,26 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.mlc.mlc.Mlc.miniMessage;
 
 /** 多方块附魔升级界面。所有库存和玩家操作均在服务端主线程执行。 */
 public final class EnchantUpgradeMenu implements Listener {
-    private static final int EQUIPMENT = 10;
-    private static final int UPGRADE_RUNE = 12;
-    private static final int PROTECTION_RUNE = 14;
-    private static final int REPAIR = 16;
-    private static final int REPAIR_RUNE = 20;
-    private static final int STABILITY_RUNE = 23;
-    private static final int FIRST_ENCHANT = 27;
-    private static final int ENCHANTS_PER_PAGE = 18;
-    private static final int PREVIOUS = 48;
-    private static final int NEXT = 50;
+    private static final int INSTRUCTIONS = 4;
+    private static final int EQUIPMENT = 11;
+    private static final int COST_OR_REPAIR = 22;
+    private static final List<Integer> RUNE_SLOTS = List.of(28, 29, 30);
+    private static final int PREVIOUS = 6;
+    private static final int NEXT = 51;
+    private static final List<Integer> ENCHANT_SLOTS = List.of(15, 24, 33, 42, 16, 25, 34, 43);
+    private static final List<Integer> CORNERS = List.of(0, 8, 45, 53);
+    private static final String UPGRADE_RUNE = "upgrade_rune";
+    private static final String PROTECTION_RUNE = "protection_rune";
+    private static final String REPAIR_RUNE = "repair_rune";
+    private static final String STABILITY_RUNE = "stability_rune";
+    private static final List<String> RUNE_TYPES = List.of(UPGRADE_RUNE, PROTECTION_RUNE, REPAIR_RUNE, STABILITY_RUNE);
 
     private static final class Menu implements InventoryHolder {
         private final Block center;
@@ -70,7 +74,6 @@ public final class EnchantUpgradeMenu implements Listener {
         menu.inventory = Bukkit.createInventory(menu, 54, line("<#b8ffde>附魔升级 <#71877a>· Enchant Upgrade"));
         render(menu);
         player.openInventory(menu.inventory);
-        player.sendMessage(Component.text("放入装备和升级符文，选择下方魔咒；保护符文可选。"));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -85,20 +88,28 @@ public final class EnchantUpgradeMenu implements Listener {
         }
         event.setCancelled(true);
         if (raw < 0 || (event.getClick() != ClickType.LEFT && event.getClick() != ClickType.RIGHT)) return;
-        if (raw == EQUIPMENT || raw == UPGRADE_RUNE || raw == PROTECTION_RUNE || raw == REPAIR_RUNE || raw == STABILITY_RUNE) {
+        if (isInputSlot(raw)) {
+            ItemStack previousEquipment = menu.inventory.getItem(EQUIPMENT);
             moveInput(event, menu, raw);
+            if (raw == EQUIPMENT && !Objects.equals(previousEquipment, menu.inventory.getItem(EQUIPMENT))) menu.page = 0;
             render(menu);
+            return;
+        }
+        if (raw == COST_OR_REPAIR && UpgradeItems.isType(menu.inventory.getItem(EQUIPMENT), "broken_item")) {
+            repair(player, menu);
+            return;
+        }
+
+        int position = ENCHANT_SLOTS.indexOf(raw);
+        if (position >= 0) {
+            int index = menu.page * ENCHANT_SLOTS.size() + position;
+            if (index < menu.enchantments.size()) upgrade(player, menu, menu.enchantments.get(index));
         } else if (raw == PREVIOUS && menu.page > 0) {
             menu.page--;
             render(menu);
-        } else if (raw == NEXT && (menu.page + 1) * ENCHANTS_PER_PAGE < menu.enchantments.size()) {
+        } else if (raw == NEXT && (menu.page + 1) * ENCHANT_SLOTS.size() < menu.enchantments.size()) {
             menu.page++;
             render(menu);
-        } else if (raw == REPAIR) {
-            repair(player, menu);
-        } else if (raw >= FIRST_ENCHANT && raw < FIRST_ENCHANT + ENCHANTS_PER_PAGE) {
-            int index = menu.page * ENCHANTS_PER_PAGE + raw - FIRST_ENCHANT;
-            if (index < menu.enchantments.size()) upgrade(player, menu, menu.enchantments.get(index));
         }
     }
 
@@ -129,7 +140,8 @@ public final class EnchantUpgradeMenu implements Listener {
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         if (!(event.getInventory().getHolder() instanceof Menu menu) || !(event.getPlayer() instanceof Player player)) return;
-        for (int slot : new int[]{EQUIPMENT, UPGRADE_RUNE, PROTECTION_RUNE, REPAIR_RUNE, STABILITY_RUNE}) {
+        for (int slot = 0; slot < menu.inventory.getSize(); slot++) {
+            if (!isInputSlot(slot)) continue;
             ItemStack item = menu.inventory.getItem(slot);
             menu.inventory.setItem(slot, null);
             if (item == null || item.getType().isAir()) continue;
@@ -180,60 +192,76 @@ public final class EnchantUpgradeMenu implements Listener {
     }
 
     private static boolean accepts(int slot, ItemStack item) {
-        return switch (slot) {
-            case UPGRADE_RUNE -> UpgradeItems.isType(item, "upgrade_rune");
-            case PROTECTION_RUNE -> UpgradeItems.isType(item, "protection_rune");
-            case REPAIR_RUNE -> UpgradeItems.isType(item, "repair_rune");
-            case STABILITY_RUNE -> UpgradeItems.isType(item, "stability_rune");
-            case EQUIPMENT -> UpgradeItems.isType(item, "broken_item") || !item.getEnchantments().isEmpty();
-            default -> false;
-        };
+        if (slot == EQUIPMENT) return UpgradeItems.isType(item, "broken_item") || !item.getEnchantments().isEmpty();
+        return RUNE_SLOTS.contains(slot) && RUNE_TYPES.stream().anyMatch(type -> UpgradeItems.isType(item, type));
+    }
+
+    private static boolean isInputSlot(int slot) {
+        return slot == EQUIPMENT || RUNE_SLOTS.contains(slot);
     }
 
     private static void render(Menu menu) {
         Inventory inv = menu.inventory;
         ItemStack frame = icon(Material.GRAY_STAINED_GLASS_PANE, " ");
         ItemStack accent = icon(Material.CYAN_STAINED_GLASS_PANE, " ");
+        ItemStack emptyEnchant = icon(Material.LIGHT_GRAY_STAINED_GLASS_PANE, " ");
         for (int i = 0; i < inv.getSize(); i++) {
-            if (i != EQUIPMENT && i != UPGRADE_RUNE && i != PROTECTION_RUNE && i != REPAIR_RUNE && i != STABILITY_RUNE) {
-                inv.setItem(i, i == 0 || i == 8 || i == 45 || i == 53 ? accent : frame);
-            }
+            if (isInputSlot(i)) continue;
+            if (CORNERS.contains(i)) inv.setItem(i, accent);
+            else if (ENCHANT_SLOTS.contains(i)) inv.setItem(i, emptyEnchant);
+            else inv.setItem(i, frame);
         }
-        inv.setItem(1, icon(Material.DIAMOND_CHESTPLATE, "<#b8ffde>装备槽",
-                "<#aab8b0>在下方放入已附魔装备", "<#71877a>破损装备也可放在此处修复"));
-        inv.setItem(3, icon(Material.LAPIS_LAZULI, "<#b8ffde>升级符文槽",
-                "<#aab8b0>每次升级消耗 <#ffd166>" + UpgradeRules.UPGRADE_RUNES_PER_ATTEMPT + " <#aab8b0>个符文"));
-        inv.setItem(5, icon(Material.SHIELD, "<#b8ffde>保护符文槽 <#71877a>· 可选",
-                "<#aab8b0>升级失败时消耗符文", "<#aab8b0>保护装备免于破损"));
-        inv.setItem(7, icon(Material.ANVIL, "<#b8ffde>修复装备",
-                "<#aab8b0>自然恢复完成后点击下方按钮", "<#aab8b0>也可使用修复符文提前修复"));
-        inv.setItem(19, icon(Material.PRISMARINE_CRYSTALS, "<#b8ffde>修复符文槽 <#71877a>· 可选",
-                "<#aab8b0>放入右侧槽位，可提前修复装备",
-                "<#aab8b0>提前修复消耗 <#ffd166>" + UpgradeRules.REPAIR_RUNES_PER_ITEM + " <#aab8b0>个符文"));
-        inv.setItem(22, icon(Material.AMETHYST_SHARD, "<#b8ffde>稳定符文槽 <#71877a>· 可选",
-                "<#aab8b0>升级时有 <#ffb4a8>" + String.format(java.util.Locale.ROOT, "%.0f%%", UpgradeRules.NEGATIVE_ENCHANTMENT_CHANCE * 100) + " <#aab8b0>概率获得负面魔咒",
-                "<#aab8b0>触发时消耗符文，避免获得负面魔咒"));
         ItemStack equipment = inv.getItem(EQUIPMENT);
-        if (UpgradeItems.refreshLore(equipment, System.currentTimeMillis())) inv.setItem(EQUIPMENT, equipment);
-        long readyAt = UpgradeItems.readyAt(equipment);
-        String repairStatus = readyAt < 0 ? "<#71877a>放入破损装备以查看修复状态"
-                : readyAt <= System.currentTimeMillis() ? "<#b8ffde>✦ 修复时间已到，点击修复"
-                : "<#aab8b0>剩余约 <#ffd166>" + ((readyAt - System.currentTimeMillis() + 59999) / 60000) + " <#aab8b0>分钟；可用修复符文提前修复";
-        inv.setItem(REPAIR, icon(Material.ANVIL, "<#b8ffde>修复破损装备", repairStatus));
+        if (UpgradeItems.isType(equipment, "broken_item")) {
+            inv.setItem(INSTRUCTIONS, icon(Material.KNOWLEDGE_BOOK, "<#b8ffde>装备修复说明",
+                    "<#aab8b0>修复符文可放入左下任意一个空格",
+                    "<#aab8b0>将鼠标移到铁砧上查看修复条件"));
+            long now = System.currentTimeMillis();
+            if (UpgradeItems.refreshLore(equipment, now)) inv.setItem(EQUIPMENT, equipment);
+            long readyAt = UpgradeItems.readyAt(equipment);
+            String repairStatus = readyAt < 0 ? "<#ffb4a8>破损装备数据无效"
+                    : readyAt <= now ? "<#b8ffde>✦ 修复时间已到，点击修复"
+                    : "<#aab8b0>距离自然恢复约 <#ffd166>" + ((readyAt - now + 59999) / 60000) + " <#aab8b0>分钟";
+            if (readyAt > now) {
+                inv.setItem(COST_OR_REPAIR, icon(Material.ANVIL, "<#b8ffde>修复破损装备", repairStatus,
+                        "<#aab8b0>提前修复消耗 <#ffd166>" + UpgradeRules.REPAIR_RUNES_PER_ITEM + " <#aab8b0>个修复符文",
+                        "<#aab8b0>已放入 <#d8e3dc>" + countRunes(inv, REPAIR_RUNE) + " <#aab8b0>个，点击铁砧修复"));
+            } else {
+                inv.setItem(COST_OR_REPAIR, icon(Material.ANVIL, "<#b8ffde>修复破损装备", repairStatus));
+            }
+            menu.enchantments = List.of();
+            menu.page = 0;
+            return;
+        }
+        inv.setItem(INSTRUCTIONS, icon(Material.KNOWLEDGE_BOOK, "<#b8ffde>附魔升级说明",
+                "<#aab8b0>把已附魔的装备放入左侧空格",
+                "<#aab8b0>符文可放入左下任意一个空格",
+                "<#aab8b0>点击右侧魔咒尝试升级"));
         menu.enchantments = equipment == null ? List.of() : equipment.getEnchantments().keySet().stream()
                 .filter(enchantment -> !NegativeEnchantments.isNegative(enchantment))
                 .sorted(Comparator.comparing(e -> e.getKey().toString())).toList();
-        int pages = Math.max(1, (menu.enchantments.size() + ENCHANTS_PER_PAGE - 1) / ENCHANTS_PER_PAGE);
+        int pageSize = ENCHANT_SLOTS.size();
+        int pages = Math.max(1, (menu.enchantments.size() + pageSize - 1) / pageSize);
         menu.page = Math.min(menu.page, pages - 1);
         int total = equipment == null ? 0 : equipment.getEnchantments().values().stream().mapToInt(Integer::intValue).sum();
-        for (int i = 0; i < ENCHANTS_PER_PAGE; i++) {
-            int index = menu.page * ENCHANTS_PER_PAGE + i;
+        List<String> costs = new ArrayList<>(List.of(
+                "<#aab8b0>经验等级 <#ffd166>" + UpgradeRules.UPGRADE_EXPERIENCE_LEVELS + " <#aab8b0>级",
+                "<#aab8b0>升级符文 <#ffd166>" + UpgradeRules.UPGRADE_RUNES_PER_ATTEMPT
+                        + " <#aab8b0>个（已放入 " + countRunes(inv, UPGRADE_RUNE) + " 个）",
+                "<#aab8b0>升级失败时可消耗 <#ffd166>" + UpgradeRules.PROTECTION_RUNES_ON_FAILURE + " <#aab8b0>个保护符文",
+                "<#aab8b0>触发负面魔咒时可消耗 <#ffd166>" + UpgradeRules.STABILITY_RUNES_PER_PREVENTION + " <#aab8b0>个稳定符文"));
+        if (!menu.enchantments.isEmpty()) {
+            costs.add("<#aab8b0>失败概率 <#ffb4a8>" + String.format(java.util.Locale.ROOT, "%.2f%%", UpgradeRules.failureProbability(total) * 100));
+        }
+        inv.setItem(COST_OR_REPAIR, icon(Material.ENCHANTING_TABLE, "<#b8ffde>本次升级消耗", costs.toArray(String[]::new)));
+        for (int i = 0; i < pageSize; i++) {
+            int index = menu.page * pageSize + i;
             if (index >= menu.enchantments.size()) break;
             Enchantment enchant = menu.enchantments.get(index);
             int level = equipment.getEnchantmentLevel(enchant);
             int maxLevel = EnchantmentMaxLevel.getMaxLevel(enchant);
             if (level >= maxLevel) {
-                inv.setItem(FIRST_ENCHANT + i, icon(Material.BARRIER, enchantName(enchant, "<#ffb4a8>"),
+                inv.setItem(ENCHANT_SLOTS.get(i), icon(Material.BARRIER, enchantName(enchant, "<#ffb4a8>"),
                         "<#aab8b0>当前等级 <#d8e3dc>" + level + " <#71877a>/ <#d8e3dc>" + maxLevel,
                         "", "<#ffb4a8>◆ 已达到等级上限"));
                 continue;
@@ -241,17 +269,14 @@ public final class EnchantUpgradeMenu implements Listener {
             ItemStack option = icon(Material.ENCHANTED_BOOK, enchantName(enchant, "<#b8ffde>"),
                     "<#aab8b0>当前等级 <#d8e3dc>" + level + " <#71877a>/ <#d8e3dc>" + maxLevel,
                     "<#aab8b0>升级后 <#b8ffde>" + (level + 1) + " 级",
-                    "", "<#aab8b0>失败概率 <#ffb4a8>" + String.format(java.util.Locale.ROOT, "%.2f%%", UpgradeRules.failureProbability(total) * 100),
-                    "<#aab8b0>破损修复 <#ffd166>" + total * UpgradeRules.REPAIR_HOURS_PER_ENCHANTMENT_LEVEL + " 小时",
-                    "<#aab8b0>消耗经验 <#ffd166>" + UpgradeRules.UPGRADE_EXPERIENCE_LEVELS + " 级",
                     "", "<#b8ffde>✦ 点击尝试升级");
-            inv.setItem(FIRST_ENCHANT + i, option);
+            inv.setItem(ENCHANT_SLOTS.get(i), option);
         }
-        inv.setItem(PREVIOUS, icon(Material.ARROW, menu.page > 0 ? "<#b8ffde>← 上一页" : "<#71877a>← 已是第一页"));
-        inv.setItem(NEXT, icon(Material.ARROW, menu.page + 1 < pages ? "<#b8ffde>下一页 →" : "<#71877a>已是最后一页 →"));
-        inv.setItem(49, icon(Material.BOOK, "<#b8ffde>魔咒列表",
-                "<#aab8b0>第 <#ffd166>" + (menu.page + 1) + " <#71877a>/ <#ffd166>" + pages + " <#aab8b0>页",
-                "<#71877a>选择装备上已有的魔咒进行升级"));
+        if (pages > 1) {
+            String pageStatus = "<#aab8b0>第 <#ffd166>" + (menu.page + 1) + " <#71877a>/ <#ffd166>" + pages + " <#aab8b0>页";
+            if (menu.page > 0) inv.setItem(PREVIOUS, icon(Material.ARROW, "<#b8ffde>↑ 上一页", pageStatus));
+            if (menu.page + 1 < pages) inv.setItem(NEXT, icon(Material.ARROW, "<#b8ffde>↓ 下一页", pageStatus));
+        }
     }
 
     private static Component line(String text) {
@@ -281,7 +306,6 @@ public final class EnchantUpgradeMenu implements Listener {
     private static void upgrade(Player player, Menu menu, Enchantment enchant) {
         Inventory inv = menu.inventory;
         ItemStack equipment = inv.getItem(EQUIPMENT);
-        ItemStack rune = inv.getItem(UPGRADE_RUNE);
         if (!EnchantUpgradelistener.checkblock(menu.center)) {
             player.sendMessage(Component.text("多方块结构不完整。")); return;
         }
@@ -290,7 +314,7 @@ public final class EnchantUpgradeMenu implements Listener {
         if (level >= EnchantmentMaxLevel.getMaxLevel(enchant)) {
             player.sendMessage(Component.text("这个魔咒已经达到等级上限。")); return;
         }
-        if (!UpgradeItems.isType(rune, "upgrade_rune") || rune.getAmount() < UpgradeRules.UPGRADE_RUNES_PER_ATTEMPT) {
+        if (countRunes(inv, UPGRADE_RUNE) < UpgradeRules.UPGRADE_RUNES_PER_ATTEMPT) {
             player.sendMessage(Component.text("请放入足够的升级符文。")); return;
         }
         if (player.getLevel() < UpgradeRules.UPGRADE_EXPERIENCE_LEVELS) {
@@ -299,28 +323,25 @@ public final class EnchantUpgradeMenu implements Listener {
         int total = equipment.getEnchantments().values().stream().mapToInt(Integer::intValue).sum();
         if (total <= 0) return;
         boolean failure = ThreadLocalRandom.current().nextDouble() < UpgradeRules.failureProbability(total);
-        ItemStack protection = inv.getItem(PROTECTION_RUNE);
-        boolean protectedFailure = failure && UpgradeItems.isType(protection, "protection_rune")
-                && protection.getAmount() >= UpgradeRules.PROTECTION_RUNES_ON_FAILURE;
+        boolean protectedFailure = failure
+                && countRunes(inv, PROTECTION_RUNE) >= UpgradeRules.PROTECTION_RUNES_ON_FAILURE;
         // 先准备结果，成功后才扣除输入，避免结果创建失败导致损失。
         ItemStack result = equipment.clone();
         if (!failure) result.addUnsafeEnchantment(enchant, level + 1);
-        ItemStack stability = inv.getItem(STABILITY_RUNE);
         boolean prevented = false;
         Enchantment negative = null;
         if (ThreadLocalRandom.current().nextDouble() < UpgradeRules.NEGATIVE_ENCHANTMENT_CHANCE) {
             negative = NegativeEnchantments.randomApplicable(result, ThreadLocalRandom.current());
             if (negative != null) {
-                prevented = UpgradeItems.isType(stability, "stability_rune")
-                        && stability.getAmount() >= UpgradeRules.STABILITY_RUNES_PER_PREVENTION;
+                prevented = countRunes(inv, STABILITY_RUNE) >= UpgradeRules.STABILITY_RUNES_PER_PREVENTION;
                 if (!prevented) result.addUnsafeEnchantment(negative, 1);
             }
         }
         if (failure && !protectedFailure) result = UpgradeItems.breakItem(result, total, System.currentTimeMillis());
         inv.setItem(EQUIPMENT, result);
-        consume(inv, UPGRADE_RUNE, UpgradeRules.UPGRADE_RUNES_PER_ATTEMPT);
-        if (protectedFailure) consume(inv, PROTECTION_RUNE, UpgradeRules.PROTECTION_RUNES_ON_FAILURE);
-        if (prevented) consume(inv, STABILITY_RUNE, UpgradeRules.STABILITY_RUNES_PER_PREVENTION);
+        consumeRunes(inv, UPGRADE_RUNE, UpgradeRules.UPGRADE_RUNES_PER_ATTEMPT);
+        if (protectedFailure) consumeRunes(inv, PROTECTION_RUNE, UpgradeRules.PROTECTION_RUNES_ON_FAILURE);
+        if (prevented) consumeRunes(inv, STABILITY_RUNE, UpgradeRules.STABILITY_RUNES_PER_PREVENTION);
         player.setLevel(player.getLevel() - UpgradeRules.UPGRADE_EXPERIENCE_LEVELS);
         player.playSound(player.getLocation(), failure ? Sound.BLOCK_ANVIL_DESTROY : Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1);
         player.sendMessage(Component.text(!failure ? "附魔升级成功。" : protectedFailure ? "升级失败，保护符文保护了装备。" : "升级失败，装备已破损。"));
@@ -330,13 +351,13 @@ public final class EnchantUpgradeMenu implements Listener {
     }
 
     private static void repair(Player player, Menu menu) {
-        ItemStack broken = menu.inventory.getItem(EQUIPMENT);
+        Inventory inv = menu.inventory;
+        ItemStack broken = inv.getItem(EQUIPMENT);
         long ready = UpgradeItems.readyAt(broken);
         if (ready < 0) { player.sendMessage(Component.text("请放入有效的破损装备。")); return; }
         long now = System.currentTimeMillis();
         boolean early = now < ready;
-        ItemStack rune = menu.inventory.getItem(REPAIR_RUNE);
-        if (early && (!UpgradeItems.isType(rune, "repair_rune") || rune.getAmount() < UpgradeRules.REPAIR_RUNES_PER_ITEM)) {
+        if (early && countRunes(inv, REPAIR_RUNE) < UpgradeRules.REPAIR_RUNES_PER_ITEM) {
             long remaining = ready - now;
             player.sendMessage(Component.text("距离修复完成还需 " + ((remaining + 59999) / 60000) + " 分钟，或放入修复符文提前修复。"));
             render(menu);
@@ -345,8 +366,8 @@ public final class EnchantUpgradeMenu implements Listener {
         try {
             ItemStack restored = UpgradeItems.repair(broken, now, early);
             if (restored == null) { player.sendMessage(Component.text("破损装备数据无效。")); return; }
-            menu.inventory.setItem(EQUIPMENT, restored);
-            if (early) consume(menu.inventory, REPAIR_RUNE, UpgradeRules.REPAIR_RUNES_PER_ITEM);
+            inv.setItem(EQUIPMENT, restored);
+            if (early) consumeRunes(inv, REPAIR_RUNE, UpgradeRules.REPAIR_RUNES_PER_ITEM);
             player.sendMessage(Component.text("装备修复完成。"));
             render(menu);
         } catch (IllegalArgumentException exception) {
@@ -354,12 +375,28 @@ public final class EnchantUpgradeMenu implements Listener {
         }
     }
 
-    private static void consume(Inventory inventory, int slot, int amount) {
-        ItemStack item = inventory.getItem(slot);
-        if (item.getAmount() == amount) inventory.setItem(slot, null);
-        else {
-            item.setAmount(item.getAmount() - amount);
-            inventory.setItem(slot, item);
+    private static int countRunes(Inventory inventory, String type) {
+        int count = 0;
+        for (int slot : RUNE_SLOTS) {
+            ItemStack item = inventory.getItem(slot);
+            if (UpgradeItems.isType(item, type)) count += item.getAmount();
+        }
+        return count;
+    }
+
+    private static void consumeRunes(Inventory inventory, String type, int amount) {
+        for (int slot : RUNE_SLOTS) {
+            ItemStack item = inventory.getItem(slot);
+            if (!UpgradeItems.isType(item, type)) continue;
+            int consumed = Math.min(amount, item.getAmount());
+            int remaining = item.getAmount() - consumed;
+            if (remaining == 0) inventory.setItem(slot, null);
+            else {
+                item.setAmount(remaining);
+                inventory.setItem(slot, item);
+            }
+            amount -= consumed;
+            if (amount == 0) return;
         }
     }
 

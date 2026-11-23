@@ -188,11 +188,41 @@ public class Mlcitems {
         balloon.setItemMeta(itemMeta_14);
 
         // 使用青金石作为符文本体，使其可以放入原版附魔台的材料槽。
-        enchantUpgradeRune = enchantmentItem(Material.LAPIS_LAZULI, "附魔升级符文", "upgrade_rune");
-        enchantProtectionRune = enchantmentItem(Material.LAPIS_LAZULI, "附魔保护符文", "protection_rune");
-        enchantRepairRune = enchantmentItem(Material.PRISMARINE_CRYSTALS, "装备修复符文", "repair_rune");
-        enchantStabilityRune = enchantmentItem(Material.AMETHYST_SHARD, "稳定符文", "stability_rune");
-        brokenEnchantmentItem = enchantmentItem(Material.PAPER, "破损装备", "broken_item");
+        enchantUpgradeRune = ItemStack.of(Material.LAPIS_LAZULI);
+        ItemMeta itemMeta_15 = enchantUpgradeRune.getItemMeta();
+        itemMeta_15.itemName(Component.text("附魔升级符文"));
+        itemMeta_15.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
+                PersistentDataType.STRING, "upgrade_rune");
+        enchantUpgradeRune.setItemMeta(itemMeta_15);
+
+        enchantProtectionRune = ItemStack.of(Material.LAPIS_LAZULI);
+        ItemMeta itemMeta_16 = enchantProtectionRune.getItemMeta();
+        itemMeta_16.itemName(Component.text("附魔保护符文"));
+        itemMeta_16.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
+                PersistentDataType.STRING, "protection_rune");
+        enchantProtectionRune.setItemMeta(itemMeta_16);
+
+        enchantRepairRune = ItemStack.of(Material.PRISMARINE_CRYSTALS);
+        ItemMeta itemMeta_17 = enchantRepairRune.getItemMeta();
+        itemMeta_17.itemName(Component.text("装备修复符文"));
+        itemMeta_17.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
+                PersistentDataType.STRING, "repair_rune");
+        enchantRepairRune.setItemMeta(itemMeta_17);
+
+        enchantStabilityRune = ItemStack.of(Material.AMETHYST_SHARD);
+        ItemMeta itemMeta_18 = enchantStabilityRune.getItemMeta();
+        itemMeta_18.itemName(Component.text("稳定符文"));
+        itemMeta_18.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
+                PersistentDataType.STRING, "stability_rune");
+        enchantStabilityRune.setItemMeta(itemMeta_18);
+
+        brokenEnchantmentItem = ItemStack.of(Material.PAPER);
+        ItemMeta itemMeta_19 = brokenEnchantmentItem.getItemMeta();
+        itemMeta_19.itemName(Component.text("破损装备"));
+        itemMeta_19.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
+                PersistentDataType.STRING, "broken_item");
+        itemMeta_19.setMaxStackSize(1);
+        brokenEnchantmentItem.setItemMeta(itemMeta_19);
 
         itemsmap.put(1,backpack);
         itemsmap.put(2,healfood);
@@ -214,16 +244,5 @@ public class Mlcitems {
         itemsmap.put(18,brokenEnchantmentItem);
         itemsmap.put(19,enchantRepairRune);
         itemsmap.put(20,enchantStabilityRune);
-    }
-
-    private static ItemStack enchantmentItem(Material material, String name, String id) {
-        ItemStack item = ItemStack.of(material);
-        ItemMeta meta = item.getItemMeta();
-        meta.itemName(Component.text(name));
-        meta.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
-                PersistentDataType.STRING, id);
-        if (id.equals("broken_item")) meta.setMaxStackSize(1);
-        item.setItemMeta(meta);
-        return item;
     }
 }

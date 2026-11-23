@@ -17,7 +17,7 @@ import static com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems.money_nugget;
 public class DropmoneyListener implements Listener {
 
     // 金币基础掉落概率
-    private static final double MONEY_CHANCE = 0.1;
+    private static final double MONEY_CHANCE = 0.05;
 
     // 矿物掉落概率表
     private static final List<OreChance> ORE_CHANCES = List.of(
