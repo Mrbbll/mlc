@@ -164,6 +164,7 @@ public final class Mlc extends JavaPlugin {
         Balloon.shutdown();
         PacketEvents.getAPI().terminate();
         WalletMenu.closeAll();
+        com.mlc.mlc.mlcmain.enchantments.enchantupgrade.EnchantUpgradeMenu.closeAll();
         com.mlc.mlcwaystone.Mlcwaystone.shutdown();
         // Plugin shutdown logic
         Bukkit.resetRecipes();

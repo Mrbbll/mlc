@@ -50,6 +50,21 @@ public class BootStrapTask {
                                     .activeSlots(EquipmentSlotGroup.MAINHAND)
                     );
 
+                    // 负面魔咒仅由升级玩法添加，不加入原版附魔台和交易的随机池。
+                    for (var entry : List.of(
+                            java.util.Map.entry(EnchantmentKeys.BRITTLE, "易损"),
+                            java.util.Map.entry(EnchantmentKeys.FRAGILE, "脆弱"))) {
+                        event.registry().register(entry.getKey(), b -> b
+                                .description(Component.text(entry.getValue()).color(NamedTextColor.RED))
+                                .supportedItems(event.getOrCreateTag(ItemTypeTagKeys.ENCHANTABLE_DURABILITY))
+                                .weight(1)
+                                .maxLevel(1)
+                                .minimumCost(EnchantmentRegistryEntry.EnchantmentCost.of(1, 1))
+                                .maximumCost(EnchantmentRegistryEntry.EnchantmentCost.of(1, 1))
+                                .anvilCost(1)
+                                .activeSlots(EquipmentSlotGroup.ANY));
+                    }
+
 
 
                 }

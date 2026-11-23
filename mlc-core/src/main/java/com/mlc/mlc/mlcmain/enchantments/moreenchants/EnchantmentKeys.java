@@ -11,6 +11,8 @@ public class EnchantmentKeys {
                     RegistryKey.ENCHANTMENT,
                     Key.key("mlc:veinmine")
             );
+    public static final TypedKey<Enchantment> BRITTLE = TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("mlc:brittle"));
+    public static final TypedKey<Enchantment> FRAGILE = TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("mlc:fragile"));
 
     private EnchantmentKeys() {
     }

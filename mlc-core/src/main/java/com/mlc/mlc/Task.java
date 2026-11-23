@@ -10,8 +10,9 @@ import com.mlc.mlc.mlcmain.items.itemfunc.create.crates.listener.Opencreates;
 import com.mlc.mlc.mlcmain.dialog.Listener.ServerJoinListener;
 import com.mlc.mlc.mlcmain.dropmoney.DropmoneyListener;
 import com.mlc.mlc.mlcmain.enchantments.listener.EnchantRestricter;
-import com.mlc.mlc.mlcmain.enchantments.listener.EnchantUpgradelistener;
+import com.mlc.mlc.mlcmain.enchantments.enchantupgrade.EnchantUpgradeMenu;
 import com.mlc.mlc.mlcmain.enchantments.moreenchants.VeinMine;
+import com.mlc.mlc.mlcmain.enchantments.moreenchants.NegativeEnchantments;
 import com.mlc.mlc.mlcmain.ess.listener.Tplistener;
 import com.mlc.mlc.mlcmain.ess.command.*;
 import com.mlc.mlc.mlcmain.hook.economy.commands.money;
@@ -85,7 +86,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new Deadlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new PlayerHeadListener(), instance);
         Bukkit.getPluginManager().registerEvents(new Eatlistener(), instance);
-        Bukkit.getPluginManager().registerEvents(new EnchantUpgradelistener(), instance);
+        Bukkit.getPluginManager().registerEvents(new EnchantUpgradeMenu(), instance);
         Bukkit.getPluginManager().registerEvents(new Sleeplistener(), instance);
         Bukkit.getPluginManager().registerEvents(new Maillistener(), instance);
         Bukkit.getPluginManager().registerEvents(new ServerJoinListener(), instance);
@@ -99,6 +100,7 @@ public class Task {
         Bukkit.getPluginManager().registerEvents(new chatformatmenu(), instance);
         Bukkit.getPluginManager().registerEvents(new Tpalistener(), instance);
         Bukkit.getPluginManager().registerEvents(new VeinMine(), instance);
+        Bukkit.getPluginManager().registerEvents(new NegativeEnchantments(), instance);
         Bukkit.getPluginManager().registerEvents(new Chatlistener(), instance);
         Bukkit.getPluginManager().registerEvents(new EnchantRestricter(), instance);
         Bukkit.getPluginManager().registerEvents(new Anvilcost(), instance);

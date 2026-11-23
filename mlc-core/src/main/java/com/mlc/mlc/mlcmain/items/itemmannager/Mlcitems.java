@@ -38,6 +38,11 @@ public class Mlcitems {
     public static ItemStack money_coin;
     public static ItemStack crate;
     public static ItemStack balloon;
+    public static ItemStack enchantUpgradeRune;
+    public static ItemStack enchantProtectionRune;
+    public static ItemStack enchantRepairRune;
+    public static ItemStack enchantStabilityRune;
+    public static ItemStack brokenEnchantmentItem;
     public static Map<Integer,ItemStack> itemsmap;
 
     public static void init(){
@@ -182,6 +187,13 @@ public class Mlcitems {
         itemMeta_14.lore(balloonLorelist);
         balloon.setItemMeta(itemMeta_14);
 
+        // 使用青金石作为符文本体，使其可以放入原版附魔台的材料槽。
+        enchantUpgradeRune = enchantmentItem(Material.LAPIS_LAZULI, "附魔升级符文", "upgrade_rune");
+        enchantProtectionRune = enchantmentItem(Material.LAPIS_LAZULI, "附魔保护符文", "protection_rune");
+        enchantRepairRune = enchantmentItem(Material.PRISMARINE_CRYSTALS, "装备修复符文", "repair_rune");
+        enchantStabilityRune = enchantmentItem(Material.AMETHYST_SHARD, "稳定符文", "stability_rune");
+        brokenEnchantmentItem = enchantmentItem(Material.PAPER, "破损装备", "broken_item");
+
         itemsmap.put(1,backpack);
         itemsmap.put(2,healfood);
         itemsmap.put(3,elytraitem);
@@ -197,5 +209,21 @@ public class Mlcitems {
         itemsmap.put(13,money_coin);
         itemsmap.put(14,crate);
         itemsmap.put(15,balloon);
+        itemsmap.put(16,enchantUpgradeRune);
+        itemsmap.put(17,enchantProtectionRune);
+        itemsmap.put(18,brokenEnchantmentItem);
+        itemsmap.put(19,enchantRepairRune);
+        itemsmap.put(20,enchantStabilityRune);
+    }
+
+    private static ItemStack enchantmentItem(Material material, String name, String id) {
+        ItemStack item = ItemStack.of(material);
+        ItemMeta meta = item.getItemMeta();
+        meta.itemName(Component.text(name));
+        meta.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
+                PersistentDataType.STRING, id);
+        if (id.equals("broken_item")) meta.setMaxStackSize(1);
+        item.setItemMeta(meta);
+        return item;
     }
 }
