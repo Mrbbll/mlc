@@ -188,37 +188,58 @@ public class Mlcitems {
         balloon.setItemMeta(itemMeta_14);
 
         // 使用青金石作为符文本体，使其可以放入原版附魔台的材料槽。
-        enchantUpgradeRune = ItemStack.of(Material.LAPIS_LAZULI);
+        enchantUpgradeRune = ItemStack.of(Material.ECHO_SHARD);
         ItemMeta itemMeta_15 = enchantUpgradeRune.getItemMeta();
-        itemMeta_15.itemName(Component.text("附魔升级符文"));
+        itemMeta_15.itemName(miniMessage.deserialize("<#f24227>附魔升级符文"));
+        itemMeta_15.lore(List.of(
+                miniMessage.deserialize("<!i><#aab8b0>放入附魔升级界面的符文槽"),
+                miniMessage.deserialize("<!i><#aab8b0>尝试提升装备的魔咒等级时消耗")
+        ));
+        itemMeta_15.setItemModel(NamespacedKey.fromString("mlc:runes/upgraderune"));
         itemMeta_15.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
                 PersistentDataType.STRING, "upgrade_rune");
         enchantUpgradeRune.setItemMeta(itemMeta_15);
 
-        enchantProtectionRune = ItemStack.of(Material.LAPIS_LAZULI);
+        enchantProtectionRune = ItemStack.of(Material.ECHO_SHARD);
         ItemMeta itemMeta_16 = enchantProtectionRune.getItemMeta();
-        itemMeta_16.itemName(Component.text("附魔保护符文"));
+        itemMeta_16.itemName(miniMessage.deserialize("<#13c9f2>附魔保护符文"));
+        itemMeta_16.lore(List.of(
+                miniMessage.deserialize("<!i><#aab8b0>放入附魔升级界面的符文槽"),
+                miniMessage.deserialize("<!i><#aab8b0>升级失败时消耗，防止装备破损")
+        ));
+        itemMeta_16.setItemModel(NamespacedKey.fromString("mlc:runes/protectionrune"));
         itemMeta_16.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
                 PersistentDataType.STRING, "protection_rune");
         enchantProtectionRune.setItemMeta(itemMeta_16);
 
         enchantRepairRune = ItemStack.of(Material.PRISMARINE_CRYSTALS);
         ItemMeta itemMeta_17 = enchantRepairRune.getItemMeta();
-        itemMeta_17.itemName(Component.text("装备修复符文"));
+        itemMeta_17.itemName(miniMessage.deserialize("<#2ef218>装备修复符文"));
+        itemMeta_17.lore(List.of(
+                miniMessage.deserialize("<!i><#aab8b0>在附魔升级界面放入破损装备和此符文"),
+                miniMessage.deserialize("<!i><#aab8b0>点击铁砧可消耗符文，提前修复装备")
+        ));
+        itemMeta_17.setItemModel(NamespacedKey.fromString("mlc:runes/repairrune"));
         itemMeta_17.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
                 PersistentDataType.STRING, "repair_rune");
         enchantRepairRune.setItemMeta(itemMeta_17);
 
         enchantStabilityRune = ItemStack.of(Material.AMETHYST_SHARD);
         ItemMeta itemMeta_18 = enchantStabilityRune.getItemMeta();
-        itemMeta_18.itemName(Component.text("稳定符文"));
+        itemMeta_18.itemName(miniMessage.deserialize("<#e933f2>稳定符文"));
+        itemMeta_18.lore(List.of(
+                miniMessage.deserialize("<!i><#aab8b0>放入附魔升级界面的符文槽"),
+                miniMessage.deserialize("<!i><#aab8b0>触发负面魔咒时消耗，阻止装备获得该魔咒")
+        ));
+        itemMeta_18.setItemModel(NamespacedKey.fromString("mlc:runes/stabilityrune"));
         itemMeta_18.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
                 PersistentDataType.STRING, "stability_rune");
         enchantStabilityRune.setItemMeta(itemMeta_18);
 
         brokenEnchantmentItem = ItemStack.of(Material.PAPER);
         ItemMeta itemMeta_19 = brokenEnchantmentItem.getItemMeta();
-        itemMeta_19.itemName(Component.text("破损装备"));
+        itemMeta_19.itemName(miniMessage.deserialize("<#8a8689>破损装备"));
+        itemMeta_19.setItemModel(NamespacedKey.fromString("mlc:runes/brokenitem"));
         itemMeta_19.getPersistentDataContainer().set(new NamespacedKey(instance, "enchant_upgrade_item"),
                 PersistentDataType.STRING, "broken_item");
         itemMeta_19.setMaxStackSize(1);

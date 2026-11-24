@@ -1,10 +1,22 @@
 #随机附魔书 随机纹饰 随机陶罐碎片 随机旗帜图案
 items:
   # MLC 物品示例。mlc_item 使用 Mlcitems.itemsmap 中的编号，物品数据按原模板发放。
-  # 2:
-  #   mlc_item: 16  # 附魔升级符文
-  #   tagged:
-  #     cratesraritytier: 2
+  2:
+    mlc_item: 16  # 附魔升级符文
+    tagged:
+      cratesraritytier: 2
+  3:
+    mlc_item: 17  # 附魔保护符文
+    tagged:
+      cratesraritytier: 2
+  4:
+    mlc_item: 19  # 装备修复符文
+    tagged:
+      cratesraritytier: 2
+  5:
+    mlc_item: 20  # 稳定符文
+    tagged:
+      cratesraritytier: 2
   1:
     name: "<#ff3300>1111"
     type: ECHO_SHARD

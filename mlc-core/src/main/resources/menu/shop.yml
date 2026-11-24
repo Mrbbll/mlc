@@ -21,6 +21,9 @@ builder-shop:
     SMOOTH_SANDSTONE: 0.4
     QUARTZ_BLOCK: 0.8
     SMOOTH_QUARTZ: 0.9
+    ICE: 0.8
+    PACKED_ICE: 6.4
+    BLUE_ICE: 50
 
     # 海晶石与照明
     PRISMARINE: 0.6
@@ -227,7 +230,35 @@ builder-shop:
     GREEN_TERRACOTTA: 0.5
     RED_TERRACOTTA: 0.5
     BLACK_TERRACOTTA: 0.5
+    # 南瓜灯
+    JACK_O_LANTERN: 1.2
 
+    # 活珊瑚扇
+    TUBE_CORAL_FAN: 0.4
+    BRAIN_CORAL_FAN: 0.4
+    BUBBLE_CORAL_FAN: 0.4
+    FIRE_CORAL_FAN: 0.4
+    HORN_CORAL_FAN: 0.4
+
+    # 失活珊瑚扇
+    DEAD_TUBE_CORAL_FAN: 0.3
+    DEAD_BRAIN_CORAL_FAN: 0.3
+    DEAD_BUBBLE_CORAL_FAN: 0.3
+    DEAD_FIRE_CORAL_FAN: 0.3
+    DEAD_HORN_CORAL_FAN: 0.3
+    # 活珊瑚
+    TUBE_CORAL: 0.4
+    BRAIN_CORAL: 0.4
+    BUBBLE_CORAL: 0.4
+    FIRE_CORAL: 0.4
+    HORN_CORAL: 0.4
+
+    # 失活珊瑚
+    DEAD_TUBE_CORAL: 0.3
+    DEAD_BRAIN_CORAL: 0.3
+    DEAD_BUBBLE_CORAL: 0.3
+    DEAD_FIRE_CORAL: 0.3
+    DEAD_HORN_CORAL: 0.3
     # 珊瑚块
     TUBE_CORAL_BLOCK: 0.6
     BRAIN_CORAL_BLOCK: 0.6
