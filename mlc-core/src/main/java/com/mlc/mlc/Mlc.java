@@ -133,11 +133,7 @@ public final class Mlc extends JavaPlugin {
         com.mlc.mlcstyte.MlcStyte.init(this);
 
         xaeroMapHook = XaeroMapHook.init(this);
-        try {
-            totalAssault = TotalAssaultService.start(this);
-        } catch (Exception e) {
-            getLogger().log(java.util.logging.Level.SEVERE, "总力战初始化失败，其他功能继续运行", e);
-        }
+
         web = MlcWeb.start(this);
 
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
@@ -152,14 +148,6 @@ public final class Mlc extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (totalAssault != null) {
-            try {
-                totalAssault.close();
-            } catch (Exception e) {
-                getLogger().log(java.util.logging.Level.SEVERE, "总力战关闭失败", e);
-            }
-            totalAssault = null;
-        }
         Task.shutdown();
         if (web != null) {
             web.close();
