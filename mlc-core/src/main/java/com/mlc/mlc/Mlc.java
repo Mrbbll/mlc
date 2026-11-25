@@ -7,7 +7,7 @@ import com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon;
 import com.mlc.mlc.mlcmain.menu.buildershop;
 import com.mlc.mlc.mlcmain.menu.WalletMenu;
 import com.mlc.mlc.mlcmain.web.MlcWeb;
-import com.mlc.mlc.totalassault.TotalAssaultService;
+
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -44,7 +44,6 @@ public final class Mlc extends JavaPlugin {
 
     private MlcWeb web;
 
-    private TotalAssaultService totalAssault;
 
 
     @Override
