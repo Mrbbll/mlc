@@ -1,0 +1,64 @@
+# Shift 右键可举起的实体类型（使用 Bukkit EntityType 名称，修改后重启）
+allowed-entities:
+  - PLAYER
+
+  # 家畜
+  - PIG
+  - COW
+  - SHEEP
+  - CHICKEN
+  - MOOSHROOM
+  - RABBIT
+
+  # 村民与商人
+  - VILLAGER
+  - WANDERING_TRADER
+
+  # 宠物
+  - WOLF
+  - CAT
+  - PARROT
+
+  # 骑乘与运输生物
+  - HORSE
+  - DONKEY
+  - MULE
+  - SKELETON_HORSE
+  - CAMEL
+  - LLAMA
+  - TRADER_LLAMA
+  - HAPPY_GHAST
+  - STRIDER
+  - NAUTILUS
+
+  # 野生动物
+  - ARMADILLO
+  - BAT
+  - BEE
+  - FOX
+  - FROG
+  - GOAT
+  - OCELOT
+  - PANDA
+  - POLAR_BEAR
+  - SNIFFER
+
+  # 水生生物
+  - AXOLOTL
+  - COD
+  - SALMON
+  - PUFFERFISH
+  - TROPICAL_FISH
+  - SQUID
+  - GLOW_SQUID
+  - DOLPHIN
+  - TURTLE
+  - TADPOLE
+
+  # 功能性生物
+  - ALLAY
+  - IRON_GOLEM
+  - SNOW_GOLEM
+  - COPPER_GOLEM
+  - SULFUR_CUBE
+

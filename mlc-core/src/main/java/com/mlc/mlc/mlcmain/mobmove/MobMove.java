@@ -4,6 +4,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -16,6 +18,8 @@ import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Locale;
@@ -30,7 +34,28 @@ public final class MobMove implements Listener {
 
     public MobMove(JavaPlugin plugin) {
         this.plugin = plugin;
-        for (String name : plugin.getConfig().getStringList("mobmove.allowed-entities")) {
+        File file = new File(plugin.getDataFolder(), "mobmove/config.yml");
+        if (!file.exists()) {
+            if (plugin.getConfig().isSet("mobmove.allowed-entities")) {
+                YamlConfiguration migrated = new YamlConfiguration();
+                migrated.set("allowed-entities", plugin.getConfig().getStringList("mobmove.allowed-entities"));
+                try {
+                    migrated.save(file);
+                    plugin.getLogger().info("已将生物搬运白名单迁移到 mobmove/config.yml");
+                } catch (IOException exception) {
+                    throw new IllegalStateException("无法保存生物搬运配置 " + file, exception);
+                }
+            } else {
+                plugin.saveResource("mobmove/config.yml", false);
+            }
+        }
+        YamlConfiguration config = new YamlConfiguration();
+        try {
+            config.load(file);
+        } catch (IOException | InvalidConfigurationException exception) {
+            throw new IllegalStateException("无法读取生物搬运配置 " + file, exception);
+        }
+        for (String name : config.getStringList("allowed-entities")) {
             try {
                 allowedTypes.add(EntityType.valueOf(name.toUpperCase(Locale.ROOT)));
             } catch (IllegalArgumentException ex) {

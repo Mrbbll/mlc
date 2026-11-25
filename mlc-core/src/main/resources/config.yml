@@ -11,16 +11,6 @@ gonggao: "当前活动：\n在生存服破坏方块，
 使用/getscore获取自己当前的活动分数\n\n本次活动设置奖项为限定帽子"
 
 
-# Shift 右键可举起的实体类型（使用 Bukkit EntityType 名称，修改后重启）
-mobmove:
-  allowed-entities:
-    - PLAYER
-    - PIG
-    - COW
-    - SHEEP
-    - CHICKEN
-    -
-
 # Xaero 地图玩家追踪，修改后需要重启。
 xaero-map:
   enabled: true
