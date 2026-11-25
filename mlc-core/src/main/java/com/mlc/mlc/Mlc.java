@@ -1,6 +1,5 @@
 package com.mlc.mlc;
 
-import com.mlc.mlc.mlcmain.damageindicator.DamageIndicatorService;
 import com.mlc.mlc.mlcmain.hook.economy.MlcEconomy;
 import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
 import com.mlc.mlc.mlcmain.hook.xearomap.XaeroMapHook;
@@ -8,6 +7,7 @@ import com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon;
 import com.mlc.mlc.mlcmain.menu.buildershop;
 import com.mlc.mlc.mlcmain.menu.WalletMenu;
 import com.mlc.mlc.mlcmain.web.MlcWeb;
+import com.mlc.mlc.totalassault.TotalAssaultService;
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -41,8 +41,10 @@ public final class Mlc extends JavaPlugin {
     public static File playerfiledir;
     public static MiniMessage miniMessage;
     private XaeroMapHook xaeroMapHook;
-    private DamageIndicatorService damageIndicator;
+
     private MlcWeb web;
+
+    private TotalAssaultService totalAssault;
 
 
     @Override
@@ -131,8 +133,11 @@ public final class Mlc extends JavaPlugin {
         com.mlc.mlcstyte.MlcStyte.init(this);
 
         xaeroMapHook = XaeroMapHook.init(this);
-        damageIndicator = new DamageIndicatorService(this);
-        getServer().getPluginManager().registerEvents(damageIndicator, this);
+        try {
+            totalAssault = TotalAssaultService.start(this);
+        } catch (Exception e) {
+            getLogger().log(java.util.logging.Level.SEVERE, "总力战初始化失败，其他功能继续运行", e);
+        }
         web = MlcWeb.start(this);
 
         getLogger().info("\n\nmlc核心插件加载成功\n\n");
@@ -142,20 +147,23 @@ public final class Mlc extends JavaPlugin {
     @Override
     public void reloadConfig() {
         super.reloadConfig();
-        if (damageIndicator != null) {
-            damageIndicator.reload();
-        }
+        Task.reload();
     }
 
     @Override
     public void onDisable() {
+        if (totalAssault != null) {
+            try {
+                totalAssault.close();
+            } catch (Exception e) {
+                getLogger().log(java.util.logging.Level.SEVERE, "总力战关闭失败", e);
+            }
+            totalAssault = null;
+        }
+        Task.shutdown();
         if (web != null) {
             web.close();
             web = null;
-        }
-        if (damageIndicator != null) {
-            damageIndicator.shutdown();
-            damageIndicator = null;
         }
         if (xaeroMapHook != null) {
             xaeroMapHook.shutdown();

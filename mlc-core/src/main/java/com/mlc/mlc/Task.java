@@ -5,7 +5,10 @@ import com.mlc.mlc.mlcmain.backpack.listener.BackpackDyeListener;
 import com.mlc.mlc.mlcmain.backpack.listener.Backpacklistener;
 import com.mlc.mlc.mlcmain.chat.commands.Item;
 import com.mlc.mlc.mlcmain.chat.listener.Chatlistener;
+import com.mlc.mlc.mlcmain.damageindicator.DamageIndicatorService;
 import com.mlc.mlc.mlcmain.enchantments.listener.Villanplus;
+import com.mlc.mlc.mlcmain.fish.FishingEffects;
+import com.mlc.mlc.mlcmain.fish.listener.FishingListener;
 import com.mlc.mlc.mlcmain.items.itemfunc.create.crates.listener.Opencreates;
 import com.mlc.mlc.mlcmain.dialog.Listener.ServerJoinListener;
 import com.mlc.mlc.mlcmain.dropmoney.DropmoneyListener;
@@ -60,8 +63,27 @@ import java.security.NoSuchAlgorithmException;
 import static com.mlc.mlc.Mlc.instance;
 import static com.mlc.mlc.mlcmain.dialog.Serverjoindialog.initserverjoindialog;
 import static com.mlc.mlc.mlcmain.dialog.Serverlinks.setserverLinks;
+import static org.bukkit.Bukkit.getServer;
 
 public class Task {
+    private static DamageIndicatorService damageIndicator;
+    private static FishingEffects fishingEffects;
+
+    public static void reload() {
+        if (damageIndicator != null) damageIndicator.reload();
+    }
+
+    public static void shutdown() {
+        if (fishingEffects != null) {
+            fishingEffects.shutdown();
+            fishingEffects = null;
+        }
+        if (damageIndicator != null) {
+            damageIndicator.shutdown();
+            damageIndicator = null;
+        }
+    }
+
     public static void task() throws URISyntaxException, NoSuchAlgorithmException, IOException {
         Motd.setmotd();
 
@@ -73,6 +95,10 @@ public class Task {
         packsender.init();
 
 
+        damageIndicator = new DamageIndicatorService(instance);
+        getServer().getPluginManager().registerEvents(damageIndicator, instance);
+        fishingEffects = new FishingEffects(instance);
+        getServer().getPluginManager().registerEvents(new FishingListener(fishingEffects), instance);
         Bukkit.getPluginManager().registerEvents(new MobMove(instance), instance);
         Bukkit.getPluginManager().registerEvents(new Backpacklistener(),instance);
         Bukkit.getPluginManager().registerEvents(new BackpackDyeListener(), instance);

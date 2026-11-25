@@ -26,3 +26,4 @@ mlc-core/src/test/**
 !mlc-core/src/test/**/PackSenderTest.java
 !mlc-core/src/test/**/UpgradeRulesTest.java
 !mlc-core/src/test/**/NegativeEnchantmentsTest.java
+!mlc-core/src/test/**/FishingEffectsTest.java

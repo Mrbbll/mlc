@@ -12,6 +12,8 @@ permissions:
     default: op
 
 commands:
+  ta:
+    description: "打开总力战菜单"
   respack:
     description: "压缩、上传并分发资源包"
     permission: mlc.op

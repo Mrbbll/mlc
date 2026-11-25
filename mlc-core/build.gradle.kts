@@ -32,6 +32,8 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    // 允许 SQLite 在测试进程中加载本地库，避免 Java 25 的本地访问警告。
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
     jvmArgumentProviders.add(CommandLineArgumentProvider {
         listOf("-javaagent:${mockitoAgent.singleFile.absolutePath}")
     })
