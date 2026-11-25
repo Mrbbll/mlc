@@ -23,38 +23,47 @@ import static com.mlc.mlc.Mlc.instance;
 public class sendmailtoall implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
-
-        List<String> playernames;
-        try {
-            playernames = findplayernames();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (!(commandSender instanceof Player player)) {
+            commandSender.sendMessage("该命令只能由玩家执行");
+            return true;
         }
-        Player player = (Player) commandSender;
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         if(itemStack.getType()== Material.AIR)
         {
             commandSender.sendMessage(Component.text("手上物品为空", TextColor.color(0xFF4213)));
             return false;
         }
-//异步
-        List<String> finalPlayernames = playernames;
-        Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-            for(String playername : finalPlayernames)
-            {
-                player.sendMessage("尝试发送信件到" + playername);
-                sendmail sendmail_1 = new sendmail();
-                try {
-                    sendmail_1.savetomailgui(itemStack,playername);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-        });
-
-
+        try {
+            int count = sendToAll(itemStack);
+            player.sendMessage("已发送邮件给 " + count + " 名玩家");
+        } catch (IOException e) {
+            instance.getLogger().log(java.util.logging.Level.SEVERE, "群发邮件失败，部分玩家可能已收到邮件", e);
+            player.sendMessage("群发邮件失败，部分玩家可能已收到邮件，请查看服务器日志");
+        }
         return true;
+    }
+
+    /**
+     * Sends a copy of the item to each player listed in usercache.json.
+     * Must be called on the server thread; does not consume the supplied item.
+     * If an IOException occurs, some players may already have received the item.
+     *
+     * @return the number of players sent mail
+     */
+    public static int sendToAll(@NotNull ItemStack item) throws IOException {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("sendToAll must be called on the server thread");
+        }
+        if (item == null || item.getType().isAir()) {
+            throw new IllegalArgumentException("The mail item must not be empty");
+        }
+        List<String> playernames = new sendmailtoall().findplayernames();
+        ItemStack copy = item.clone();
+        sendmail mail = new sendmail();
+        for (String playername : playernames) {
+            mail.savetomailgui(copy, playername);
+        }
+        return playernames.size();
     }
 
     public List<String> findplayernames() throws IOException {

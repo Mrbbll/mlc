@@ -1,4 +1,6 @@
 # 商店：在对应分类下配置材质名和单个物品的价格，使用 /mlcreload 后生效。
+# MLC 物品使用 mlc_item_编号: 单价，例如 mlc_item_1: 100（背包）。
+# 编号对应 Mlcitems.itemsmap，可添加到任意现有分类；默认不出售 MLC 物品。
 builder-shop:
   building-products:
     # 石材与砂岩

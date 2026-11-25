@@ -112,11 +112,10 @@ public final class Mlc extends JavaPlugin {
         }
 
 
-        buildershop.reload();
-
         //指令配方注入等
         try {
             Task.task();
+            buildershop.reload();
         } catch (URISyntaxException | NoSuchAlgorithmException | IOException e) {
             throw new RuntimeException(e);
         }

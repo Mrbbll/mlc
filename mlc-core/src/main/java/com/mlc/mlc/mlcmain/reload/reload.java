@@ -26,10 +26,10 @@ public class reload implements CommandExecutor {
         Mlc.wordsnum = Mlc.fileConfiguration.getInt("words");
 
 
+        Mlcitems.init();
         if (!buildershop.reload()) {
             commandSender.sendMessage(Component.text("商店配置重载失败，保留原有商品，请查看控制台", NamedTextColor.RED));
         }
-        Mlcitems.init();
         Cratesitems.init();
         Fesitems.init();
         initserverjoindialog();

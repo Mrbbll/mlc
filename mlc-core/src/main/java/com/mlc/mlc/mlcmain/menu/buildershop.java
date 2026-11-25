@@ -1,6 +1,7 @@
 package com.mlc.mlc.mlcmain.menu;
 
 import com.mlc.mlc.mlcmain.hook.economy.Moneyfilemanager;
+import com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -56,7 +57,7 @@ public final class buildershop implements Listener {
         }
     }
 
-    private record Product(Material material, double price, ItemStack display) { }
+    private record Product(ItemStack item, double price, ItemStack display) { }
 
     // 只在启动和重载时替换，打开或翻页时均使用同一份内存快照。
     private static Map<Category, List<Product>> cachedProducts = Map.of();
@@ -122,29 +123,44 @@ public final class buildershop implements Listener {
 
     private static void loadProducts(ConfigurationSection section, List<Product> products) {
         for (String key : section.getKeys(false)) {
-            Material material = Material.matchMaterial(key);
+            ItemStack template = null;
+            if (key.toLowerCase(java.util.Locale.ROOT).startsWith("mlc_item_")) {
+                try {
+                    int id = Integer.parseInt(key.substring("mlc_item_".length()));
+                    template = Mlcitems.itemsmap == null ? null : Mlcitems.itemsmap.get(id);
+                } catch (NumberFormatException ignored) {
+                    // Invalid item IDs are reported with the other invalid products below.
+                }
+            } else {
+                Material material = Material.matchMaterial(key);
+                if (material != null && material.isItem() && !material.isAir()) template = new ItemStack(material);
+            }
             double price = section.getDouble(key, -1);
-            if (material == null || !material.isItem() || material.isAir() || price <= 0
+            if (template == null || template.getType().isAir() || price <= 0
                     || !Double.isFinite(price) || java.math.BigDecimal.valueOf(price).stripTrailingZeros().scale() > 2
-                    || price * material.getMaxStackSize() > Integer.MAX_VALUE) {
+                    || price * template.getMaxStackSize() > Integer.MAX_VALUE) {
                 instance.getLogger().warning("商店商品配置无效: " + key);
                 continue;
             }
-            products.add(new Product(material, price, createProductDisplay(material, price)));
+            ItemStack item = template.clone();
+            item.setAmount(1);
+            products.add(new Product(item, price, createProductDisplay(item, price)));
         }
     }
 
-    private static ItemStack createProductDisplay(Material material, double price) {
-        ItemStack display = new ItemStack(material);
+    private static ItemStack createProductDisplay(ItemStack item, double price) {
+        ItemStack display = item.clone();
         ItemMeta meta = display.getItemMeta();
-        meta.lore(List.of(
+        List<Component> lore = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
+        lore.addAll(List.of(
                 line(" "),
                 line("<#aab8b0>单价  <#ffd166>" + price + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\">"),
-                line("<#aab8b0>整组  <#ffd166>" + java.math.BigDecimal.valueOf(price).multiply(java.math.BigDecimal.valueOf(material.getMaxStackSize())).stripTrailingZeros().toPlainString() + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\"> <#77867e>(" + material.getMaxStackSize() + " 个)"),
+                line("<#aab8b0>整组  <#ffd166>" + java.math.BigDecimal.valueOf(price).multiply(java.math.BigDecimal.valueOf(item.getMaxStackSize())).stripTrailingZeros().toPlainString() + " <!shadow><white><sprite:items:\"mlc:item/crystal_coin\"> <#77867e>(" + item.getMaxStackSize() + " 个)"),
                 line(" "),
                 line("<#b8ffde>左键 <#d8e3dc>购买 1 个"),
                 line("<#b8ffde>Shift + 左键 <#d8e3dc>购买一组")
         ));
+        meta.lore(lore);
         display.setItemMeta(meta);
         return display;
     }
@@ -222,8 +238,9 @@ public final class buildershop implements Listener {
         for (int i = 0; i < PAGE_SIZE; i++) if (productSlot(i) == slot) { index = holder.page * PAGE_SIZE + i; break; }
         if (index < 0 || index >= holder.products.size()) return;
         Product product = holder.products.get(index);
-        int amount = event.getClick() == ClickType.SHIFT_LEFT ? product.material().getMaxStackSize() : 1;
-        ItemStack purchase = new ItemStack(product.material(), amount);
+        int amount = event.getClick() == ClickType.SHIFT_LEFT ? product.item().getMaxStackSize() : 1;
+        ItemStack purchase = product.item().clone();
+        purchase.setAmount(amount);
         int capacity = 0;
         for (ItemStack existing : player.getInventory().getStorageContents()) {
             if (existing == null || existing.getType().isAir()) capacity += purchase.getMaxStackSize();
