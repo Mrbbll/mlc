@@ -3,18 +3,87 @@ package com.mlc.mlc.mlcmain.dropmoney;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.mlc.mlc.mlcmain.items.itemmannager.Mlcitems.money_nugget;
 
 public class DropmoneyListener implements Listener {
+
+    private record BlockPosition(UUID world, int x, int y, int z) {
+        static BlockPosition of(Block block) {
+            return new BlockPosition(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ());
+        }
+    }
+
+    private final Set<BlockPosition> placedBlocks = new HashSet<>();
+
+    private static boolean hasSpecialDrops(Material material) {
+        return switch (material) {
+            case ANDESITE, DIORITE, GRANITE, TUFF, STONE, DEEPSLATE -> true;
+            default -> false;
+        };
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlace(BlockPlaceEvent event) {
+        Block block = event.getBlockPlaced();
+        BlockPosition position = BlockPosition.of(block);
+        if (hasSpecialDrops(block.getType())) placedBlocks.add(position);
+        else placedBlocks.remove(position);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBreakComplete(BlockBreakEvent event) {
+        placedBlocks.remove(BlockPosition.of(event.getBlock()));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPistonExtend(BlockPistonExtendEvent event) {
+        moveBlocks(event.getBlocks(), event.getDirection());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPistonRetract(BlockPistonRetractEvent event) {
+        moveBlocks(event.getBlocks(), event.getDirection());
+    }
+
+    private void moveBlocks(List<Block> blocks, BlockFace direction) {
+        Set<BlockPosition> moved = new HashSet<>();
+        for (Block block : blocks) {
+            if (placedBlocks.remove(BlockPosition.of(block))) {
+                moved.add(BlockPosition.of(block.getRelative(direction)));
+            }
+        }
+        placedBlocks.addAll(moved);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockExplosion(BlockExplodeEvent event) {
+        event.blockList().forEach(block -> placedBlocks.remove(BlockPosition.of(block)));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityExplosion(EntityExplodeEvent event) {
+        event.blockList().forEach(block -> placedBlocks.remove(BlockPosition.of(block)));
+    }
 
     // 金币基础掉落概率
     private static final double MONEY_CHANCE = 0.05;
@@ -34,6 +103,10 @@ public class DropmoneyListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onDropmoney(BlockBreakEvent event) {
+
+        if (placedBlocks.contains(BlockPosition.of(event.getBlock()))) {
+            return;
+        }
 
         ItemStack tool = event.getPlayer()
                 .getInventory()

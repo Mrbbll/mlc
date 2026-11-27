@@ -1,36 +1,32 @@
-# 临时测试配置；活动时间使用北京时间，结束时间不包含在活动内。
+# 测试配置；活动从北京时间开始时刻起持续七天。
 activity:
   id: "c6f177a1-3ecb-4458-9e7d-73d4f11dfc22"
   name: "总力战测试"
   start: "2026-11-25 00:00:00"
-  end: "2026-11-26 00:00:00"
   boss-id: "test_zombie"
 
-boss:
-  type: ZOMBIE
-  blacklist:
-    item-models: []
-    materials: []
-  # 按顺序解锁，移动速度为原版实体属性值。
-  difficulties:
-    normal:   { max-health: 40.0,   attack-damage: 2.0,  movement-speed: 0.23 }
-    hard:     { max-health: 80.0,   attack-damage: 3.0,  movement-speed: 0.24 }
-    hardcore: { max-health: 140.0,  attack-damage: 4.0,  movement-speed: 0.25 }
-    ex:       { max-health: 240.0,  attack-damage: 5.0,  movement-speed: 0.26 }
-    ins:      { max-health: 400.0,  attack-damage: 6.0,  movement-speed: 0.27 }
-    tm:       { max-health: 640.0,  attack-damage: 7.0,  movement-speed: 0.28 }
-    lu:       { max-health: 1000.0, attack-damage: 8.0,  movement-speed: 0.29 }
+arena:
+  # 相对于 plugins/mlc 目录。
+  schematic: "totalassault/schematics/arena.schem"
 
-# 预期新建独立平坦世界；y: surface 表示生成时在对应位置寻找地面。
-world:
-  name: "mlc_totalassault_test"
-  create-flat: true
-  preparation: { x: 40.5, y: surface, z: 0.5, yaw: 90.0, pitch: 0.0 }
-  exit: { x: 40.5, y: surface, z: 4.5, yaw: 90.0, pitch: 0.0 }
-arenas:
-  test_1:
-    corner-1: { x: -20.0, z: -20.0 }
-    corner-2: { x: 20.0, z: 20.0 }
-    player-spawn: { x: -8.5, y: surface, z: 0.5, yaw: -90.0, pitch: 0.0 }
-    boss-spawn: { x: 8.5, y: surface, z: 0.5, yaw: 90.0, pitch: 0.0 }
-    mobs: []
+  # 原理图保存时的复制原点，在挑战世界中对应的位置。
+  paste-origin:
+    x: 0
+    y: 64
+    z: 0
+
+  # 挑战世界中的玩家出生点。
+  player-spawn:
+    x: -8.5
+    y: 65
+    z: 0.5
+    yaw: -90
+    pitch: 0
+
+  # 挑战世界中的 Boss 出生点。
+  boss-spawn:
+    x: 8.5
+    y: 65
+    z: 0.5
+    yaw: 90
+    pitch: 0

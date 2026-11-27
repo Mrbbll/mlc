@@ -18,7 +18,7 @@ public class Testboss {
             Objects.requireNonNull(zombie.getAttribute(Attribute.ATTACK_DAMAGE)).setBaseValue(attackDamage);
             Objects.requireNonNull(zombie.getAttribute(Attribute.MOVEMENT_SPEED)).setBaseValue(movementSpeed);
             zombie.setHealth(health);
-            zombie.setRemoveWhenFarAway(false);
+            zombie.setPersistenceRequired(false);
             zombie.setCanPickupItems(false);
             zombie.setConversionTime(-1);
         });

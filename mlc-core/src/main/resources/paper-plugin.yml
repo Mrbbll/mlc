@@ -47,6 +47,10 @@ dependencies:
       load: BEFORE
       required: false
       join-classpath: true
+    FastAsyncWorldEdit:
+      load: BEFORE
+      required: true
+      join-classpath: true
 permissions:
   mlc.op:
     description: "管理 MLC"

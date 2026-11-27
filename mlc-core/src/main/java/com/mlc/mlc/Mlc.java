@@ -7,6 +7,7 @@ import com.mlc.mlc.mlcmain.items.itemfunc.balloon.Balloon;
 import com.mlc.mlc.mlcmain.menu.buildershop;
 import com.mlc.mlc.mlcmain.menu.WalletMenu;
 import com.mlc.mlc.mlcmain.web.MlcWeb;
+import com.mlc.mlc.totalassault.Totalassault;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
@@ -130,6 +131,14 @@ public final class Mlc extends JavaPlugin {
         // Initialize mlc-styte system
         com.mlc.mlcstyte.MlcStyte.init(this);
 
+        try {
+            Totalassault.init(this);
+        } catch (IOException | SQLException | RuntimeException e) {
+            getLogger().log(java.util.logging.Level.SEVERE, "总力战初始化失败", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         xaeroMapHook = XaeroMapHook.init(this);
 
         web = MlcWeb.start(this);
@@ -146,6 +155,11 @@ public final class Mlc extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        try {
+            Totalassault.shutdown();
+        } catch (SQLException e) {
+            getLogger().log(java.util.logging.Level.SEVERE, "关闭总力战数据库失败", e);
+        }
         Task.shutdown();
         if (web != null) {
             web.close();

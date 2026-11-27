@@ -13,6 +13,10 @@ dependencies {
         exclude("org.bukkit", "bukkit")
     }
     compileOnly(libs.placeholderapi)
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.16.3")
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.16.3") {
+        isTransitive = false
+    }
     implementation(libs.adventure.minimessage)
     implementation(libs.hikari)
     implementation(libs.sqlite)
