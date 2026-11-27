@@ -1,25 +1,9 @@
-# 临时测试配置；活动时间使用北京时间，结束时间不包含在活动内。
+# 测试配置；活动从北京时间开始时刻起持续七天。
 activity:
   id: "c6f177a1-3ecb-4458-9e7d-73d4f11dfc22"
   name: "总力战测试"
   start: "2026-11-25 00:00:00"
-  end: "2026-11-26 00:00:00"
   boss-id: "test_zombie"
-
-boss:
-  type: ZOMBIE
-  blacklist:
-    item-models: []
-    materials: []
-  # 按顺序解锁，移动速度为原版实体属性值。
-  difficulties:
-    normal:   { max-health: 40.0,   attack-damage: 2.0,  movement-speed: 0.23 }
-    hard:     { max-health: 80.0,   attack-damage: 3.0,  movement-speed: 0.24 }
-    hardcore: { max-health: 140.0,  attack-damage: 4.0,  movement-speed: 0.25 }
-    ex:       { max-health: 240.0,  attack-damage: 5.0,  movement-speed: 0.26 }
-    ins:      { max-health: 400.0,  attack-damage: 6.0,  movement-speed: 0.27 }
-    tm:       { max-health: 640.0,  attack-damage: 7.0,  movement-speed: 0.28 }
-    lu:       { max-health: 1000.0, attack-damage: 8.0,  movement-speed: 0.29 }
 
 # 预期新建独立平坦世界；y: surface 表示生成时在对应位置寻找地面。
 world:

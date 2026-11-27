@@ -1,4 +1,4 @@
--- 总力战 SQLite 设计草案。不要直接应用于已有数据库：需要先迁移旧 ta_tickets。
+-- 总力战 SQLite 结构草案；插件实际加载 src/main/resources/totalassault/schema.sql。
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE ta_activity (
