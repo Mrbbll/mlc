@@ -2,6 +2,7 @@ package com.mlc.mlc.mlcmain.web;
 
 import com.mlc.mlc.mlcmain.web.source.EconomyLeaderboardSource;
 import com.mlc.mlc.mlcmain.web.source.PapiPlaytimeSource;
+import com.mlc.mlc.mlcmain.web.source.TotalAssaultSource;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -38,7 +39,8 @@ public final class MlcWeb implements AutoCloseable {
             EconomyLeaderboardSource economy = new EconomyLeaderboardSource(plugin.getLogger());
             WebServer server = new WebServer(new InetSocketAddress(host, port), Map.of(
                     "/api/v1/leaderboard/playtime", new LeaderboardHandler<>(playtime::latest),
-                    "/api/v1/leaderboard/economy", new LeaderboardHandler<>(economy::latest)
+                    "/api/v1/leaderboard/economy", new LeaderboardHandler<>(economy::latest),
+                    "/api/v1/totalassault/scores", new LeaderboardHandler<>(new TotalAssaultSource(), plugin.getLogger())
             ), plugin.getLogger());
             web = new MlcWeb(playtime, economy, server);
             server.start();

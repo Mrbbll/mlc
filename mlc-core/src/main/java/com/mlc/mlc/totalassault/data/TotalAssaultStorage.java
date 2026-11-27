@@ -21,6 +21,13 @@ public final class TotalAssaultStorage {
     public record Attempt(String id, int number, String status, long startedAt, Long endedAt, Long battleMillis, Double bossHealthAfter) {}
     public record WorldPreparation(UUID player, String worldName, String state) {}
     public record Reward(String key, String activityId, UUID player, String challengeId, String kind, byte[] payload) {}
+    /** 对外查询使用的成绩和物品快照，不包含未保存或已回退的出战。 */
+    public record HistoryItem(String slot, String identityType, String identityValue, String snapshotBase64) {}
+    public record HistoryAttempt(int number, long battleMillis, double bossHealthAfter, List<HistoryItem> items) {}
+    public record HistoryScore(String activityId, String activityName, String bossId, String playerUuid,
+                               String challengeId, String difficulty, int difficultyOrder, long battleMillis,
+                               long achievedAtMillis, List<HistoryAttempt> attempts) {}
+    public record HistoryPage(long total, int limit, int offset, List<HistoryScore> scores) {}
 
     TotalAssaultStorage(Path file) throws SQLException, IOException {
         Datamanager.prepareDatabaseDirectory(file);
@@ -336,6 +343,43 @@ public final class TotalAssaultStorage {
                 return rs.next() ? Optional.of(new Score(rs.getString(1), rs.getInt(2), rs.getLong(3), rs.getLong(4))) : Optional.empty();
             }
         }
+    }
+
+    /** 只读取各期最佳成绩及其已保存出战，不创建票券或变更挑战。 */
+    synchronized HistoryPage scoreHistory(String player, String activity, int limit, int offset) throws SQLException {
+        String filter = " WHERE (? IS NULL OR s.player_uuid=?) AND (? IS NULL OR s.activity_id=?)";
+        long total;
+        try (PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) FROM ta_best_score s" + filter)) {
+            ps.setString(1, player); ps.setString(2, player); ps.setString(3, activity); ps.setString(4, activity);
+            try (ResultSet rs = ps.executeQuery()) { total = rs.next() ? rs.getLong(1) : 0; }
+        }
+        List<HistoryScore> scores = new ArrayList<>();
+        String sql = "SELECT s.activity_id,a.name,a.boss_id,s.player_uuid,s.challenge_id,c.difficulty_id,"
+                + "s.difficulty_order,s.battle_ms,s.achieved_at_ms FROM ta_best_score s "
+                + "JOIN ta_activity a ON a.id=s.activity_id JOIN ta_challenge c ON c.id=s.challenge_id"
+                + filter + " ORDER BY a.start_ms DESC,s.activity_id,s.player_uuid LIMIT ? OFFSET ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, player); ps.setString(2, player); ps.setString(3, activity); ps.setString(4, activity);
+            ps.setInt(5, limit); ps.setInt(6, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String challengeId = rs.getString(5);
+                    List<HistoryAttempt> saved = new ArrayList<>();
+                    for (Attempt attempt : attempts(challengeId)) {
+                        if (!attempt.status().equals("SAVED")) continue;
+                        List<HistoryItem> items = new ArrayList<>();
+                        for (AttemptItem item : attemptItems(attempt.id())) {
+                            items.add(new HistoryItem(item.slot(), item.identityType(), item.identityValue(),
+                                    Base64.getEncoder().encodeToString(item.snapshot())));
+                        }
+                        saved.add(new HistoryAttempt(attempt.number(), attempt.battleMillis(), attempt.bossHealthAfter(), List.copyOf(items)));
+                    }
+                    scores.add(new HistoryScore(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4),
+                            challengeId, rs.getString(6), rs.getInt(7), rs.getLong(8), rs.getLong(9), List.copyOf(saved)));
+                }
+            }
+        }
+        return new HistoryPage(total, limit, offset, List.copyOf(scores));
     }
 
     synchronized void setWorldState(String challengeId, String state) throws SQLException {

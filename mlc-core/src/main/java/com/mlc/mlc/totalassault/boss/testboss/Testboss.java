@@ -8,6 +8,7 @@ import java.util.Objects;
 public class Testboss {
     private Testboss() {}
 
+    @SuppressWarnings("deprecation")
     public static Zombie spawn(Location location, double maxHealth, double attackDamage,
                                double movementSpeed, double health) {
         if (maxHealth <= 0 || health <= 0 || health > maxHealth || attackDamage < 0 || movementSpeed < 0) {
@@ -18,7 +19,9 @@ public class Testboss {
             Objects.requireNonNull(zombie.getAttribute(Attribute.ATTACK_DAMAGE)).setBaseValue(attackDamage);
             Objects.requireNonNull(zombie.getAttribute(Attribute.MOVEMENT_SPEED)).setBaseValue(movementSpeed);
             zombie.setHealth(health);
-            zombie.setPersistenceRequired(false);
+            // 使用兼容当前服务端版本的接口，防止僵尸远离玩家时消失。
+            zombie.setRemoveWhenFarAway(false);
+            zombie.setPersistent(true);
             zombie.setCanPickupItems(false);
             zombie.setConversionTime(-1);
         });

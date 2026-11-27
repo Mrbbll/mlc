@@ -17,7 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.entity.Player;
 
@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -89,8 +90,14 @@ public final class Worldmanager {
 
         WorldCreator creator = new WorldCreator(name);
 
-        // 暂时使用原版平坦世界，之后再粘贴场地。
-        creator.type(WorldType.FLAT);
+        // 不生成地形、装饰和生物，只保留之后粘贴的场地。
+        creator.generator(new ChunkGenerator() {
+            @Override
+            public Location getFixedSpawnLocation(World world, Random random) {
+                // 虚空世界没有地面，固定出生点避免寻找自然出生位置。
+                return new Location(world, 0.5, 64, 0.5);
+            }
+        });
         creator.generateStructures(false);
 
         World world = creator.createWorld();

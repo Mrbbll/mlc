@@ -3,6 +3,8 @@ package com.mlc.mlc.totalassault.menu;
 import com.mlc.mlc.totalassault.data.Datamanager;
 import com.mlc.mlc.totalassault.data.Filereader;
 import com.mlc.mlc.totalassault.data.TotalAssaultStorage;
+import com.mlc.mlc.totalassault.ChallengeCreator;
+import com.mlc.mlc.totalassault.battle.BattleManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -42,6 +44,8 @@ public final class tamenu {
     private static final int RECORD = 49, CONTROL = 50, NEXT = 52, CLOSE = 53;
     public static JavaPlugin plugin;
     private static Filereader.ActivityConfig activity;
+    private static ChallengeCreator challengeCreator;
+    private static BattleManager battleManager;
 
     private enum Page { MAIN, ATTEMPTS, ITEMS, OPERATIONS }
 
@@ -62,9 +66,11 @@ public final class tamenu {
 
     private tamenu() {}
 
-    public static void init(JavaPlugin owner, Filereader.ActivityConfig config) {
+    public static void init(JavaPlugin owner, Filereader.ActivityConfig config, ChallengeCreator creator, BattleManager manager) {
         plugin = owner;
         activity = config;
+        challengeCreator = creator;
+        battleManager = manager;
         owner.getServer().getPluginManager().registerEvents(new Listener(), owner);
     }
 
@@ -132,7 +138,7 @@ public final class tamenu {
                     "<#b8ffde>» 点击查看挑战操作"));
         } else {
             holder.inventory.setItem(CONTROL, icon(Material.CLOCK, "<#aab8b0>当前没有挑战",
-                    "<#71877a>挑战功能暂未开放"));
+                    "<#71877a>选择已解锁的难度创建挑战"));
         }
         holder.inventory.setItem(RECORD, score.isPresent()
                 ? icon(Material.WRITABLE_BOOK, "<#ffd166>本期最佳成绩",
@@ -147,7 +153,7 @@ public final class tamenu {
             holder.inventory.setItem(CONTENT[index - start], icon(available ? Material.IRON_SWORD : Material.GRAY_DYE,
                     (available ? "<#ffd166>" : "<#71877a>") + escape(difficulty),
                     available ? "<#b8ffde>已解锁" : "<#ffb4a8>通关上一难度后解锁",
-                    "<#71877a>挑战功能暂未开放"));
+                    available ? "<#b8ffde>» 点击准备挑战" : "<#71877a>该难度尚未解锁"));
             holder.actions.add(difficulty);
         }
         pagination(holder, page, pages);
@@ -161,10 +167,10 @@ public final class tamenu {
         holder.inventory.setItem(INFO, icon(Material.CLOCK, "<#ffd166>当前挑战",
                 "<#aab8b0>难度：<#ffffff>" + escape(current.get().difficulty()),
                 "<#aab8b0>状态：<#ffffff>" + (current.get().status().equals("BATTLING") ? "出战中" : "准备中")));
-        holder.inventory.setItem(19, icon(Material.ENDER_PEARL, "<#ffd166>继续挑战", "<#71877a>暂未开放"));
-        holder.inventory.setItem(21, icon(Material.OAK_DOOR, "<#ffd166>退出本次出战", "<#aab8b0>保留本次进度", "<#71877a>暂未开放"));
-        holder.inventory.setItem(23, icon(Material.CLOCK, "<#ffd166>重置本次出战", "<#aab8b0>回退至上次保存的进度", "<#71877a>暂未开放"));
-        holder.inventory.setItem(25, icon(Material.BARRIER, "<#ffb4a8>放弃挑战", "<#aab8b0>结束挑战并消耗本张票", "<#71877a>暂未开放"));
+        holder.inventory.setItem(19, icon(Material.ENDER_PEARL, "<#ffd166>继续挑战"));
+        holder.inventory.setItem(21, icon(Material.OAK_DOOR, "<#ffd166>退出本次出战", "<#aab8b0>保留本次进度"));
+        holder.inventory.setItem(23, icon(Material.CLOCK, "<#ffd166>重置本次出战", "<#aab8b0>回退至上次保存的进度"));
+        holder.inventory.setItem(25, icon(Material.BARRIER, "<#ffb4a8>放弃挑战", "<#aab8b0>结束挑战并消耗本张票"));
         holder.inventory.setItem(BACK, icon(Material.ARROW, "<#b8ffde>返回总力战"));
         player.openInventory(holder.inventory);
     }
@@ -270,7 +276,16 @@ public final class tamenu {
             return;
         }
         if (holder.page == Page.OPERATIONS && (slot == 19 || slot == 21 || slot == 23 || slot == 25)) {
-            player.sendMessage(line("<#ffb4a8>挑战操作暂未开放。"));
+            later(player, () -> {
+                player.closeInventory();
+                switch (slot) {
+                    case 19 -> battleManager.enter(player);
+                    case 21 -> battleManager.exit(player);
+                    case 23 -> battleManager.reset(player);
+                    case 25 -> battleManager.giveUp(player);
+                    default -> { }
+                }
+            });
             return;
         }
         for (int i = 0; i < CONTENT.length && i < holder.actions.size(); i++) {
@@ -279,7 +294,8 @@ public final class tamenu {
                 String attemptId = holder.actions.get(i);
                 later(player, () -> show(player, Page.ITEMS, 0, attemptId));
             } else if (holder.page == Page.MAIN) {
-                player.sendMessage(line("<#ffb4a8>挑战功能暂未开放。"));
+                String difficulty = holder.actions.get(i);
+                later(player, () -> challengeCreator.start(player, difficulty));
             }
             return;
         }
@@ -317,6 +333,8 @@ public final class tamenu {
             if (player.getOpenInventory().getTopInventory().getHolder() instanceof Holder) player.closeInventory();
         }
         activity = null;
+        challengeCreator = null;
+        battleManager = null;
         plugin = null;
     }
 }

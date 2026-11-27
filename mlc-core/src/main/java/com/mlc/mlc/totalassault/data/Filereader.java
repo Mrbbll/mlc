@@ -1,6 +1,6 @@
 package com.mlc.mlc.totalassault.data;
 
-import org.bukkit.Bukkit;
+import com.mlc.mlc.mlcmain.lobby.LobbyWorld;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -27,7 +27,6 @@ public final class Filereader {
     private static final String ACTIVITY_RESOURCE = "totalassault/test-activity.yml";
     private static final String SCHEMA_RESOURCE = "/totalassault/schema.sql";
     private static final String DATABASE_FILE = "totalassault.db";
-    private static final String LOBBY_WORLD = "lobbyworld";
 
     // 活动开始时间按北京时间解析，避免受服务器所在时区影响。
     private static final ZoneId ACTIVITY_ZONE = ZoneId.of("Asia/Shanghai");
@@ -119,14 +118,14 @@ public final class Filereader {
         /**
          * 读取准备大厅和公共出口共用的出生点。
          *
-         * lobbyworld 必须已经由服务器加载。
+         * 大厅必须已经由项目的大厅初始化流程创建。
          */
         public static Location lobbySpawn() {
-            World lobby = Bukkit.getWorld(LOBBY_WORLD);
+            World lobby = LobbyWorld.lobbyworld;
 
             if (lobby == null) {
                 throw new IllegalStateException(
-                        "未找到大厅世界：" + LOBBY_WORLD
+                        "大厅世界尚未初始化：mlc:lobbyworld"
                 );
             }
 

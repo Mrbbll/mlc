@@ -5,6 +5,7 @@ import com.mlc.mlc.totalassault.data.Filereader;
 import com.mlc.mlc.totalassault.data.TotalAssaultStorage;
 import com.mlc.mlc.totalassault.menu.tamenu;
 import com.mlc.mlc.totalassault.world.Worldmanager;
+import com.mlc.mlc.totalassault.battle.BattleManager;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -16,6 +17,8 @@ import java.util.logging.Level;
 
 public final class Totalassault {
     private static BukkitTask expirationTask;
+    private static ChallengeCreator challengeCreator;
+    private static BattleManager battleManager;
 
     private Totalassault() {}
 
@@ -27,18 +30,22 @@ public final class Totalassault {
             Datamanager.registerActivity(activity.id(), activity.name(), activity.bossId(), activity.start(), activity.difficulties());
             Datamanager.recoverAfterRestart(Instant.now());
             cleanupWorldsAfterRestart(plugin);
-            tamenu.init(plugin, activity);
+            challengeCreator = new ChallengeCreator(plugin, activity);
+            battleManager = new BattleManager(plugin, activity);
+            tamenu.init(plugin, activity, challengeCreator, battleManager);
             // Paper 插件需要通过接口注册命令，不能从插件描述文件中获取命令。
             plugin.registerCommand("ta", "打开总力战菜单", (source, args) -> {
                 if (!(source.getSender() instanceof Player player)) {
-                    source.getSender().sendMessage("只有玩家可以打开总力战菜单。");
+                    source.getSender().sendMessage(TaText.line("<#b8ffde>只有玩家可以打开总力战菜单。"));
                     return;
                 }
                 tamenu.open(player);
             });
             expirationTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
                 try {
+                    battleManager.tick();
                     Datamanager.expireChallenges(Instant.now());
+                    cleanupFinishedWorlds(plugin);
                 } catch (SQLException e) {
                     plugin.getLogger().log(java.util.logging.Level.SEVERE, "检查总力战过期状态失败", e);
                 }
@@ -52,6 +59,20 @@ public final class Totalassault {
 
     /** 重启时清理已结束的挑战和创建中断的临时世界。 */
     private static void cleanupWorldsAfterRestart(JavaPlugin plugin) throws SQLException {
+        cleanupFinishedWorlds(plugin);
+        for (TotalAssaultStorage.WorldPreparation preparation : Datamanager.preparations()) {
+            try {
+                Datamanager.setPreparationState(preparation.player(), "CLEANING");
+                Worldmanager.deleteWorld(preparation.worldName());
+                Datamanager.removePreparation(preparation.player());
+            } catch (IOException | RuntimeException exception) {
+                plugin.getLogger().log(Level.SEVERE, "删除准备世界失败：" + preparation.worldName(), exception);
+            }
+        }
+    }
+
+    /** 清理已经结束且仍等待删除的挑战世界。 */
+    private static void cleanupFinishedWorlds(JavaPlugin plugin) throws SQLException {
         for (TotalAssaultStorage.Challenge challenge : Datamanager.challengesNeedingRecovery()) {
             if (!challenge.status().equals("SUCCESS") && !challenge.status().equals("FAILED")) {
                 continue;
@@ -62,15 +83,6 @@ public final class Totalassault {
             } catch (IOException | RuntimeException exception) {
                 // 保留待清理状态，下一次启动时可以继续处理。
                 plugin.getLogger().log(Level.SEVERE, "删除挑战世界失败：" + challenge.worldName(), exception);
-            }
-        }
-        for (TotalAssaultStorage.WorldPreparation preparation : Datamanager.preparations()) {
-            try {
-                Datamanager.setPreparationState(preparation.player(), "CLEANING");
-                Worldmanager.deleteWorld(preparation.worldName());
-                Datamanager.removePreparation(preparation.player());
-            } catch (IOException | RuntimeException exception) {
-                plugin.getLogger().log(Level.SEVERE, "删除准备世界失败：" + preparation.worldName(), exception);
             }
         }
     }
@@ -85,6 +97,14 @@ public final class Totalassault {
     }
 
     public static void shutdown() throws SQLException {
+        if (battleManager != null) {
+            battleManager.shutdown();
+            battleManager = null;
+        }
+        if (challengeCreator != null) {
+            challengeCreator.shutdown();
+            challengeCreator = null;
+        }
         if (expirationTask != null) {
             expirationTask.cancel();
             expirationTask = null;
