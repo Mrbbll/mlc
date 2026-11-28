@@ -1,8 +1,10 @@
 package com.mlc.mlc.totalassault.battle;
 
-import com.mlc.mlc.totalassault.boss.testboss.TestBossDifficulty;
+import com.mlc.mlc.totalassault.boss.AssaultBoss;
+import com.mlc.mlc.totalassault.boss.BossHandle;
+import com.mlc.mlc.totalassault.boss.BossRegistry;
+import com.mlc.mlc.totalassault.boss.saint.Saint;
 import com.mlc.mlc.totalassault.TaText;
-import com.mlc.mlc.totalassault.boss.testboss.Testboss;
 import com.mlc.mlc.totalassault.data.Datamanager;
 import com.mlc.mlc.totalassault.data.Filereader;
 import com.mlc.mlc.totalassault.data.TotalAssaultStorage;
@@ -13,11 +15,11 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -41,17 +43,19 @@ import java.util.logging.Level;
 public final class BattleManager implements Listener {
     private final JavaPlugin plugin;
     private final Filereader.ActivityConfig activity;
+    private final BossRegistry bosses;
     private final NamespacedKey controlKey;
     private final Map<UUID, Battle> battles = new HashMap<>();
     private final Set<UUID> internalTeleports = new java.util.HashSet<>();
     private final Set<UUID> returnToLobby = new java.util.HashSet<>();
 
-    private record Battle(TotalAssaultStorage.Challenge challenge, String attemptId, Zombie boss,
+    private record Battle(TotalAssaultStorage.Challenge challenge, String attemptId, BossHandle boss,
                           long startNanos, GameMode originalMode, Set<String> identities) {}
 
-    public BattleManager(JavaPlugin plugin, Filereader.ActivityConfig activity) {
+    public BattleManager(JavaPlugin plugin, Filereader.ActivityConfig activity, BossRegistry bosses) {
         this.plugin = plugin;
         this.activity = activity;
+        this.bosses = bosses;
         this.controlKey = new NamespacedKey(plugin, "totalassault_control");
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
@@ -61,30 +65,42 @@ public final class BattleManager implements Listener {
         if (battles.containsKey(player.getUniqueId())) { player.sendMessage(TaText.line("<#b8ffde>你正在出战。")); return; }
         String attemptId = UUID.randomUUID().toString();
         TotalAssaultStorage.Challenge challenge = null;
-        Zombie boss = null;
+        BossHandle boss = null;
         GameMode original = player.getGameMode();
         boolean started = false;
         boolean moved = false;
         try {
             challenge = Datamanager.findActiveChallenge(player.getUniqueId()).orElse(null);
             if (challenge == null || !challenge.status().equals("PREPARING")) { player.sendMessage(TaText.line("<#b8ffde>当前没有可以进入的挑战。")); return; }
+            // 不能用当前活动的 Boss 接管其他活动遗留的挑战。
+            if (!challenge.activityId().equals(activity.id())) { player.sendMessage(TaText.line("<#ffb4a8>当前挑战不属于本期活动。")); return; }
+            AssaultBoss definition = bosses.find(activity.bossId()).orElse(null);
+            if (definition == null) { player.sendMessage(TaText.line("<#ffb4a8>本期 Boss 尚未实现或配置有误，无法进入挑战。")); return; }
             World world = Bukkit.getWorld(challenge.worldName());
             if (world == null) { player.sendMessage(TaText.line("<#b8ffde>挑战世界未加载，请联系管理员。")); return; }
-            EquipmentCheck.Result result = EquipmentCheck.check(player, Datamanager.usedItemIdentities(challenge.id()));
+            Set<String> savedAttempts = new java.util.HashSet<>();
+            for (TotalAssaultStorage.Attempt attempt : Datamanager.attempts(challenge.id())) {
+                if ("SAVED".equals(attempt.status())) savedAttempts.add(attempt.id());
+            }
+            EquipmentCheck.Result result = EquipmentCheck.check(player, Datamanager.usedItemIdentities(challenge.id()), savedAttempts, definition, plugin);
             if (!result.errors().isEmpty()) {
                 player.sendMessage(TaText.line("<#b8ffde>无法进入挑战，请处理以下问题："));
                 result.errors().forEach(error -> player.sendMessage(TaText.line("<#ffb4a8>" + TaText.escape(error))));
                 return;
             }
             Filereader.ArenaConfig arena = Filereader.ArenaConfig.load(plugin);
-            TestBossDifficulty difficulty = TestBossDifficulty.of(challenge.difficulty());
             Datamanager.startAttempt(challenge.id(), attemptId, result.items(), Instant.now());
             started = true;
+            // 标记指向本次出战；如果之后回退，数据库状态不会变为已保存，标记也不会造成禁用。
+            EquipmentCheck.markEquipment(player, plugin, attemptId);
             player.setGameMode(GameMode.ADVENTURE);
             if (!teleport(player, arena.playerSpawn().location(world))) throw new IllegalStateException("传送失败");
             moved = true;
             long start = System.nanoTime();
-            boss = Testboss.spawn(arena.bossSpawn().location(world), difficulty.health(), difficulty.damage(), difficulty.speed(), challenge.bossHealth());
+            boss = definition.spawn(arena.bossSpawn().location(world), challenge.difficulty(), challenge.bossHealth());
+            Saint.Progress progress = definition.id().equals("saint")
+                    ? Datamanager.saintProgress(challenge.id()) : new Saint.Progress(0, 0);
+            boss.start(plugin, player, progress.ultimate(), progress.stun());
             player.getInventory().setItem(8, controlItem());
             battles.put(player.getUniqueId(), new Battle(challenge, attemptId, boss, start, original, Set.copyOf(result.identities())));
             player.sendMessage(TaText.line("<#b8ffde>出战开始，单次出战限时四分钟。"));
@@ -116,7 +132,15 @@ public final class BattleManager implements Listener {
         long millis = Math.min(240_000L, Math.max(0, (System.nanoTime() - battle.startNanos()) / 1_000_000L));
         try {
             switch (action) {
-                case "保存" -> Datamanager.saveAttempt(battle.challenge().id(), battle.attemptId(), millis, Math.max(0.01, battle.boss().getHealth()), Instant.now());
+                case "保存" -> {
+                    double health = Math.max(0.01, battle.boss().health());
+                    if (activity.bossId().equals("saint")) {
+                        Saint.Progress progress = new Saint.Progress(battle.boss().ultimateProgress(), battle.boss().stunProgress());
+                        Datamanager.saveSaintAttempt(battle.challenge().id(), battle.attemptId(), millis, health, progress, Instant.now());
+                    } else {
+                        Datamanager.saveAttempt(battle.challenge().id(), battle.attemptId(), millis, health, Instant.now());
+                    }
+                }
                 case "回退" -> Datamanager.rollbackAttempt(battle.challenge().id(), Instant.now());
                 case "通关" -> Datamanager.completeChallenge(battle.challenge().id(), battle.attemptId(), millis, Instant.now());
                 case "放弃" -> Datamanager.failChallenge(battle.challenge().id(), "GIVE_UP", Instant.now());
@@ -259,10 +283,17 @@ public final class BattleManager implements Listener {
         event.getDrops().clear();
         finish(event.getEntity(), "保存", false);
     }
+    /** 只记录本场玩家造成的有效原版近战暴击，不统计弓箭等投射物。 */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCritical(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player player) || !event.isCritical() || event.getFinalDamage() <= 0) return;
+        Battle battle = battles.get(player.getUniqueId());
+        if (battle != null && battle.boss().entityId().equals(event.getEntity().getUniqueId())) battle.boss().onCritical();
+    }
     @EventHandler
     public void onBossDeath(EntityDeathEvent event) {
         for (Map.Entry<UUID, Battle> entry : Map.copyOf(battles).entrySet()) {
-            if (!entry.getValue().boss().getUniqueId().equals(event.getEntity().getUniqueId())) continue;
+            if (!entry.getValue().boss().entityId().equals(event.getEntity().getUniqueId())) continue;
             event.getDrops().clear();
             event.setDroppedExp(0);
             Player player = Bukkit.getPlayer(entry.getKey());

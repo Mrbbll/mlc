@@ -126,7 +126,7 @@ public final class tamenu {
                 "<#aab8b0>开始：<#ffffff>" + DATE.format(activity.start()) + " 北京时间",
                 "<#aab8b0>结束：<#ffffff>" + DATE.format(end) + " 北京时间"));
         holder.inventory.setItem(STATUS, icon(Material.PAPER, "<#ffd166>挑战票",
-                tickets == null ? "<#aab8b0>活动未开放" : "<#aab8b0>今日剩余：<#ffffff>" + tickets + " / 3",
+                tickets == null ? "<#aab8b0>活动未开放" : "<#aab8b0>今日剩余：<#ffffff>" + tickets,
                 "<#71877a>每日北京时间 04:00 刷新"));
         if (current.isPresent()) {
             TotalAssaultStorage.Challenge c = current.get();

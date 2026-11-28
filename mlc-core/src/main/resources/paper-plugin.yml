@@ -51,6 +51,10 @@ dependencies:
       load: BEFORE
       required: true
       join-classpath: true
+    BetterModel:
+      load: BEFORE
+      required: false
+      join-classpath: true
 permissions:
   mlc.op:
     description: "管理 MLC"

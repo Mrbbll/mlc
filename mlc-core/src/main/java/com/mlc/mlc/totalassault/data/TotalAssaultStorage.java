@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import com.mlc.mlc.totalassault.boss.saint.Saint;
 
 /** 总力战数据库。所有公开操作共用一条连接并串行执行。 */
 public final class TotalAssaultStorage {
@@ -42,11 +43,37 @@ public final class TotalAssaultStorage {
                 version = rs.next() ? rs.getInt(1) : 0;
             }
             if (version == 0) initializeSchema();
-            else if (version != 1) throw new SQLException("Unsupported total assault database version: " + version);
+            else {
+                if (version == 1) { migrateSaintProgress(); version = 2; }
+                if (version == 2) { migrateTicketBonus(); version = 3; }
+                if (version != 3) throw new SQLException("Unsupported total assault database version: " + version);
+            }
         } catch (SQLException | IOException | RuntimeException e) {
             try { connection.close(); } catch (SQLException close) { e.addSuppressed(close); }
             throw e;
         }
+    }
+
+    /** 为旧数据库增加赠票记录，不修改已有挑战和每日票数。 */
+    private void migrateTicketBonus() throws SQLException {
+        transaction(() -> {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("CREATE TABLE ta_ticket_bonus (activity_id TEXT NOT NULL, player_uuid TEXT NOT NULL, ticket_day TEXT NOT NULL, remaining INTEGER NOT NULL CHECK (remaining >= 0), PRIMARY KEY (activity_id,player_uuid,ticket_day), FOREIGN KEY (activity_id,player_uuid,ticket_day) REFERENCES ta_ticket_day(activity_id,player_uuid,ticket_day))");
+                statement.execute("PRAGMA user_version = 3");
+            }
+            return null;
+        });
+    }
+
+    /** 给已有数据库增加圣徒进度表，不删除原有票券与成绩。 */
+    private void migrateSaintProgress() throws SQLException {
+        transaction(() -> {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("CREATE TABLE ta_saint_progress (challenge_id TEXT PRIMARY KEY REFERENCES ta_challenge(id), ultimate REAL NOT NULL CHECK (ultimate >= 0 AND ultimate <= 100), stun REAL NOT NULL CHECK (stun >= 0 AND stun <= 100))");
+                statement.execute("PRAGMA user_version = 2");
+            }
+            return null;
+        });
     }
 
     private void initializeSchema() throws IOException, SQLException {
@@ -137,10 +164,28 @@ public final class TotalAssaultStorage {
             require(active(activity, now.toEpochMilli()), "Activity is not active");
             String day = ticketDay(now).toString();
             ensureTicket(player, activity, day);
-            try (PreparedStatement ps = connection.prepareStatement("SELECT remaining FROM ta_ticket_day WHERE activity_id=? AND player_uuid=? AND ticket_day=?")) {
+            try (PreparedStatement ps = connection.prepareStatement("SELECT d.remaining+COALESCE(b.remaining,0) FROM ta_ticket_day d LEFT JOIN ta_ticket_bonus b ON b.activity_id=d.activity_id AND b.player_uuid=d.player_uuid AND b.ticket_day=d.ticket_day WHERE d.activity_id=? AND d.player_uuid=? AND d.ticket_day=?")) {
                 ps.setString(1, activity); ps.setString(2, player.toString()); ps.setString(3, day);
                 try (ResultSet rs = ps.executeQuery()) { require(rs.next(), "Ticket row missing"); return rs.getInt(1); }
             }
+        });
+    }
+
+    /** 增加当前刷新日的赠票；操作与余额上限检查在同一事务完成。 */
+    synchronized int giveTickets(UUID player, String activity, int amount, Instant now) throws SQLException {
+        require(player != null && amount > 0, "赠票数量必须大于零");
+        return transaction(() -> {
+            require(active(activity, now.toEpochMilli()), "活动未开放");
+            String day = ticketDay(now).toString();
+            ensureTicket(player, activity, day);
+            long remaining;
+            try (PreparedStatement ps = connection.prepareStatement("SELECT d.remaining+COALESCE(b.remaining,0) FROM ta_ticket_day d LEFT JOIN ta_ticket_bonus b ON b.activity_id=d.activity_id AND b.player_uuid=d.player_uuid AND b.ticket_day=d.ticket_day WHERE d.activity_id=? AND d.player_uuid=? AND d.ticket_day=?")) {
+                ps.setString(1, activity); ps.setString(2, player.toString()); ps.setString(3, day);
+                try (ResultSet rs = ps.executeQuery()) { require(rs.next(), "票券记录不存在"); remaining = rs.getLong(1); }
+            }
+            require(remaining + amount <= Integer.MAX_VALUE, "票券数量超过上限");
+            update("INSERT INTO ta_ticket_bonus(activity_id,player_uuid,ticket_day,remaining) VALUES(?,?,?,?) ON CONFLICT(activity_id,player_uuid,ticket_day) DO UPDATE SET remaining=remaining+excluded.remaining", activity, player.toString(), day, amount);
+            return (int) (remaining + amount);
         });
     }
 
@@ -192,7 +237,10 @@ public final class TotalAssaultStorage {
             }
             String day = ticketDay(now).toString();
             ensureTicket(player, activity, day);
-            require(update("UPDATE ta_ticket_day SET remaining=remaining-1 WHERE activity_id=? AND player_uuid=? AND ticket_day=? AND remaining>0", activity, player.toString(), day) == 1, "No tickets remaining");
+            // 优先消耗每日票，日票用完后再消耗同一刷新日的赠票。
+            int consumed = update("UPDATE ta_ticket_day SET remaining=remaining-1 WHERE activity_id=? AND player_uuid=? AND ticket_day=? AND remaining>0", activity, player.toString(), day);
+            if (consumed == 0) consumed = update("UPDATE ta_ticket_bonus SET remaining=remaining-1 WHERE activity_id=? AND player_uuid=? AND ticket_day=? AND remaining>0", activity, player.toString(), day);
+            require(consumed == 1, "No tickets remaining");
             update("INSERT INTO ta_challenge(id,activity_id,player_uuid,ticket_day,difficulty_id,difficulty_order,status,started_at_ms,expires_at_ms,saved_boss_health,world_name,world_state) VALUES(?,?,?,?,?,?,'PREPARING',?,?,?,?, 'READY')",
                     challengeId, activity, player.toString(), day, difficulty, order, time, now.plusSeconds(3600).toEpochMilli(), bossHealth, world);
             require(update("DELETE FROM ta_world_preparation WHERE player_uuid=? AND world_name=?", player.toString(), world) == 1, "World preparation disappeared");
@@ -293,6 +341,31 @@ public final class TotalAssaultStorage {
             saveAttemptInTransaction(c, attemptId, battleMillis, bossHealth, now);
             return null;
         });
+    }
+
+    /** 出战进度与圣徒两条进度在同一事务中保存。 */
+    synchronized void saveSaintAttempt(String challengeId, String attemptId, long battleMillis, double bossHealth,
+                                       Saint.Progress progress, Instant now) throws SQLException {
+        require(progress != null && Double.isFinite(progress.ultimate()) && Double.isFinite(progress.stun())
+                && progress.ultimate() >= 0 && progress.ultimate() <= 100 && progress.stun() >= 0 && progress.stun() <= 100,
+                "圣徒进度无效");
+        transaction(() -> {
+            Challenge challenge = getChallenge(challengeId);
+            requireLive(challenge, now);
+            saveAttemptInTransaction(challenge, attemptId, battleMillis, bossHealth, now);
+            update("INSERT INTO ta_saint_progress(challenge_id,ultimate,stun) VALUES(?,?,?) ON CONFLICT(challenge_id) DO UPDATE SET ultimate=excluded.ultimate,stun=excluded.stun",
+                    challengeId, progress.ultimate(), progress.stun());
+            return null;
+        });
+    }
+
+    synchronized Saint.Progress saintProgress(String challengeId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT ultimate,stun FROM ta_saint_progress WHERE challenge_id=?")) {
+            statement.setString(1, challengeId);
+            try (ResultSet result = statement.executeQuery()) {
+                return result.next() ? new Saint.Progress(result.getDouble(1), result.getDouble(2)) : new Saint.Progress(0, 0);
+            }
+        }
     }
 
     private void saveAttemptInTransaction(Challenge c, String attemptId, long battleMillis, double bossHealth, Instant now) throws SQLException {

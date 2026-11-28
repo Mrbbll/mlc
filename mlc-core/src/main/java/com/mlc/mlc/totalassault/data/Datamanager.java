@@ -1,6 +1,7 @@
 package com.mlc.mlc.totalassault.data;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import com.mlc.mlc.totalassault.boss.saint.Saint;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -115,18 +116,23 @@ public final class Datamanager {
      * @param player 玩家 UUID。
      * @param activity 活动 ID。
      * @param now 查询时刻，用于检查活动状态和计算刷新日期。
-     * @return 当日剩余票数，范围为 0 至 3。
+     * @return 当日每日票与管理员赠票的剩余总数。
      * @throws SQLException 活动未开放或数据库操作失败。
      */
     public static int remainingTickets(UUID player, String activity, Instant now) throws SQLException {
         return storage().remainingTickets(player, activity, now);
+    }
+
+    /** 管理员增加当前刷新日的赠票，返回增加后的剩余票数。 */
+    public static int giveTickets(UUID player, String activity, int amount, Instant now) throws SQLException {
+        return storage().giveTickets(player, activity, amount, now);
     }
     /**
      * 读取玩家当日票数，是 remainingTickets 的别名。
      * @param player 玩家 UUID。
      * @param activity 活动 ID。
      * @param now 查询时刻。
-     * @return 当日剩余票数，范围为 0 至 3。
+     * @return 当日剩余票数。
      * @throws SQLException 活动未开放或数据库操作失败。
      */
     public static int getremainticket(UUID player, String activity, Instant now) throws SQLException {
@@ -299,6 +305,17 @@ public final class Datamanager {
      */
     public static void saveAttempt(String challengeId, String attemptId, long battleMillis, double bossHealth, Instant now) throws SQLException {
         storage().saveAttempt(challengeId, attemptId, battleMillis, bossHealth, now);
+    }
+
+    /** 保存一次圣徒出战及两条进度。 */
+    public static void saveSaintAttempt(String challengeId, String attemptId, long battleMillis, double bossHealth,
+                                        Saint.Progress progress, Instant now) throws SQLException {
+        storage().saveSaintAttempt(challengeId, attemptId, battleMillis, bossHealth, progress, now);
+    }
+
+    /** 查询本张挑战票最后一次保存的圣徒进度。 */
+    public static Saint.Progress saintProgress(String challengeId) throws SQLException {
+        return storage().saintProgress(challengeId);
     }
     /**
      * 回退挑战中正在进行的出战，保留上一次已保存的进度，无返回值。

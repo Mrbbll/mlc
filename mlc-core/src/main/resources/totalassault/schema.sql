@@ -27,6 +27,17 @@ CREATE TABLE ta_ticket_day (
     PRIMARY KEY (activity_id, player_uuid, ticket_day)
 );
 
+-- 管理员赠票单独记录，仍按同一刷新日期失效。
+CREATE TABLE ta_ticket_bonus (
+    activity_id TEXT NOT NULL,
+    player_uuid TEXT NOT NULL,
+    ticket_day TEXT NOT NULL,
+    remaining INTEGER NOT NULL CHECK (remaining >= 0),
+    PRIMARY KEY (activity_id, player_uuid, ticket_day),
+    FOREIGN KEY (activity_id, player_uuid, ticket_day)
+        REFERENCES ta_ticket_day(activity_id, player_uuid, ticket_day)
+);
+
 -- 创建世界前登记，崩溃后可找到未扣票、未完成创建的世界。
 CREATE TABLE ta_world_preparation (
     player_uuid TEXT PRIMARY KEY,
@@ -61,6 +72,13 @@ CREATE TABLE ta_challenge (
 );
 CREATE UNIQUE INDEX ta_one_active_challenge ON ta_challenge(player_uuid)
     WHERE status IN ('PREPARING', 'BATTLING');
+
+-- 圣徒两条进度按挑战保存，只有保存出战时才更新。
+CREATE TABLE ta_saint_progress (
+    challenge_id TEXT PRIMARY KEY REFERENCES ta_challenge(id),
+    ultimate REAL NOT NULL CHECK (ultimate >= 0 AND ultimate <= 100),
+    stun REAL NOT NULL CHECK (stun >= 0 AND stun <= 100)
+);
 
 -- 每次进入战斗先写 ACTIVE；只有 SAVED 的出战参与装备禁用与成绩。
 CREATE TABLE ta_attempt (
@@ -124,4 +142,4 @@ CREATE TABLE ta_reward_delivery (
         OR (status = 'DELIVERED' AND delivered_at_ms IS NOT NULL))
 );
 
-PRAGMA user_version = 1;
+PRAGMA user_version = 3;

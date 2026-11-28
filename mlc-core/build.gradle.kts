@@ -13,6 +13,8 @@ dependencies {
         exclude("org.bukkit", "bukkit")
     }
     compileOnly(libs.placeholderapi)
+    // BetterModel 由服务器提供，插件中只使用其接口。
+    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:3.7.1")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.16.3")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.16.3") {
         isTransitive = false

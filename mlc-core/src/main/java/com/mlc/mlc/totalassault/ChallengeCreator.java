@@ -3,7 +3,8 @@ package com.mlc.mlc.totalassault;
 import com.mlc.mlc.totalassault.data.Datamanager;
 import com.mlc.mlc.totalassault.data.Filereader;
 import com.mlc.mlc.totalassault.data.difficulties;
-import com.mlc.mlc.totalassault.boss.testboss.TestBossDifficulty;
+import com.mlc.mlc.totalassault.boss.AssaultBoss;
+import com.mlc.mlc.totalassault.boss.BossRegistry;
 import com.mlc.mlc.totalassault.menu.tamenu;
 import com.mlc.mlc.totalassault.world.Worldmanager;
 import org.bukkit.Bukkit;
@@ -26,14 +27,16 @@ import java.util.logging.Level;
 public final class ChallengeCreator implements Listener {
     private final JavaPlugin plugin;
     private final Filereader.ActivityConfig activity;
+    private final BossRegistry bosses;
     // 所有访问都在主线程进行，防止玩家重复点击创建多个世界。
     private final Set<UUID> preparing = new HashSet<>();
     private final Set<UUID> disconnected = new HashSet<>();
     private boolean closed;
 
-    public ChallengeCreator(JavaPlugin plugin, Filereader.ActivityConfig activity) {
+    public ChallengeCreator(JavaPlugin plugin, Filereader.ActivityConfig activity, BossRegistry bosses) {
         this.plugin = plugin;
         this.activity = activity;
+        this.bosses = bosses;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -59,8 +62,11 @@ public final class ChallengeCreator implements Listener {
         try {
             Instant now = Instant.now();
             int order = activity.difficulties().indexOf(difficultyId);
+            AssaultBoss boss = bosses.find(activity.bossId()).orElse(null);
             if (now.isBefore(activity.start()) || !now.isBefore(activity.start().plusSeconds(7L * 24 * 60 * 60))) {
                 player.sendMessage(TaText.line("<#b8ffde>当前没有开放的总力战活动。"));
+            } else if (boss == null) {
+                player.sendMessage(TaText.line("<#ffb4a8>本期 Boss 尚未实现或配置有误，无法开启挑战。"));
             } else if (order < 0 || difficulties.fromId(difficultyId).isEmpty()) {
                 player.sendMessage(TaText.line("<#b8ffde>该难度不存在。"));
             } else if (Datamanager.findActiveChallenge(playerId).isPresent()) {
@@ -72,6 +78,9 @@ public final class ChallengeCreator implements Listener {
             } else if (Datamanager.remainingTickets(playerId, activity.id(), now) <= 0) {
                 player.sendMessage(TaText.line("<#b8ffde>今天的挑战票已经用完。"));
             } else {
+                // 在创建世界和扣票之前，确认 Boss 支持这个难度。
+                boss.validate();
+                boss.attributes(difficultyId);
                 Filereader.ArenaConfig arena = Filereader.ArenaConfig.load(plugin);
                 Datamanager.prepareWorld(playerId, worldName, now);
                 registered = true;
@@ -102,8 +111,11 @@ public final class ChallengeCreator implements Listener {
             return;
         }
         try {
+            AssaultBoss boss = bosses.find(activity.bossId())
+                    .orElseThrow(() -> new IllegalStateException("本期 Boss 尚未注册：" + activity.bossId()));
+            boss.validate();
             Datamanager.startChallenge(challengeId.toString(), playerId, activity.id(), difficultyId,
-                    worldName, TestBossDifficulty.of(difficultyId).health(), Instant.now());
+                    worldName, boss.attributes(difficultyId).health(), Instant.now());
         } catch (SQLException | RuntimeException exception) {
             fail(playerId, worldName, "挑战创建失败，没有消耗挑战票。", exception);
             return;
