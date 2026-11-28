@@ -1,10 +1,12 @@
 package com.mlc.mlc.totalassault.boss.saint;
 
 import com.mlc.mlc.totalassault.boss.BossHandle;
+import com.mlc.mlc.totalassault.TaText;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
@@ -31,10 +33,47 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * 普通技能按难度表和冷却轮流选择；大招可以打断普通技能，眩晕会中断当前普通技能。
  * 各技能的伤害、范围、时间及可用技能在 SaintDifficulty 中按难度调整。
+ * 技能音效使用原版声音，仅发送给本次挑战玩家；音效名称、音量和音调在下方统一调整。
  * 已生成的弹幕由本控制器维护，在出战结束时统一清理。
  */
 final class SaintSkills implements BossHandle {
     private static final double FULL = 100;
+    /** 圣徒战斗台词；每 20 秒随机选择一句，仅挑战玩家可见。 */
+    private static final List<String> DIALOGUES = List.of(
+            "<#f8e5a0>「此刻，群星将为汝等送葬。」",
+            "<#f8e5a0>「神明不再垂怜，唯有终焉永存。」",
+            "<#f8e5a0>「见证吧，此即万象归墟之刻！」",
+            "<#f8e5a0>「以吾之名，宣告此世终末。」",
+            "<#f8e5a0>「时间、空间、因果……皆归于虚无！」",
+            "<#f8e5a0>「天幕倾覆，星海沉沦。」",
+            "<#f8e5a0>「星辰坠落之时，便是尔等葬身之日。」",
+            "<#f8e5a0>「汝逃得过幻影，却逃不过宿命。」",
+            "<#f8e5a0>「僭越神权者，当受天诛！」"
+    );
+    /** 音效标识、音量与音调；替换为资源包音效时可直接修改声音标识。 */
+    private record SoundCue(String sound, float volume, float pitch) {}
+    private record SkillSounds(SoundCue start, SoundCue hit) {}
+
+    private static final SkillSounds NORMAL_SOUNDS = new SkillSounds(
+            new SoundCue("minecraft:entity.player.attack.sweep", 1.0f, 1.0f),
+            new SoundCue("minecraft:entity.player.attack.strong", 1.0f, 1.0f));
+    private static final SkillSounds LIGHTNING_SOUNDS = new SkillSounds(
+            new SoundCue("minecraft:block.beacon.ambient", 0.8f, 1.5f),
+            new SoundCue("minecraft:entity.lightning_bolt.thunder", 0.8f, 1.3f));
+    private static final SkillSounds SHOCKWAVE_SOUNDS = new SkillSounds(
+            new SoundCue("minecraft:entity.warden.sonic_charge", 0.9f, 1.2f),
+            new SoundCue("minecraft:entity.warden.sonic_boom", 1.0f, 1.2f));
+    private static final SkillSounds ULTIMATE_SOUNDS = new SkillSounds(
+            new SoundCue("minecraft:entity.ender_dragon.growl", 0.9f, 0.8f),
+            new SoundCue("minecraft:entity.generic.explode", 1.0f, 0.8f));
+    private static final SkillSounds MOVE_SOUNDS = new SkillSounds(
+            new SoundCue("minecraft:entity.illusioner.prepare_mirror", 0.8f, 1.1f),
+            new SoundCue("minecraft:block.glass.break", 0.8f, 1.4f));
+    private static final SkillSounds BARRAGE_SOUNDS = new SkillSounds(
+            new SoundCue("minecraft:block.amethyst_block.chime", 0.8f, 1.2f),
+            new SoundCue("minecraft:entity.arrow.hit_player", 0.8f, 1.0f));
+    private static final SoundCue TRACKING_SHOT = new SoundCue("minecraft:entity.snowball.throw", 0.6f, 1.3f);
+    private static final SoundCue BARRAGE_SHOT = new SoundCue("minecraft:entity.arrow.shoot", 0.45f, 1.6f);
     /** 普通技能的轮换顺序；大招由进度单独触发。 */
     private static final SaintDifficulty.Skill[] ROTATION = {
             SaintDifficulty.Skill.NORMAL_ATTACK, SaintDifficulty.Skill.LIGHTNING, SaintDifficulty.Skill.SHOCKWAVE,
@@ -51,6 +90,8 @@ final class SaintSkills implements BossHandle {
     private double ultimate;
     private double stun;
     private long lastTime;
+    private long nextDialogue;
+    private long activeAt;
     private long stunnedUntil;
     private boolean pendingStun;
     private int current = -1;
@@ -64,6 +105,7 @@ final class SaintSkills implements BossHandle {
     private long nextAction;
     private long nextSkillAt;
     private int strikes;
+    private int previewTicks;
     private List<SaintDifficulty.Point> movePoints = List.of();
     private int movePoint;
 
@@ -110,6 +152,8 @@ final class SaintSkills implements BossHandle {
         this.ultimate = Math.max(0, Math.min(FULL, ultimate));
         this.stun = Math.max(0, Math.min(FULL, stun));
         this.lastTime = System.nanoTime();
+        this.activeAt = this.lastTime + SaintDifficulty.ACTIVATION_DELAY_TICKS * 50_000_000L;
+        this.nextDialogue = this.activeAt + 20_000_000_000L;
         task = plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 1L, 1L);
     }
 
@@ -129,10 +173,24 @@ final class SaintSkills implements BossHandle {
 
     private void tick() {
         if (!entity.isValid() || entity.isDead() || !player.isOnline() || !player.getWorld().equals(entity.getWorld())) return;
+        // 持续朝向玩家；已锁定的范围技能方向仍沿用施法开始时的方向。
+        facePlayer();
         long now = System.nanoTime();
+        if (now < activeAt) {
+            // 等待激活期间允许玩家攻击，但技能和大招进度都不运行。
+            lastTime = now;
+            return;
+        }
+        if (now >= nextDialogue) {
+            String dialogue = DIALOGUES.get(ThreadLocalRandom.current().nextInt(DIALOGUES.size()));
+            player.sendMessage(TaText.line("<#ffd166>圣徒 <#aab8b0>» " + dialogue));
+            nextDialogue = now + 20_000_000_000L;
+        }
         ultimate = Math.min(FULL, ultimate + Math.max(0, now - lastTime) / 1_000_000_000.0 * 2);
         lastTime = now;
         tickBullets();
+        // 弹幕伤害可能同步触发死亡和出战结束，此时控制器已经被清理。
+        if (task == null) return;
         if (now < stunnedUntil) return;
         // 大招充满后立即打断普通技能；眩晕期间则等待眩晕结束。
         if (ultimate >= FULL && current != 3 && difficulty.hasSkill(SaintDifficulty.Skill.ULTIMATE)) {
@@ -194,12 +252,14 @@ final class SaintSkills implements BossHandle {
             default -> 0;
         };
         if (recoveryTicks > 0) nextSkillAt = Math.max(nextSkillAt, now + recoveryTicks * 50_000_000L);
+        model.stop();
         current = -1;
     }
 
     private void begin(int skill, long now) {
         current = skill;
         strikes = 0;
+        previewTicks = 0;
         skillStart = now;
         nextAction = now;
         facePlayer();
@@ -213,7 +273,39 @@ final class SaintSkills implements BossHandle {
             SaintDifficulty.Point point = movePoints.get(movePoint);
             moveEnd = new Location(entity.getWorld(), point.x(), point.y(), point.z());
         }
-        model.play(switch (skill) { case 0 -> "横扫"; case 1 -> "落雷"; case 2 -> "冲击波"; case 4 -> "移动"; case 5 -> "弹幕"; default -> "大招"; });
+        // 动画从技能预警开始时播放，名称与难度表中的英文技能名保持一致。
+        model.play(switch (skill) {
+            case 0 -> "normal_attack";
+            case 1 -> "lightning";
+            case 2 -> "shockwave";
+            case 3 -> "ultimate";
+            case 4 -> "move";
+            case 5 -> "barrage";
+            default -> throw new IllegalArgumentException("未知技能：" + skill);
+        });
+        playSound(entity.getLocation(), sounds(skill).start());
+    }
+
+    /** 将技能编号映射到对应的预警和命中音效。 */
+    private SkillSounds sounds(int skill) {
+        return switch (skill) {
+            case 0 -> NORMAL_SOUNDS;
+            case 1 -> LIGHTNING_SOUNDS;
+            case 2 -> SHOCKWAVE_SOUNDS;
+            case 3 -> ULTIMATE_SOUNDS;
+            case 4 -> MOVE_SOUNDS;
+            case 5 -> BARRAGE_SOUNDS;
+            default -> throw new IllegalArgumentException("未知技能：" + skill);
+        };
+    }
+
+    /** 音效只发送给挑战玩家，不向世界中的其他玩家广播。 */
+    private void playSound(Location location, SoundCue sound) {
+        if (player.isOnline() && player.getWorld().equals(location.getWorld())) {
+            // 从玩家位置播放并设为最大音量，避免远程技能因距离产生衰减。
+            player.playSound(player.getLocation(), sound.sound(), SoundCategory.HOSTILE,
+                    Math.max(1.0f, sound.volume()), sound.pitch());
+        }
     }
 
     /** 根据正在释放的范围技能读取当前难度的参数。 */
@@ -239,10 +331,21 @@ final class SaintSkills implements BossHandle {
         double radius = settings.radius();
         double half = Math.toRadians(settings.halfAngleDegrees());
         double base = settings.halfAngleDegrees() < 180 ? Math.atan2(direction.getZ(), direction.getX()) : 0;
+        if (current == 2) {
+            // 每四刻绘制一次扇形，沿每隔五度的射线以半格间距填充粒子。
+            if (previewTicks++ % 4 != 0) return;
+            Particle.DustOptions yellow = new Particle.DustOptions(Color.YELLOW, 1.0f);
+            double angleStep = Math.toRadians(5);
+            for (double offset = -half; offset < half; offset += angleStep) {
+                drawShockwaveLine(center, base + offset, radius, yellow);
+            }
+            drawShockwaveLine(center, base + half, radius, yellow);
+            return;
+        }
         for (int i = 0; i <= 24; i++) {
             double angle = base - half + 2 * half * i / 24;
             Location point = center.clone().add(Math.cos(angle) * radius, 0.2, Math.sin(angle) * radius);
-            if (current == 2) {
+            if (current == 1 || current == 2) {
                 entity.getWorld().spawnParticle(Particle.DUST, point, 1, 0, 0, 0, 0,
                         new Particle.DustOptions(Color.YELLOW, 1.0f));
             } else {
@@ -251,8 +354,22 @@ final class SaintSkills implements BossHandle {
         }
     }
 
+    /** 绘制冲击波预警区域内的一条黄色射线，包含最外侧边界。 */
+    private void drawShockwaveLine(Location center, double angle, double radius, Particle.DustOptions color) {
+        double x = Math.cos(angle);
+        double z = Math.sin(angle);
+        for (double distance = 0; distance < radius; distance += 0.5) {
+            entity.getWorld().spawnParticle(Particle.DUST, center.clone().add(x * distance, 0.2, z * distance),
+                    1, 0, 0, 0, 0, color);
+        }
+        entity.getWorld().spawnParticle(Particle.DUST, center.clone().add(x * radius, 0.2, z * radius),
+                1, 0, 0, 0, 0, color);
+    }
+
     private void hit() {
         Location center = current == 0 || current == 1 ? target : entity.getLocation();
+        // 即使玩家成功躲开，也能听到技能落下的声音。
+        playSound(center, sounds(current).hit());
         Vector delta = player.getLocation().toVector().subtract(center.toVector());
         SaintDifficulty.AreaSkill settings = areaSkill(current);
         double radius = settings.radius();
@@ -327,6 +444,7 @@ final class SaintSkills implements BossHandle {
                 spread == 0 ? 0 : random.nextDouble(-spread, spread));
         Vector aim = player.getEyeLocation().toVector().subtract(start.toVector());
         if (aim.lengthSquared() < 0.0001) return;
+        playSound(start, tracking ? TRACKING_SHOT : BARRAGE_SHOT);
         BlockDisplay display = null;
         if (tracking) {
             display = entity.getWorld().spawn(start, BlockDisplay.class, block -> {
@@ -365,12 +483,15 @@ final class SaintSkills implements BossHandle {
                 entity.getWorld().spawnParticle(Particle.END_ROD, bullet.location, 1, 0, 0, 0, 0);
             }
             if (player.getBoundingBox().expand(0.3).contains(bullet.location.toVector())) {
+                // 先从迭代器移除，伤害事件可能同步结束出战并清空剩余弹幕。
+                iterator.remove();
+                bullet.remove();
+                playSound(bullet.location, bullet.tracking ? MOVE_SOUNDS.hit() : BARRAGE_SOUNDS.hit());
                 player.damage(bullet.damage, entity);
+                if (task == null) return;
                 if (bullet.freezeTicks > 0 && !player.isDead()) {
                     player.setFreezeTicks(Math.max(player.getFreezeTicks(), bullet.freezeTicks));
                 }
-                bullet.remove();
-                iterator.remove();
             }
         }
     }

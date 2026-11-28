@@ -19,6 +19,7 @@ public final class TotalAssaultStorage {
                             String worldName, String worldState) {}
     public record AttemptItem(String slot, String identityType, String identityValue, byte[] snapshot) {}
     public record Score(String challengeId, int difficultyOrder, long battleMillis, long achievedAt) {}
+    public record RankingEntry(UUID player, String difficulty, long battleMillis, long score, long achievedAt) {}
     public record Attempt(String id, int number, String status, long startedAt, Long endedAt, Long battleMillis, Double bossHealthAfter) {}
     public record WorldPreparation(UUID player, String worldName, String state) {}
     public record Reward(String key, String activityId, UUID player, String challengeId, String kind, byte[] payload) {}
@@ -29,6 +30,17 @@ public final class TotalAssaultStorage {
                                String challengeId, String difficulty, int difficultyOrder, long battleMillis,
                                long achievedAtMillis, List<HistoryAttempt> attempts) {}
     public record HistoryPage(long total, int limit, int offset, List<HistoryScore> scores) {}
+    public record ActivitySummary(String id, String name, String bossId) {}
+
+    /** 返回已登记的活动，包括尚无通关成绩的活动。 */
+    synchronized List<ActivitySummary> activities() throws SQLException {
+        List<ActivitySummary> result = new ArrayList<>();
+        try (Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery("SELECT id,name,boss_id FROM ta_activity ORDER BY start_ms DESC,id")) {
+            while (rs.next()) result.add(new ActivitySummary(rs.getString(1), rs.getString(2), rs.getString(3)));
+        }
+        return List.copyOf(result);
+    }
 
     TotalAssaultStorage(Path file) throws SQLException, IOException {
         Datamanager.prepareDatabaseDirectory(file);
@@ -46,12 +58,28 @@ public final class TotalAssaultStorage {
             else {
                 if (version == 1) { migrateSaintProgress(); version = 2; }
                 if (version == 2) { migrateTicketBonus(); version = 3; }
-                if (version != 3) throw new SQLException("Unsupported total assault database version: " + version);
+                if (version == 3) { migrateExtraSlots(); version = 4; }
+                if (version != 4) throw new SQLException("Unsupported total assault database version: " + version);
             }
         } catch (SQLException | IOException | RuntimeException e) {
             try { connection.close(); } catch (SQLException close) { e.addSuppressed(close); }
             throw e;
         }
+    }
+
+    /** 扩展辅助槽位约束，原有出战和物品快照在同一事务内完整保留。 */
+    private void migrateExtraSlots() throws SQLException {
+        transaction(() -> {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("CREATE TABLE ta_attempt_item_new (attempt_id TEXT NOT NULL REFERENCES ta_attempt(id) ON DELETE CASCADE, slot TEXT NOT NULL CHECK (slot IN ('HEAD','CHEST','LEGS','FEET','MAIN_HAND','OFF_HAND','HOTBAR_2','HOTBAR_3','HOTBAR_4','HOTBAR_5')), identity_type TEXT NOT NULL CHECK (identity_type IN ('MODEL','MATERIAL')), identity_value TEXT NOT NULL, item_snapshot BLOB NOT NULL, PRIMARY KEY (attempt_id,slot))");
+                statement.execute("INSERT INTO ta_attempt_item_new SELECT * FROM ta_attempt_item");
+                statement.execute("DROP TABLE ta_attempt_item");
+                statement.execute("ALTER TABLE ta_attempt_item_new RENAME TO ta_attempt_item");
+                statement.execute("CREATE INDEX ta_item_identity ON ta_attempt_item(identity_type,identity_value)");
+                statement.execute("PRAGMA user_version = 4");
+            }
+            return null;
+        });
     }
 
     /** 为旧数据库增加赠票记录，不修改已有挑战和每日票数。 */
@@ -416,6 +444,26 @@ public final class TotalAssaultStorage {
                 return rs.next() ? Optional.of(new Score(rs.getString(1), rs.getInt(2), rs.getLong(3), rs.getLong(4))) : Optional.empty();
             }
         }
+    }
+
+    /** 读取本期各玩家的最佳成绩，统一使用游戏内计分公式排序。 */
+    synchronized List<RankingEntry> ranking(String activity) throws SQLException {
+        List<RankingEntry> result = new ArrayList<>();
+        String sql = "SELECT s.player_uuid,c.difficulty_id,s.battle_ms,s.achieved_at_ms FROM ta_best_score s JOIN ta_challenge c ON c.id=s.challenge_id WHERE s.activity_id=?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, activity);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    String difficulty = rs.getString(2);
+                    difficulties value = difficulties.fromId(difficulty).orElseThrow(() -> new SQLException("未知难度：" + difficulty));
+                    long millis = rs.getLong(3);
+                    result.add(new RankingEntry(UUID.fromString(rs.getString(1)), difficulty, millis, value.score(millis), rs.getLong(4)));
+                }
+            }
+        }
+        result.sort(Comparator.comparingLong(RankingEntry::score).reversed()
+                .thenComparingLong(RankingEntry::achievedAt).thenComparing(entry -> entry.player().toString()));
+        return List.copyOf(result);
     }
 
     /** 只读取各期最佳成绩及其已保存出战，不创建票券或变更挑战。 */

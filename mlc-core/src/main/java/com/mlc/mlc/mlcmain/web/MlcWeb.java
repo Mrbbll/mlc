@@ -40,7 +40,8 @@ public final class MlcWeb implements AutoCloseable {
             WebServer server = new WebServer(new InetSocketAddress(host, port), Map.of(
                     "/api/v1/leaderboard/playtime", new LeaderboardHandler<>(playtime::latest),
                     "/api/v1/leaderboard/economy", new LeaderboardHandler<>(economy::latest),
-                    "/api/v1/totalassault/scores", new LeaderboardHandler<>(new TotalAssaultSource(), plugin.getLogger())
+                    "/api/v1/totalassault/scores", new LeaderboardHandler<>(new TotalAssaultSource(plugin), plugin.getLogger()),
+                    "/api/v1/totalassault/leaderboard", new LeaderboardHandler<>(new TotalAssaultSource(plugin), plugin.getLogger(), true)
             ), plugin.getLogger());
             web = new MlcWeb(playtime, economy, server);
             server.start();

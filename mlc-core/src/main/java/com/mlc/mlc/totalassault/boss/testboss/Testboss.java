@@ -14,6 +14,7 @@ import java.util.UUID;
 /** 原版僵尸实现，仅用于验证总力战流程。 */
 public class Testboss implements AssaultBoss {
     @Override public String id() { return "test_zombie"; }
+    @Override public String displayName() { return "测试僵尸"; }
 
     @Override
     public BossAttributes attributes(String difficulty) {

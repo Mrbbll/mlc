@@ -5,7 +5,37 @@ import java.util.Map;
 
 /** 圣徒各难度的血量和技能表；每个技能名称后紧跟该难度的参数。 */
 public record SaintDifficulty(double health, Map<Skill, SkillSettings> skills) {
-    public enum Skill { NORMAL_ATTACK, LIGHTNING, SHOCKWAVE, MOVE, BARRAGE, ULTIMATE }
+    /** 技能名称和说明与实际伤害参数分开，菜单按当前难度自动组合。 */
+    public enum Skill {
+        NORMAL_ATTACK("蚀界连环", "连续锁定玩家位置，释放圆形攻击。"),
+        LIGHTNING("苍雷神罚", "锁定玩家位置，短暂预警后发动攻击，ins及以上难度会额外缓慢效果。"),
+        SHOCKWAVE("裂空之息", "向目标方向释放扇形冲击波。"),
+        MOVE("幻影追魂", "依次移动到固定点位，并发射追踪弹，ins及以上难度会额外霜冻效果。"),
+        BARRAGE("星陨天幕", "在上方持续生成射向玩家的弹幕。"),
+        ULTIMATE("终焉·万象归墟", "战斗中逐渐蓄力，充满后释放范围攻击。");
+
+        private final String displayName;
+        private final String description;
+        Skill(String displayName, String description) { this.displayName = displayName; this.description = description; }
+        public String displayName() { return displayName; }
+        public String description() { return description; }
+    }
+
+    /** 入场镜头绝对坐标；每个点的 durationTicks 是从该点移动到下一点的时间。 */
+    public record CameraPoint(double x, double y, double z, float yaw, float pitch, int durationTicks) {}
+    /** 入场文字：主标题按字符显示，副标题在主标题完成后出现。 */
+    public static final String INTRO_TITLE = "第七圣徒";
+    public static final String INTRO_SUBTITLE = "<#c4abd9>—— 无垢的审判者 ——";
+    public static final String INTRO_DIALOGUE = "<#e2d2f0>「愿群星见证，愿神明垂怜。」";
+    public static final int INTRO_TITLE_CHARACTER_TICKS = 4;
+    /** 镜头结束并开始计时后，圣徒延迟激活技能的时间。 */
+    public static final int ACTIVATION_DELAY_TICKS = 200;
+    public static final List<CameraPoint> INTRO_POINTS = List.of(
+            // 示例：new CameraPoint(20, 78, 70, 0, 10, 60),
+            //       new CameraPoint(25, 76, 80, 90, 5, 60)
+            new CameraPoint(23,68,87,-12.9f,-25.6f,80),
+            new CameraPoint(19,68,88,-45.3f,-26.3f,0)
+    );
 
     /** 挑战世界内的绝对坐标；移动时严格按列表填写顺序依次经过所有点位。 */
     public record Point(double x, double y, double z) {}
@@ -76,33 +106,33 @@ public record SaintDifficulty(double health, Map<Skill, SkillSettings> skills) {
                     Map.entry(Skill.MOVE, new ProjectileSkill(5, 18, 0.30, 10, 40, 1, 0.75, 0.5, 60)), // 移动追踪弹
                     Map.entry(Skill.ULTIMATE, new AreaSkill(14, 20, 180, 60, 0, 1, 0, 0)))); // 大招，进度满时触发
             case "ex" -> new SaintDifficulty(240, Map.ofEntries(
-                    Map.entry(Skill.NORMAL_ATTACK, new AreaSkill(6, 3, 180, 20, 8, 5, 12, 60)), // 普通攻击
+                    Map.entry(Skill.NORMAL_ATTACK, new AreaSkill(8, 3, 180, 20, 8, 5, 12, 60)), // 普通攻击
                     Map.entry(Skill.LIGHTNING, new AreaSkill(8, 3, 180, 30, 12, 1, 0, 60)), // 落雷
                     Map.entry(Skill.SHOCKWAVE, new AreaSkill(10, 12, 45, 40, 16, 1, 0, 60)), // 冲击波
                     Map.entry(Skill.MOVE, new ProjectileSkill(6, 18, 0.30, 10, 40, 1, 0.75, 0.5, 60)), // 移动追踪弹
                     Map.entry(Skill.BARRAGE, new ProjectileSkill(5, 20, 0.45, 5, 80, 2.5, 0.75, 0.5, 60)), // 头顶弹幕
-                    Map.entry(Skill.ULTIMATE, new AreaSkill(14, 20, 180, 60, 0, 1, 0, 0)))); // 大招，进度满时触发
-            case "ins" -> new SaintDifficulty(400, Map.ofEntries(
-                    Map.entry(Skill.NORMAL_ATTACK, new AreaSkill(6, 3, 180, 20, 8, 5, 12, 60)), // 普通攻击
-                    Map.entry(Skill.LIGHTNING, new AreaSkill(8, 3, 180, 30, 12, 1, 0, 60)), // 落雷
-                    Map.entry(Skill.SHOCKWAVE, new AreaSkill(10, 12, 45, 40, 16, 1, 0, 60, 60, 0)), // 冲击波
-                    Map.entry(Skill.MOVE, new ProjectileSkill(7, 18, 0.30, 10, 40, 1, 0.75, 0.5, 60, 140)), // 移动追踪弹
-                    Map.entry(Skill.BARRAGE, new ProjectileSkill(6, 20, 0.45, 5, 80, 2.5, 0.75, 0.5, 60)), // 头顶弹幕
-                    Map.entry(Skill.ULTIMATE, new AreaSkill(14, 20, 180, 60, 0, 1, 0, 0)))); // 大招，进度满时触发
-            case "tm" -> new SaintDifficulty(640, Map.ofEntries(
-                    Map.entry(Skill.NORMAL_ATTACK, new AreaSkill(6, 3, 180, 20, 8, 5, 12, 60)), // 普通攻击
-                    Map.entry(Skill.LIGHTNING, new AreaSkill(8, 3, 180, 30, 12, 1, 0, 60)), // 落雷
-                    Map.entry(Skill.SHOCKWAVE, new AreaSkill(10, 12, 45, 40, 16, 1, 0, 60, 60, 0)), // 冲击波
-                    Map.entry(Skill.MOVE, new ProjectileSkill(8, 18, 0.30, 10, 40, 1, 0.75, 0.5, 60, 140)), // 移动追踪弹
-                    Map.entry(Skill.BARRAGE, new ProjectileSkill(7, 20, 0.45, 5, 80, 2.5, 0.75, 0.5, 60)), // 头顶弹幕
-                    Map.entry(Skill.ULTIMATE, new AreaSkill(14, 20, 180, 60, 0, 1, 0, 0)))); // 大招，进度满时触发
+                    Map.entry(Skill.ULTIMATE, new AreaSkill(25, 20, 180, 60, 0, 1, 0, 0)))); // 大招，进度满时触发
+            case "ins" -> new SaintDifficulty(600, Map.ofEntries(
+                    Map.entry(Skill.NORMAL_ATTACK, new AreaSkill(10, 3, 180, 20, 8, 5, 12, 60)), // 普通攻击
+                    Map.entry(Skill.LIGHTNING, new AreaSkill(30, 3, 180, 30, 12, 1, 0, 60, 60, 0)), // 落雷：迟缓 60 刻，一级
+                    Map.entry(Skill.SHOCKWAVE, new AreaSkill(25, 12, 45, 40, 16, 1, 0, 60, 60, 0)), // 冲击波
+                    Map.entry(Skill.MOVE, new ProjectileSkill(10, 18, 0.30, 10, 40, 1, 0.75, 0.5, 60, 140)), // 移动追踪弹
+                    Map.entry(Skill.BARRAGE, new ProjectileSkill(10, 20, 0.45, 5, 80, 2.5, 0.75, 0.5, 60)), // 头顶弹幕
+                    Map.entry(Skill.ULTIMATE, new AreaSkill(40, 20, 180, 60, 0, 1, 0, 0)))); // 大招，进度满时触发
+            case "tm" -> new SaintDifficulty(840, Map.ofEntries(
+                    Map.entry(Skill.NORMAL_ATTACK, new AreaSkill(20, 3, 180, 20, 8, 5, 12, 60)), // 普通攻击
+                    Map.entry(Skill.LIGHTNING, new AreaSkill(40, 3, 180, 30, 12, 1, 0, 60, 120, 1)), // 落雷：迟缓 120 刻，2级
+                    Map.entry(Skill.SHOCKWAVE, new AreaSkill(30, 12, 45, 40, 16, 1, 0, 60, 60, 0)), // 冲击波
+                    Map.entry(Skill.MOVE, new ProjectileSkill(20, 18, 0.30, 10, 40, 1, 0.75, 0.5, 60, 140)), // 移动追踪弹
+                    Map.entry(Skill.BARRAGE, new ProjectileSkill(20, 20, 0.45, 5, 80, 2.5, 0.75, 0.5, 60)), // 头顶弹幕
+                    Map.entry(Skill.ULTIMATE, new AreaSkill(50, 20, 180, 60, 0, 1, 0, 0)))); // 大招，进度满时触发
             case "lu" -> new SaintDifficulty(1000, Map.ofEntries(
-                    Map.entry(Skill.NORMAL_ATTACK, new AreaSkill(6, 3, 180, 20, 8, 5, 12, 60)), // 普通攻击
-                    Map.entry(Skill.LIGHTNING, new AreaSkill(8, 3, 180, 30, 12, 1, 0, 60)), // 落雷
-                    Map.entry(Skill.SHOCKWAVE, new AreaSkill(10, 12, 45, 40, 16, 1, 0, 60, 60, 0)), // 冲击波
-                    Map.entry(Skill.MOVE, new ProjectileSkill(9, 18, 0.30, 10, 40, 1, 0.75, 0.5, 60, 140)), // 移动追踪弹
-                    Map.entry(Skill.BARRAGE, new ProjectileSkill(8, 20, 0.45, 5, 80, 2.5, 0.75, 0.5, 60)), // 头顶弹幕
-                    Map.entry(Skill.ULTIMATE, new AreaSkill(14, 20, 180, 60, 0, 1, 0, 0)))); // 大招，进度满时触发
+                    Map.entry(Skill.NORMAL_ATTACK, new AreaSkill(30, 3, 180, 20, 8, 5, 12, 60)), // 普通攻击
+                    Map.entry(Skill.LIGHTNING, new AreaSkill(60, 3, 180, 30, 12, 1, 0, 60, 180, 1)), // 落雷：迟缓 180 刻，2级
+                    Map.entry(Skill.SHOCKWAVE, new AreaSkill(70, 12, 45, 40, 16, 1, 0, 60, 60, 0)), // 冲击波
+                    Map.entry(Skill.MOVE, new ProjectileSkill(50, 18, 0.30, 10, 40, 1, 0.75, 0.5, 60, 140)), // 移动追踪弹
+                    Map.entry(Skill.BARRAGE, new ProjectileSkill(60, 20, 0.45, 5, 80, 2.5, 0.75, 0.5, 60)), // 头顶弹幕
+                    Map.entry(Skill.ULTIMATE, new AreaSkill(60, 20, 180, 60, 0, 1, 0, 0)))); // 大招，进度满时触发
             default -> throw new IllegalArgumentException("未知圣徒难度：" + id);
         };
     }

@@ -100,7 +100,7 @@ CREATE UNIQUE INDEX ta_one_active_attempt ON ta_attempt(challenge_id) WHERE stat
 -- 每个非空进场槽位一行，完整物品快照包含数量、组件和耐久。
 CREATE TABLE ta_attempt_item (
     attempt_id TEXT NOT NULL REFERENCES ta_attempt(id) ON DELETE CASCADE,
-    slot TEXT NOT NULL CHECK (slot IN ('HEAD', 'CHEST', 'LEGS', 'FEET', 'MAIN_HAND', 'OFF_HAND', 'HOTBAR_2', 'HOTBAR_3')),
+    slot TEXT NOT NULL CHECK (slot IN ('HEAD', 'CHEST', 'LEGS', 'FEET', 'MAIN_HAND', 'OFF_HAND', 'HOTBAR_2', 'HOTBAR_3', 'HOTBAR_4', 'HOTBAR_5')),
     identity_type TEXT NOT NULL CHECK (identity_type IN ('MODEL', 'MATERIAL')),
     identity_value TEXT NOT NULL,
     item_snapshot BLOB NOT NULL,
@@ -142,4 +142,4 @@ CREATE TABLE ta_reward_delivery (
         OR (status = 'DELIVERED' AND delivered_at_ms IS NOT NULL))
 );
 
-PRAGMA user_version = 3;
+PRAGMA user_version = 4;

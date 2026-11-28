@@ -126,6 +126,16 @@ public class menuopenlistener implements Listener {
                 });
                 break;
 
+            case Mlcmenu.SLOT_TOTAL_ASSAULT:
+                // 等当前点击事件结束后再打开新界面，沿用 /ta 的入口和状态判断。
+                Bukkit.getScheduler().runTask(instance, () -> {
+                    if (player.isOnline() && player.getOpenInventory().getTopInventory().equals(inv)) {
+                        player.closeInventory();
+                        player.performCommand("ta");
+                    }
+                });
+                break;
+
             default:
                 // 点击边框或其他区域，不做处理
                 break;

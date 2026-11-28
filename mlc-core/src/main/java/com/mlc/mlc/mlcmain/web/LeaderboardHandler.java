@@ -30,17 +30,24 @@ final class LeaderboardHandler<T> {
     private final Supplier<LeaderboardSnapshot<T>> snapshots;
     private final TotalAssaultSource totalAssault;
     private final Logger logger;
+    private final boolean totalAssaultLeaderboard;
 
     LeaderboardHandler(Supplier<LeaderboardSnapshot<T>> snapshots) {
         this.snapshots = snapshots;
         this.totalAssault = null;
         this.logger = null;
+        this.totalAssaultLeaderboard = false;
     }
 
     LeaderboardHandler(TotalAssaultSource totalAssault, Logger logger) {
+        this(totalAssault, logger, false);
+    }
+
+    LeaderboardHandler(TotalAssaultSource totalAssault, Logger logger, boolean totalAssaultLeaderboard) {
         this.snapshots = null;
         this.totalAssault = totalAssault;
         this.logger = logger;
+        this.totalAssaultLeaderboard = totalAssaultLeaderboard;
     }
 
     void handle(HttpExchange exchange) throws IOException {
@@ -51,6 +58,16 @@ final class LeaderboardHandler<T> {
         }
 
         if (totalAssault != null) {
+            if (totalAssaultLeaderboard) {
+                try {
+                    exchange.getResponseHeaders().set("Cache-Control", "no-store");
+                    json(exchange, 200, totalAssault.leaderboard());
+                } catch (SQLException | IllegalStateException exception) {
+                    logger.log(Level.WARNING, "查询总力战排行榜失败。", exception);
+                    error(exchange, 503, "UNAVAILABLE", "Total assault data is unavailable");
+                }
+                return;
+            }
             handleTotalAssault(exchange);
             return;
         }

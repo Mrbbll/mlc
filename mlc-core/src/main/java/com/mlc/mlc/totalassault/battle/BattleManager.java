@@ -4,16 +4,25 @@ import com.mlc.mlc.totalassault.boss.AssaultBoss;
 import com.mlc.mlc.totalassault.boss.BossHandle;
 import com.mlc.mlc.totalassault.boss.BossRegistry;
 import com.mlc.mlc.totalassault.boss.saint.Saint;
+import com.mlc.mlc.totalassault.boss.saint.SaintDifficulty;
+import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import com.mlc.mlc.totalassault.TaText;
 import com.mlc.mlc.totalassault.data.Datamanager;
 import com.mlc.mlc.totalassault.data.Filereader;
 import com.mlc.mlc.totalassault.data.TotalAssaultStorage;
+import com.mlc.mlc.totalassault.data.difficulties;
 import com.mlc.mlc.totalassault.menu.tamenu;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -27,17 +36,21 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.List;
 import java.util.logging.Level;
 
 /** 管理单次出战、计时以及退出时的保存和回退。 */
@@ -49,10 +62,28 @@ public final class BattleManager implements Listener {
     private final Map<UUID, Battle> battles = new HashMap<>();
     private final Set<UUID> internalTeleports = new java.util.HashSet<>();
     private final Set<UUID> returnToLobby = new java.util.HashSet<>();
+    private final Map<UUID, Intro> intros = new HashMap<>();
+    private final Set<UUID> internalCameraChanges = new java.util.HashSet<>();
 
     private record Battle(TotalAssaultStorage.Challenge challenge, String attemptId, BossHandle boss,
                           long startNanos, GameMode originalMode, int originalMaximumNoDamageTicks,
                           Set<String> identities) {}
+
+    /** 入场镜头只存在于本次出战内，不参与持久化。 */
+    private static final class Intro {
+        final ItemDisplay camera;
+        final Location playerSpawn;
+        final Saint.Progress progress;
+        final List<SaintDifficulty.CameraPoint> points;
+        BukkitTask task;
+        int segment;
+        int tick;
+        int titleTicks;
+        boolean attached;
+        Intro(ItemDisplay camera, Location playerSpawn, Saint.Progress progress, List<SaintDifficulty.CameraPoint> points) {
+            this.camera = camera; this.playerSpawn = playerSpawn; this.progress = progress; this.points = points;
+        }
+    }
 
     public BattleManager(JavaPlugin plugin, Filereader.ActivityConfig activity, BossRegistry bosses) {
         this.plugin = plugin;
@@ -102,16 +133,23 @@ public final class BattleManager implements Listener {
             player.setNoDamageTicks(0);
             if (!teleport(player, arena.playerSpawn().location(world))) throw new IllegalStateException("传送失败");
             moved = true;
-            long start = System.nanoTime();
             boss = definition.spawn(arena.bossSpawn().location(world), challenge.difficulty(), challenge.bossHealth());
             Saint.Progress progress = definition.id().equals("saint")
                     ? Datamanager.saintProgress(challenge.id()) : new Saint.Progress(0, 0);
-            boss.start(plugin, player, progress.ultimate(), progress.stun());
             player.getInventory().setItem(8, controlItem());
+            boolean hasIntro = definition.id().equals("saint") && SaintDifficulty.INTRO_POINTS.size() >= 2;
+            long start = hasIntro ? 0 : System.nanoTime();
             battles.put(player.getUniqueId(), new Battle(challenge, attemptId, boss, start, original,
                     originalMaximumNoDamageTicks, Set.copyOf(result.identities())));
-            player.sendMessage(TaText.line("<#b8ffde>出战开始，单次出战限时四分钟。"));
+            if (hasIntro) {
+                beginIntro(player, world, arena.playerSpawn().location(world), progress);
+            } else {
+                boss.start(plugin, player, progress.ultimate(), progress.stun());
+                player.sendMessage(TaText.line("<#b8ffde>出战开始，单次出战限时四分钟。"));
+            }
         } catch (SQLException | RuntimeException exception) {
+            clearIntro(player);
+            battles.remove(player.getUniqueId());
             if (boss != null) boss.remove();
             player.getInventory().setItem(8, null);
             player.setGameMode(original);
@@ -137,7 +175,8 @@ public final class BattleManager implements Listener {
         }
         // 超过四分钟才击败 Boss 时，按超时保存剩余进度处理。
         if (action.equals("通关") && System.nanoTime() - battle.startNanos() >= 240_000_000_000L) action = "保存";
-        long millis = Math.min(240_000L, Math.max(0, (System.nanoTime() - battle.startNanos()) / 1_000_000L));
+        if (battle.startNanos() == 0 && action.equals("保存")) action = "回退";
+        long millis = battle.startNanos() == 0 ? 0 : Math.min(240_000L, Math.max(0, (System.nanoTime() - battle.startNanos()) / 1_000_000L));
         try {
             switch (action) {
                 case "保存" -> {
@@ -159,7 +198,10 @@ public final class BattleManager implements Listener {
             player.sendMessage(TaText.line("<#b8ffde>挑战状态保存失败，请联系管理员。"));
             return;
         }
+        // 必须等通关记录提交成功后再通报，避免失败或回退的出战被误报。
+        if (action.equals("通关")) broadcastCompletion(player, battle, millis);
         battles.remove(player.getUniqueId());
+        clearIntro(player);
         battle.boss().remove();
         cleanInventory(player, battle.identities());
         player.setGameMode(battle.originalMode());
@@ -168,6 +210,169 @@ public final class BattleManager implements Listener {
             returnToLobby(player);
         }
         player.sendMessage(TaText.line("<#b8ffde>本次出战：" + TaText.escape(action)));
+    }
+
+    /** 通报本次挑战的累计战斗时间与四分钟 Boss 计分结果。 */
+    private void broadcastCompletion(Player player, Battle battle, long finalBattleMillis) {
+        TotalAssaultStorage.Challenge challenge = battle.challenge();
+        long totalMillis = challenge.battleMillis() + finalBattleMillis;
+        difficulties difficulty = difficulties.fromId(challenge.difficulty()).orElse(null);
+        if (difficulty == null) {
+            plugin.getLogger().warning("无法通报总力战成绩，未知难度：" + challenge.difficulty());
+            return;
+        }
+        String bossName = bosses.find(activity.bossId()).map(AssaultBoss::displayName).orElse(activity.bossId());
+        String time = String.format(java.util.Locale.ROOT, "%d:%02d.%03d",
+                totalMillis / 60_000, totalMillis / 1000 % 60, totalMillis % 1000);
+        Bukkit.broadcast(TaText.line("<b><#ffd166>[总力战] <#b8ffde>"
+                + TaText.escape(player.getName()) + " 击败了 " + TaText.escape(bossName)
+                + " <#aab8b0>（" + TaText.escape(challenge.difficulty().toUpperCase(java.util.Locale.ROOT)) + "）"
+                + " <#b8ffde>用时 <#ffd166>" + time + " <#b8ffde>得分 <#ffd166>" + difficulty.score(totalMillis)));
+    }
+
+    /** 创建仅用于镜头的展示实体，玩家以旁观视角跟随它。 */
+    private void beginIntro(Player player, World world, Location playerSpawn, Saint.Progress progress) {
+        List<SaintDifficulty.CameraPoint> points = List.copyOf(SaintDifficulty.INTRO_POINTS);
+        for (int i = 0; i < points.size() - 1; i++) {
+            if (points.get(i).durationTicks() <= 0) throw new IllegalArgumentException("入场镜头每段移动时间必须大于零");
+        }
+        SaintDifficulty.CameraPoint first = points.getFirst();
+        Location initial = new Location(world, first.x(), first.y(), first.z(), first.yaw(), first.pitch());
+        ItemDisplay camera = world.spawn(initial, ItemDisplay.class, display -> {
+            display.setPersistent(false);
+            display.setTeleportDuration(1);
+        });
+        Intro intro = new Intro(camera, playerSpawn, progress, points);
+        intros.put(player.getUniqueId(), intro);
+        Battle battle = battles.get(player.getUniqueId());
+        Entity bossEntity = Bukkit.getEntity(battle.boss().entityId());
+        if (bossEntity instanceof LivingEntity living) living.setInvulnerable(true);
+        internalCameraChanges.add(player.getUniqueId());
+        internalTeleports.add(player.getUniqueId());
+        try {
+            player.setGameMode(GameMode.SPECTATOR);
+            // 先把玩家送到镜头起点，确保客户端能接收新生成的展示实体。
+            if (!player.teleport(initial)) throw new IllegalStateException("无法传送到入场镜头起点");
+        } finally {
+            internalTeleports.remove(player.getUniqueId());
+            internalCameraChanges.remove(player.getUniqueId());
+        }
+        player.sendMessage(TaText.line("<#b8ffde>入场演出中，按 Shift 跳过。"));
+        updateIntroTitle(player, intro);
+        // 等待实体跟踪数据发送给客户端，再绑定旁观目标；过早绑定可能导致客户端仍停在原视角。
+        intro.task = Bukkit.getScheduler().runTaskTimer(plugin, () -> advanceIntro(player, intro), 3L, 1L);
+    }
+
+    /** 使用平滑插值沿配置点位移动，并对朝向使用最短旋转路径。 */
+    private void advanceIntro(Player player, Intro intro) {
+        if (intros.get(player.getUniqueId()) != intro) return;
+        if (!player.isOnline() || !intro.camera.isValid()) {
+            finish(player, "回退", false);
+            return;
+        }
+        try {
+            if (!intro.attached) {
+                internalCameraChanges.add(player.getUniqueId());
+                internalTeleports.add(player.getUniqueId());
+                try { player.setSpectatorTarget(intro.camera); }
+                finally {
+                    internalTeleports.remove(player.getUniqueId());
+                    internalCameraChanges.remove(player.getUniqueId());
+                }
+                if (!intro.camera.equals(player.getSpectatorTarget())) throw new IllegalStateException("无法绑定入场镜头目标");
+                intro.attached = true;
+                return;
+            }
+            intro.titleTicks++;
+            if (intro.titleTicks % SaintDifficulty.INTRO_TITLE_CHARACTER_TICKS == 0) updateIntroTitle(player, intro);
+            SaintDifficulty.CameraPoint from = intro.points.get(intro.segment);
+            SaintDifficulty.CameraPoint to = intro.points.get(intro.segment + 1);
+            double t = Math.min(1.0, (double) ++intro.tick / from.durationTicks());
+            double smooth = t * t * (3 - 2 * t);
+            float yawDelta = (float) ((((to.yaw() - from.yaw()) % 360) + 540) % 360 - 180);
+            Location next = new Location(intro.camera.getWorld(),
+                    from.x() + (to.x() - from.x()) * smooth,
+                    from.y() + (to.y() - from.y()) * smooth,
+                    from.z() + (to.z() - from.z()) * smooth,
+                    (float) (from.yaw() + yawDelta * smooth),
+                    (float) (from.pitch() + (to.pitch() - from.pitch()) * smooth));
+            if (!intro.camera.teleport(next)) throw new IllegalStateException("镜头实体移动失败");
+            if (t >= 1) {
+                intro.segment++;
+                intro.tick = 0;
+                if (intro.segment >= intro.points.size() - 1) completeIntro(player, intro);
+            }
+        } catch (RuntimeException exception) {
+            plugin.getLogger().log(Level.WARNING, "总力战入场演出失败，回退出战", exception);
+            finish(player, "回退", true);
+        }
+    }
+
+    /** 按 Unicode 字符逐字显示主标题，完成后显示副标题。 */
+    private void updateIntroTitle(Player player, Intro intro) {
+        String text = SaintDifficulty.INTRO_TITLE;
+        int total = text.codePointCount(0, text.length());
+        int count = Math.min(total, 1 + intro.titleTicks / SaintDifficulty.INTRO_TITLE_CHARACTER_TICKS);
+        String visible = text.substring(0, text.offsetByCodePoints(0, count));
+        Component subtitle = count >= total ? TaText.line(SaintDifficulty.INTRO_SUBTITLE) : Component.empty();
+        player.showTitle(Title.title(TaText.line("<bold><#d5b5ff>" + TaText.escape(visible)), subtitle,
+                Title.Times.times(Duration.ZERO, Duration.ofSeconds(1), Duration.ZERO)));
+    }
+
+    /** 演出结束或跳过后恢复玩家视角，再开启 Boss 技能和出战计时。 */
+    private void completeIntro(Player player, Intro intro) {
+        UUID id = player.getUniqueId();
+        if (intros.get(id) != intro) return;
+        Battle battle = battles.get(id);
+        if (battle == null) { clearIntro(player); return; }
+        Instant now = Instant.now();
+        if (!now.isBefore(activity.start().plusSeconds(7L * 24 * 60 * 60)) || now.toEpochMilli() >= battle.challenge().expiresAt()) {
+            endExpired(player, battle, now);
+            return;
+        }
+        clearIntro(player);
+        try {
+            player.setGameMode(GameMode.ADVENTURE);
+            if (!teleport(player, intro.playerSpawn)) throw new IllegalStateException("入场演出结束后传送失败");
+            Entity bossEntity = Bukkit.getEntity(battle.boss().entityId());
+            if (!(bossEntity instanceof LivingEntity living) || !living.isValid()) throw new IllegalStateException("入场演出结束时 Boss 不存在");
+            battle.boss().start(plugin, player, intro.progress.ultimate(), intro.progress.stun());
+            living.setInvulnerable(false);
+            battles.put(id, new Battle(battle.challenge(), battle.attemptId(), battle.boss(), System.nanoTime(),
+                    battle.originalMode(), battle.originalMaximumNoDamageTicks(), battle.identities()));
+            // 无论镜头自然结束还是玩家跳过，都在战斗真正开始时显示同一句台词。
+            player.sendActionBar(TaText.line(SaintDifficulty.INTRO_DIALOGUE));
+            player.sendMessage(TaText.line("<#b8ffde>出战开始，单次出战限时四分钟。"));
+        } catch (RuntimeException exception) {
+            plugin.getLogger().log(Level.WARNING, "入场演出结束后无法开始战斗", exception);
+            finish(player, "回退", true);
+        }
+    }
+
+    /** 清除镜头任务、旁观目标和展示实体；调用方负责恢复游戏模式和传送。 */
+    private void clearIntro(Player player) {
+        Intro intro = intros.remove(player.getUniqueId());
+        if (intro == null) return;
+        if (intro.task != null) intro.task.cancel();
+        if (player.isOnline()) player.clearTitle();
+        internalCameraChanges.add(player.getUniqueId());
+        internalTeleports.add(player.getUniqueId());
+        try {
+            if (player.isOnline() && player.getGameMode() == GameMode.SPECTATOR && intro.camera.equals(player.getSpectatorTarget())) {
+                player.setSpectatorTarget(null);
+            }
+        } finally {
+            internalTeleports.remove(player.getUniqueId());
+            internalCameraChanges.remove(player.getUniqueId());
+            intro.camera.remove();
+        }
+    }
+
+    private void skipIntro(Player player) {
+        Intro intro = intros.get(player.getUniqueId());
+        if (intro != null) Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.isOnline() && intros.get(player.getUniqueId()) == intro) completeIntro(player, intro);
+        });
     }
 
     public void exit(Player player) { finish(player, "保存", true); }
@@ -193,7 +398,7 @@ public final class BattleManager implements Listener {
             if (battle == null || player == null) continue;
             if (!now.isBefore(activity.start().plusSeconds(7L * 24 * 60 * 60)) || now.toEpochMilli() >= battle.challenge().expiresAt()) {
                 endExpired(player, battle, now);
-            } else if (System.nanoTime() - battle.startNanos() >= 240_000_000_000L) {
+            } else if (battle.startNanos() != 0 && System.nanoTime() - battle.startNanos() >= 240_000_000_000L) {
                 finish(player, "保存", true);
             }
         }
@@ -204,6 +409,7 @@ public final class BattleManager implements Listener {
             String reason = !now.isBefore(activity.start().plusSeconds(7L * 24 * 60 * 60)) ? "ACTIVITY_ENDED" : "EXPIRED";
             Datamanager.failChallenge(battle.challenge().id(), reason, now);
             battles.remove(player.getUniqueId());
+            clearIntro(player);
             battle.boss().remove();
             cleanInventory(player, battle.identities());
             player.setGameMode(battle.originalMode());
@@ -255,6 +461,21 @@ public final class BattleManager implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onDrop(PlayerDropItemEvent event) { if (battles.containsKey(event.getPlayer().getUniqueId())) event.setCancelled(true); }
 
+    /** 旁观视角按 Shift 时可能先触发退出旁观事件，也兼容普通潜行事件。 */
+    @EventHandler(ignoreCancelled = true)
+    public void onStopSpectating(PlayerStopSpectatingEntityEvent event) {
+        Player player = event.getPlayer();
+        Intro intro = intros.get(player.getUniqueId());
+        if (intro != null && !internalCameraChanges.contains(player.getUniqueId()) && event.getSpectatorTarget().equals(intro.camera)) {
+            skipIntro(player);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onSneak(PlayerToggleSneakEvent event) {
+        if (event.isSneaking() && intros.containsKey(event.getPlayer().getUniqueId())) skipIntro(event.getPlayer());
+    }
+
     /** 受伤事件结束后的下一刻再次清零，覆盖其他逻辑在本次受伤中写入的无敌时间。 */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDamage(EntityDamageEvent event) {
@@ -275,7 +496,9 @@ public final class BattleManager implements Listener {
     }
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent event) {
-        if (!internalTeleports.contains(event.getPlayer().getUniqueId()) && battles.containsKey(event.getPlayer().getUniqueId())) finish(event.getPlayer(), "回退", false);
+        UUID id = event.getPlayer().getUniqueId();
+        if (intros.containsKey(id) && event.getCause() == PlayerTeleportEvent.TeleportCause.SPECTATE) return;
+        if (!internalTeleports.contains(id) && battles.containsKey(id)) finish(event.getPlayer(), "回退", false);
     }
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {

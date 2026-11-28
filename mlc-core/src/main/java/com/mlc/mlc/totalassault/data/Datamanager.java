@@ -348,10 +348,19 @@ public final class Datamanager {
         return storage().bestScore(player, activity);
     }
 
+    /** 查询本期排行榜，按当前计分公式从高到低排序。 */
+    public static List<TotalAssaultStorage.RankingEntry> ranking(String activity) throws SQLException {
+        return storage().ranking(activity);
+    }
+
     /** 分页查询历史最佳成绩及物品快照；可按玩家和活动筛选。 */
     public static TotalAssaultStorage.HistoryPage scoreHistory(UUID player, String activity, int limit, int offset) throws SQLException {
         if (limit < 1 || limit > 100 || offset < 0) throw new IllegalArgumentException("分页参数无效");
         return storage().scoreHistory(player == null ? null : player.toString(), activity, limit, offset);
+    }
+    /** 查询所有已登记活动，供历史成绩选择使用。 */
+    public static List<TotalAssaultStorage.ActivitySummary> activities() throws SQLException {
+        return storage().activities();
     }
     /**
      * 读取玩家本期的最高成绩，是 bestScore 的别名；此方法不计算排行榜名次。

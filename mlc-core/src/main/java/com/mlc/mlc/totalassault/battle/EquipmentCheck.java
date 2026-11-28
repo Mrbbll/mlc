@@ -31,13 +31,15 @@ public final class EquipmentCheck {
         List<TotalAssaultStorage.AttemptItem> items = new ArrayList<>();
         Set<String> identities = new HashSet<>();
         NamespacedKey attemptKey = new NamespacedKey(plugin, "totalassault_attempt");
-        for (int slot = 3; slot < 36; slot++) {
+        for (int slot = 5; slot < 36; slot++) {
             ItemStack item = inventory.getItem(slot);
             if (item != null && !item.getType().isAir()) errors.add("背包第 " + (slot + 1) + " 格必须为空。");
         }
         add("MAIN_HAND", "快捷栏第 1 格", inventory.getItem(0), false, used, savedAttempts, attemptKey, errors, items, identities, boss);
         add("HOTBAR_2", "快捷栏第 2 格", inventory.getItem(1), true, used, savedAttempts, attemptKey, errors, items, identities, boss);
         add("HOTBAR_3", "快捷栏第 3 格", inventory.getItem(2), true, used, savedAttempts, attemptKey, errors, items, identities, boss);
+        add("HOTBAR_4", "快捷栏第 4 格", inventory.getItem(3), true, used, savedAttempts, attemptKey, errors, items, identities, boss);
+        add("HOTBAR_5", "快捷栏第 5 格", inventory.getItem(4), true, used, savedAttempts, attemptKey, errors, items, identities, boss);
         add("HEAD", "头盔", inventory.getHelmet(), false, used, savedAttempts, attemptKey, errors, items, identities, boss);
         add("CHEST", "胸甲", inventory.getChestplate(), false, used, savedAttempts, attemptKey, errors, items, identities, boss);
         add("LEGS", "护腿", inventory.getLeggings(), false, used, savedAttempts, attemptKey, errors, items, identities, boss);

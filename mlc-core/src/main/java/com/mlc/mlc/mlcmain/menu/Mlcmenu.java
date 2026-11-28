@@ -52,6 +52,7 @@ public class Mlcmenu {
     public static final int SLOT_RECIPE = 30;
     public static final int SLOT_ITEMS = 32;
     public static final int SLOT_CHAT_FORMAT = 34;
+    public static final int SLOT_TOTAL_ASSAULT = 37;
 
     // 超链接URL
     public static final String MAP_URL = "http://43.248.188.28:19423/";
@@ -181,6 +182,13 @@ public class Mlcmenu {
                 null,
                 "<!i><#aaaaaa>设置名字和聊天正文的动态特效",
                 "<!i><#b8ffde>» 点击打开特效选择"));
+
+        menuinv.setItem(SLOT_TOTAL_ASSAULT, createMenuItem(
+                Material.DIAMOND_SWORD,
+                "<!i><#ffaa00>总力战",
+                null,
+                "<!i><#aaaaaa>挑战 Boss 并查看成绩",
+                "<!i><#ffff55>» 点击打开总力战"));
     }
 
     /**
