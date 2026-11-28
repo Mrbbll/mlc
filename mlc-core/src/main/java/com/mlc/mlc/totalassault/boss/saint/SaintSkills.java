@@ -1,11 +1,16 @@
 package com.mlc.mlc.totalassault.boss.saint;
 
 import com.mlc.mlc.totalassault.boss.BossHandle;
+import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
@@ -21,7 +26,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * 落雷：锁定玩家当前位置，预警后对圆形区域造成伤害。
  * 冲击波：向玩家方向释放扇形攻击。
  * 大招：战斗期间持续积攒进度，满值时释放范围攻击。
- * 移动追踪弹：在难度表指定的固定点之间移动，并向玩家发射持续追踪的弹幕；未配置点位时跳过。
+ * 移动追踪弹：每次施放依次经过难度表指定的全部固定点，途中发射追踪弹；未配置点位时跳过。
  * 头顶弹幕：在圣徒上方随机偏移的位置持续发射弹幕，弹幕沿发射时的方向飞行。
  *
  * 普通技能按难度表和冷却轮流选择；大招可以打断普通技能，眩晕会中断当前普通技能。
@@ -57,25 +62,34 @@ final class SaintSkills implements BossHandle {
     private Location moveEnd;
     private long skillStart;
     private long nextAction;
+    private long nextSkillAt;
     private int strikes;
+    private List<SaintDifficulty.Point> movePoints = List.of();
     private int movePoint;
 
-    /** 弹幕使用服务端粒子和位置模拟，不生成会遗留在世界中的实体。 */
+    /** 弹幕由服务端计算轨迹；追踪弹的冰展示实体随弹幕移动并在结束时移除。 */
     private static final class Bullet {
         private final Location location;
         private Vector velocity;
         private final boolean tracking;
         private final double damage;
         private final double speed;
+        private final int freezeTicks;
+        private final BlockDisplay display;
         private int remaining = 100;
 
-        private Bullet(Location location, Vector velocity, boolean tracking, double damage, double speed) {
+        private Bullet(Location location, Vector velocity, boolean tracking, double damage, double speed,
+                       int freezeTicks, BlockDisplay display) {
             this.location = location;
             this.velocity = velocity;
             this.tracking = tracking;
             this.damage = damage;
             this.speed = speed;
+            this.freezeTicks = freezeTicks;
+            this.display = display;
         }
+
+        private void remove() { if (display != null) display.remove(); }
     }
 
     SaintSkills(Mannequin entity, double maximumHealth, Saint.Model model, SaintDifficulty difficulty) {
@@ -106,7 +120,11 @@ final class SaintSkills implements BossHandle {
         if (stun < FULL) return;
         stun = 0;
         if (current == 3) pendingStun = true;
-        else { current = -1; stunnedUntil = System.nanoTime() + 5_000_000_000L; }
+        else {
+            long now = System.nanoTime();
+            finishSkill(now);
+            stunnedUntil = now + 5_000_000_000L;
+        }
     }
 
     private void tick() {
@@ -137,10 +155,11 @@ final class SaintSkills implements BossHandle {
                 hitAt = now + settings.strikeIntervalTicks() * 50_000_000L;
                 return;
             }
-            current = -1;
+            finishSkill(now);
             if (pendingStun) { pendingStun = false; stunnedUntil = now + 5_000_000_000L; }
             return;
         }
+        if (now < nextSkillAt) return;
         facePlayer();
         double distance = entity.getLocation().distanceSquared(player.getLocation());
         for (int i = 0; i < ROTATION.length; i++) {
@@ -166,6 +185,18 @@ final class SaintSkills implements BossHandle {
         }
     }
 
+    /** 普通技能结束后等待该技能设置的间隔；大招仍由进度条独立触发。 */
+    private void finishSkill(long now) {
+        int recoveryTicks = switch (current) {
+            case 0, 1, 2 -> areaSkill(current).recoveryTicks();
+            case 4 -> difficulty.projectile(SaintDifficulty.Skill.MOVE).recoveryTicks();
+            case 5 -> difficulty.projectile(SaintDifficulty.Skill.BARRAGE).recoveryTicks();
+            default -> 0;
+        };
+        if (recoveryTicks > 0) nextSkillAt = Math.max(nextSkillAt, now + recoveryTicks * 50_000_000L);
+        current = -1;
+    }
+
     private void begin(int skill, long now) {
         current = skill;
         strikes = 0;
@@ -177,11 +208,9 @@ final class SaintSkills implements BossHandle {
         if (skill <= 3) hitAt = now + areaSkill(skill).warningTicks() * 50_000_000L;
         if (skill == 4) {
             moveStart = entity.getLocation().clone();
-            List<SaintDifficulty.Point> points = SaintDifficulty.MOVEMENT_POINTS.stream()
-                    .sorted(java.util.Comparator.comparingDouble(SaintDifficulty.Point::x)
-                            .thenComparingDouble(SaintDifficulty.Point::y).thenComparingDouble(SaintDifficulty.Point::z))
-                    .toList();
-            SaintDifficulty.Point point = points.get(movePoint++ % points.size());
+            movePoints = SaintDifficulty.MOVEMENT_POINTS;
+            movePoint = 0;
+            SaintDifficulty.Point point = movePoints.get(movePoint);
             moveEnd = new Location(entity.getWorld(), point.x(), point.y(), point.z());
         }
         model.play(switch (skill) { case 0 -> "横扫"; case 1 -> "落雷"; case 2 -> "冲击波"; case 4 -> "移动"; case 5 -> "弹幕"; default -> "大招"; });
@@ -212,7 +241,13 @@ final class SaintSkills implements BossHandle {
         double base = settings.halfAngleDegrees() < 180 ? Math.atan2(direction.getZ(), direction.getX()) : 0;
         for (int i = 0; i <= 24; i++) {
             double angle = base - half + 2 * half * i / 24;
-            entity.getWorld().spawnParticle(Particle.END_ROD, center.clone().add(Math.cos(angle) * radius, 0.2, Math.sin(angle) * radius), 1, 0, 0, 0, 0);
+            Location point = center.clone().add(Math.cos(angle) * radius, 0.2, Math.sin(angle) * radius);
+            if (current == 2) {
+                entity.getWorld().spawnParticle(Particle.DUST, point, 1, 0, 0, 0, 0,
+                        new Particle.DustOptions(Color.YELLOW, 1.0f));
+            } else {
+                entity.getWorld().spawnParticle(Particle.END_ROD, point, 1, 0, 0, 0, 0);
+            }
         }
     }
 
@@ -227,7 +262,17 @@ final class SaintSkills implements BossHandle {
         if (settings.halfAngleDegrees() < 180 && delta.lengthSquared() > 0.0001) {
             if (direction.dot(delta.normalize()) < Math.cos(Math.toRadians(settings.halfAngleDegrees()))) return;
         }
-        player.damage(settings.damage(), entity);
+        if (current == 0) {
+            // 只抵消普通攻击造成的速度变化，保留玩家受击前已有的移动速度。
+            Vector previousVelocity = player.getVelocity().clone();
+            player.damage(settings.damage(), entity);
+            if (player.isValid() && !player.isDead()) player.setVelocity(previousVelocity);
+        } else {
+            player.damage(settings.damage(), entity);
+        }
+        if (settings.slownessTicks() > 0 && !player.isDead()) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, settings.slownessTicks(), settings.slownessAmplifier()));
+        }
     }
 
     /** 按当前难度设定的持续时间和间隔，移动并发射追踪弹或固定方向的弹幕。 */
@@ -245,13 +290,24 @@ final class SaintSkills implements BossHandle {
                 fireBullet(true);
                 nextAction = now + settings.intervalTicks() * 50_000_000L;
             }
-            if (progress >= 1) current = -1;
+            if (progress >= 1) {
+                movePoint++;
+                if (movePoint >= movePoints.size()) {
+                    finishSkill(now);
+                } else {
+                    // 以刚到达的位置作为下一段起点，继续前往本次施放中的下一个点。
+                    moveStart = entity.getLocation().clone();
+                    SaintDifficulty.Point point = movePoints.get(movePoint);
+                    moveEnd = new Location(entity.getWorld(), point.x(), point.y(), point.z());
+                    skillStart = now;
+                }
+            }
             return;
         }
         facePlayer();
         SaintDifficulty.ProjectileSkill settings = difficulty.projectile(SaintDifficulty.Skill.BARRAGE);
         if (now - skillStart >= settings.durationTicks() * 50_000_000L) {
-            current = -1;
+            finishSkill(now);
         } else if (now >= nextAction) {
             fireBullet(false);
             nextAction = now + settings.intervalTicks() * 50_000_000L;
@@ -271,7 +327,19 @@ final class SaintSkills implements BossHandle {
                 spread == 0 ? 0 : random.nextDouble(-spread, spread));
         Vector aim = player.getEyeLocation().toVector().subtract(start.toVector());
         if (aim.lengthSquared() < 0.0001) return;
-        bullets.add(new Bullet(start, aim.normalize().multiply(settings.speed()), tracking, settings.damage(), settings.speed()));
+        BlockDisplay display = null;
+        if (tracking) {
+            display = entity.getWorld().spawn(start, BlockDisplay.class, block -> {
+                block.setBlock(Material.ICE.createBlockData());
+                block.setPersistent(false);
+                var transformation = block.getTransformation();
+                transformation.getScale().set(0.1f, 0.1f, 0.1f);
+                transformation.getTranslation().set(-0.05f, -0.05f, -0.05f);
+                block.setTransformation(transformation);
+            });
+        }
+        bullets.add(new Bullet(start, aim.normalize().multiply(settings.speed()), tracking, settings.damage(), settings.speed(),
+                settings.freezeTicks(), display));
     }
 
     /** 推进和碰撞均在主线程处理；碰到方块、命中玩家或超时后移除。 */
@@ -279,7 +347,7 @@ final class SaintSkills implements BossHandle {
         var iterator = bullets.iterator();
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
-            if (--bullet.remaining <= 0 || player.isDead()) { iterator.remove(); continue; }
+            if (--bullet.remaining <= 0 || player.isDead()) { bullet.remove(); iterator.remove(); continue; }
             if (bullet.tracking) {
                 Vector aim = player.getEyeLocation().toVector().subtract(bullet.location.toVector());
                 if (aim.lengthSquared() > 0.0001) {
@@ -288,10 +356,20 @@ final class SaintSkills implements BossHandle {
                 }
             }
             bullet.location.add(bullet.velocity);
-            if (bullet.location.getBlock().getType().isSolid()) { iterator.remove(); continue; }
-            entity.getWorld().spawnParticle(Particle.END_ROD, bullet.location, 1, 0, 0, 0, 0);
+            if (bullet.location.getBlock().getType().isSolid()) { bullet.remove(); iterator.remove(); continue; }
+            if (bullet.tracking) {
+                if (bullet.display != null) bullet.display.teleport(bullet.location);
+                entity.getWorld().spawnParticle(Particle.BLOCK, bullet.location, 4, 0.05, 0.05, 0.05, 0,
+                        Material.ICE.createBlockData());
+            } else {
+                entity.getWorld().spawnParticle(Particle.END_ROD, bullet.location, 1, 0, 0, 0, 0);
+            }
             if (player.getBoundingBox().expand(0.3).contains(bullet.location.toVector())) {
                 player.damage(bullet.damage, entity);
+                if (bullet.freezeTicks > 0 && !player.isDead()) {
+                    player.setFreezeTicks(Math.max(player.getFreezeTicks(), bullet.freezeTicks));
+                }
+                bullet.remove();
                 iterator.remove();
             }
         }
@@ -300,6 +378,7 @@ final class SaintSkills implements BossHandle {
     @Override
     public void remove() {
         if (task != null) { task.cancel(); task = null; }
+        bullets.forEach(Bullet::remove);
         bullets.clear();
         try { model.close(); } finally { entity.remove(); }
     }

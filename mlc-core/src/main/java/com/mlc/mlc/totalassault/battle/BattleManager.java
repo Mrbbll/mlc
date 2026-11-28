@@ -20,6 +20,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -50,7 +51,8 @@ public final class BattleManager implements Listener {
     private final Set<UUID> returnToLobby = new java.util.HashSet<>();
 
     private record Battle(TotalAssaultStorage.Challenge challenge, String attemptId, BossHandle boss,
-                          long startNanos, GameMode originalMode, Set<String> identities) {}
+                          long startNanos, GameMode originalMode, int originalMaximumNoDamageTicks,
+                          Set<String> identities) {}
 
     public BattleManager(JavaPlugin plugin, Filereader.ActivityConfig activity, BossRegistry bosses) {
         this.plugin = plugin;
@@ -67,6 +69,7 @@ public final class BattleManager implements Listener {
         TotalAssaultStorage.Challenge challenge = null;
         BossHandle boss = null;
         GameMode original = player.getGameMode();
+        int originalMaximumNoDamageTicks = player.getMaximumNoDamageTicks();
         boolean started = false;
         boolean moved = false;
         try {
@@ -94,6 +97,9 @@ public final class BattleManager implements Listener {
             // 标记指向本次出战；如果之后回退，数据库状态不会变为已保存，标记也不会造成禁用。
             EquipmentCheck.markEquipment(player, plugin, attemptId);
             player.setGameMode(GameMode.ADVENTURE);
+            // 出战期间将受伤后的无敌时间设为零，避免连续命中被原版冷却抵消。
+            player.setMaximumNoDamageTicks(0);
+            player.setNoDamageTicks(0);
             if (!teleport(player, arena.playerSpawn().location(world))) throw new IllegalStateException("传送失败");
             moved = true;
             long start = System.nanoTime();
@@ -102,12 +108,14 @@ public final class BattleManager implements Listener {
                     ? Datamanager.saintProgress(challenge.id()) : new Saint.Progress(0, 0);
             boss.start(plugin, player, progress.ultimate(), progress.stun());
             player.getInventory().setItem(8, controlItem());
-            battles.put(player.getUniqueId(), new Battle(challenge, attemptId, boss, start, original, Set.copyOf(result.identities())));
+            battles.put(player.getUniqueId(), new Battle(challenge, attemptId, boss, start, original,
+                    originalMaximumNoDamageTicks, Set.copyOf(result.identities())));
             player.sendMessage(TaText.line("<#b8ffde>出战开始，单次出战限时四分钟。"));
         } catch (SQLException | RuntimeException exception) {
             if (boss != null) boss.remove();
             player.getInventory().setItem(8, null);
             player.setGameMode(original);
+            player.setMaximumNoDamageTicks(originalMaximumNoDamageTicks);
             if (moved) { try { teleport(player, Filereader.ArenaConfig.lobbySpawn()); } catch (RuntimeException ignored) { } }
             if (started && challenge != null) {
                 try { Datamanager.rollbackAttempt(challenge.id(), Instant.now()); }
@@ -155,6 +163,7 @@ public final class BattleManager implements Listener {
         battle.boss().remove();
         cleanInventory(player, battle.identities());
         player.setGameMode(battle.originalMode());
+        player.setMaximumNoDamageTicks(battle.originalMaximumNoDamageTicks());
         if (move && !player.isDead()) {
             returnToLobby(player);
         }
@@ -198,6 +207,7 @@ public final class BattleManager implements Listener {
             battle.boss().remove();
             cleanInventory(player, battle.identities());
             player.setGameMode(battle.originalMode());
+            player.setMaximumNoDamageTicks(battle.originalMaximumNoDamageTicks());
             if (!player.isDead()) returnToLobby(player);
             player.sendMessage(TaText.line("<#b8ffde>挑战已结束。"));
         } catch (SQLException | RuntimeException exception) { plugin.getLogger().log(Level.SEVERE, "结束过期挑战失败", exception); }
@@ -244,6 +254,18 @@ public final class BattleManager implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onDrop(PlayerDropItemEvent event) { if (battles.containsKey(event.getPlayer().getUniqueId())) event.setCancelled(true); }
+
+    /** 受伤事件结束后的下一刻再次清零，覆盖其他逻辑在本次受伤中写入的无敌时间。 */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        Battle battle = battles.get(player.getUniqueId());
+        if (battle == null) return;
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            // 玩家可能已经结束出战或开始了新一轮，不要修改其他状态下的无敌时间。
+            if (battles.get(player.getUniqueId()) == battle && player.isOnline()) player.setNoDamageTicks(0);
+        });
+    }
     @EventHandler(ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
         if (battles.containsKey(event.getPlayer().getUniqueId()) && isControl(event.getItem())) {
